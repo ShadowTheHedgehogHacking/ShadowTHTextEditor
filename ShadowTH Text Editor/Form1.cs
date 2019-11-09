@@ -37,9 +37,10 @@ namespace ShadowTH_Text_Editor {
              */
             clearData();
 
-            if (openFileDialog.ShowDialog() == DialogResult.OK) {
-                originalFile = File.ReadAllBytes(openFileDialog.FileName);
-            }
+            if (openFileDialog.ShowDialog() != DialogResult.OK)
+                return;
+
+            originalFile = File.ReadAllBytes(openFileDialog.FileName);
 
             // TODO: Determine if reverse endian is necessary, Seems to vary per .fnt?? Need to double check
             numberOfSubtitles = BitConverter.ToInt32(originalFile, 0);
@@ -105,6 +106,10 @@ namespace ShadowTH_Text_Editor {
         private void buttonSave_Click(object sender, EventArgs e) {
             if (selected == -1)
                 return;
+
+            if (saveFileDialog.ShowDialog() != DialogResult.OK)
+                return;
+            
             updateSubtitles();
             List<byte> updatedFile = new List<byte>();
 
@@ -124,9 +129,7 @@ namespace ShadowTH_Text_Editor {
             for (int i = 0; i < numberOfSubtitles; i++)
                 Encoding.Unicode.GetBytes(subtitleList[i]).ToList().ForEach(b => { updatedFile.Add(b); });
 
-            if (saveFileDialog.ShowDialog() == DialogResult.OK) {
-                File.WriteAllBytes(saveFileDialog.FileName, updatedFile.ToArray());
-            }
+            File.WriteAllBytes(saveFileDialog.FileName, updatedFile.ToArray());
             
         }
 
