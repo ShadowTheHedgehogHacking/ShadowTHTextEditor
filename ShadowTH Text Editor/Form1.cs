@@ -11,6 +11,7 @@ namespace ShadowTH_Text_Editor
         private Byte[] originalFile;
         private List<SubtitleTableEntry> subtitleTable;
         private List<String> subtitleList;
+        private int selected = -1;
 
         public Form1()
         {
@@ -40,12 +41,12 @@ namespace ShadowTH_Text_Editor
             //int numberOfSubtitles = BinaryPrimitives.ReverseEndianness(BitConverter.ToInt32(originalFile, 0));
 
             int subtitleTableEntryStructSize = 0x14;
-            int positionIndex = 4; //skip header
+            int positionIndex = 4; // skip header
 
             subtitleTable = new List<SubtitleTableEntry>();
             subtitleList = new List<String>();
 
-            //read table entries
+            // read table entries
             for (int i = 0; i < numberOfSubtitles; i++)
             {
                 SubtitleTableEntry entry = new SubtitleTableEntry
@@ -58,10 +59,11 @@ namespace ShadowTH_Text_Editor
                 };
                 //Save entry in a table holding entries which map to UTF-16 entries below
                 subtitleTable.Add(entry);
+                subtitleTable_ListBox.Items.Add("Subtitle " + i );
                 positionIndex += subtitleTableEntryStructSize;
             }
 
-            //read UTF-16 entries
+            // read UTF-16 entries
             for (int i = 0; i < numberOfSubtitles; i++)
             {
                 int subtitleLength = calculateSize(i);
@@ -69,6 +71,7 @@ namespace ShadowTH_Text_Editor
                 subtitleList.Add(test);
                 positionIndex += subtitleLength;
             }
+
         }
 
         private int calculateSize(int entryIndex) {
@@ -77,7 +80,7 @@ namespace ShadowTH_Text_Editor
                 return originalFile.Length - subtitleTable[entryIndex].startingPosition;
             }
 
-            //otherwise calculate based on next entry in list
+            // otherwise calculate based on next entry in list
             return subtitleTable[entryIndex + 1].startingPosition - subtitleTable[entryIndex].startingPosition;
         }
 
@@ -85,9 +88,38 @@ namespace ShadowTH_Text_Editor
         {
             public int startingPosition;
             public int externalAddress;
-            public int textType; //enumify later if going to make this modifiable
+            public int textType; // enumify later if going to make this modifiable
             public int subtitleActiveTime;
             public int subtitleId;
         };
+
+        private void subtitleTable_ListBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (selected != -1)
+                updateSubtitles();
+            subtitleTextBox.Text = subtitleList[subtitleTable_ListBox.SelectedIndex].Replace("\n", "\r\n");
+            selected = subtitleTable_ListBox.SelectedIndex;
+        }
+
+        private void buttonSave_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void updateSubtitles()
+        {
+            String updatedSubtitle = subtitleTextBox.Text.Replace("\r\n", "\n") + "\0";
+            int characterSizeDifference = updatedSubtitle.Length - subtitleList[selected].Length;
+            subtitleList[selected] = updatedSubtitle;
+
+            // Update SubtitleTableEntry of all succeeding elements to account for length change
+            if (characterSizeDifference != 0) {
+                for (int i = selected + 1; i < subtitleList.Count; i++) {
+                    SubtitleTableEntry updatedEntry = subtitleTable[i];
+                    updatedEntry.startingPosition = subtitleTable[i].startingPosition + characterSizeDifference;
+                    subtitleTable[i] = updatedEntry;
+                }
+            }
+        }
     }
 }
