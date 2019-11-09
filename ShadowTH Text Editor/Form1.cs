@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
@@ -12,6 +14,10 @@ namespace ShadowTH_Text_Editor
         private List<SubtitleTableEntry> subtitleTable;
         private List<String> subtitleList;
         private int selected = -1;
+
+        private int numberOfSubtitles;
+        private int subtitleTableEntryStructSize = 0x14;
+
 
         public Form1()
         {
@@ -37,10 +43,9 @@ namespace ShadowTH_Text_Editor
             originalFile = File.ReadAllBytes("X:\\Movie_EN.fnt");
 
             // TODO: Determine if reverse endian is necessary, Seems to vary per .fnt?? Need to double check
-            int numberOfSubtitles = BitConverter.ToInt32(originalFile, 0);
+            numberOfSubtitles = BitConverter.ToInt32(originalFile, 0);
             //int numberOfSubtitles = BinaryPrimitives.ReverseEndianness(BitConverter.ToInt32(originalFile, 0));
 
-            int subtitleTableEntryStructSize = 0x14;
             int positionIndex = 4; // skip header
 
             subtitleTable = new List<SubtitleTableEntry>();
@@ -103,7 +108,26 @@ namespace ShadowTH_Text_Editor
 
         private void buttonSave_Click(object sender, EventArgs e)
         {
+            List<byte> updatedFile = new List<byte>();
 
+            // write header
+            BitConverter.GetBytes(numberOfSubtitles).ToList().ForEach(b => { updatedFile.Add(b); });
+            
+            // write table entries
+            for (int i = 0; i < numberOfSubtitles; i++) {
+                BitConverter.GetBytes(subtitleTable[i].startingPosition).ToList().ForEach(b => { updatedFile.Add(b); });
+                BitConverter.GetBytes(subtitleTable[i].externalAddress).ToList().ForEach(b => { updatedFile.Add(b); });
+                BitConverter.GetBytes(subtitleTable[i].textType).ToList().ForEach(b => { updatedFile.Add(b); });
+                BitConverter.GetBytes(subtitleTable[i].subtitleActiveTime).ToList().ForEach(b => { updatedFile.Add(b); });
+                BitConverter.GetBytes(subtitleTable[i].subtitleId).ToList().ForEach(b => { updatedFile.Add(b); });
+            }
+
+            // write UTF-16 entries
+            for (int i = 0; i < numberOfSubtitles; i++)
+                Encoding.Unicode.GetBytes(subtitleList[i]).ToList().ForEach(b => { updatedFile.Add(b); });
+
+
+            File.WriteAllBytes("X:\\OutputTest.fnt", updatedFile.ToArray());
         }
 
         private void updateSubtitles()
