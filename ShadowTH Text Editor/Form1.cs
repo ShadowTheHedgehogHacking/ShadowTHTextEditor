@@ -167,9 +167,9 @@ namespace ShadowTH_Text_Editor {
         private void aboutButton_Click(object sender, EventArgs e) {
             MessageBox.Show("Created by dreamsyntax\n" +
                 ".fnt struct reversal done by LimblessVector\n\n" +
-                "This program does NOT modify the .mlt nor .txd " +
+                "This program does NOT modify the .met nor .txd " +
                 "associated with the .fnt you edit. " +
-                "This program assumes you already are using a universal .mlt/.txd" +
+                "This program assumes you already are using a universal .met/.txd" +
                 "\n\n" +
                 "https://github.com/ShadowTheHedgehogHacking\n\nto check for non-prototype version of this software", "About ShadowTH Text Editor Prototype");
         }
