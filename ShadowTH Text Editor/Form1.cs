@@ -140,7 +140,7 @@ namespace ShadowTH_Text_Editor
             if (characterSizeDifference != 0) {
                 for (int i = selected + 1; i < subtitleList.Count; i++) {
                     SubtitleTableEntry updatedEntry = subtitleTable[i];
-                    updatedEntry.startingPosition = subtitleTable[i].startingPosition + characterSizeDifference;
+                    updatedEntry.startingPosition = subtitleTable[i].startingPosition + characterSizeDifference * 2;
                     subtitleTable[i] = updatedEntry;
                 }
             }
