@@ -13,3 +13,7 @@ Simple .fnt editor for ShadowTH.
 * Allows for any length of text per subtitle
 * Only handles one .fnt file at a time
 * Does NOT automatically edit the .met/.txd (coming soon?)
+
+##NOTE: 
+ShadowTH uses an ampersand (&) to represent the trademark symbol (™).
+If you actually want to use & somewhere... you can't.
