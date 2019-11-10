@@ -1,19 +1,20 @@
-<div align="center"><h1>ShadowTH Text Editor (Prototype/WinForms Edition)</h1>
+<div align="center"><h1>ShadowTH Text Editor</h1>
 <img src="https://raw.githubusercontent.com/ShadowTheHedgehogHacking/ShadowTHTextEditor/master/res/prototype.png" align="center" />
 </div>
 
 
 
+WIP .fnt editor for ShadowTH.
 
-Simple .fnt editor for ShadowTH.
 
+## Planned:
+* Handles the entire /font folder (with locale support)
+* Search feature
+* AudioID edit support
+* Automatically edit the .met/.txd (single universal instance with ID change per file?)
 
-## This prototype:
-* Produces .fnt format in 1:1 form
-* Allows for any length of text per subtitle
-* Only handles one .fnt file at a time
-* Does NOT automatically edit the .met/.txd (coming soon?)
+## Bonus:
+* Realtime AFS preview/play? -> Full AFS integration?
 
-## Note: 
-ShadowTH uses an ampersand (&) to represent the trademark symbol (™).
-If you actually want to use & somewhere... you can't.
+## Note:
+By default ShadowTH uses an ampersand (&) to represent the trademark symbol (™).
