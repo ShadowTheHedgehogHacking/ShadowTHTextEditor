@@ -42,10 +42,7 @@ namespace ShadowTH_Text_Editor {
 
             originalFile = File.ReadAllBytes(openFileDialog.FileName);
 
-            // TODO: Determine if reverse endian is necessary, Seems to vary per .fnt?? Need to double check
             numberOfSubtitles = BitConverter.ToInt32(originalFile, 0);
-            //int numberOfSubtitles = BinaryPrimitives.ReverseEndianness(BitConverter.ToInt32(originalFile, 0));
-
             int positionIndex = 4; // skip header
 
             subtitleTable = new List<SubtitleTableEntry>();
