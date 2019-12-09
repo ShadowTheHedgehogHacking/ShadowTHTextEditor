@@ -7,6 +7,10 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
+        <Button HorizontalAlignment="Left" Margin="75,217,0,0" VerticalAlignment="Top" Height="44" Width="172" Click="Button_Click">
+            <WrapPanel/>
+        </Button>
+        <ListBox x:Name="ListBox_OpenedFNTS" Margin="361,0,0,0"/>
 
     </Grid>
 </Window>
