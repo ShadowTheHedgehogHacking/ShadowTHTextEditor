@@ -5,12 +5,21 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ShadowTH_Text_Editor"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="765" Width="918">
     <Grid>
-        <Button HorizontalAlignment="Left" Margin="75,217,0,0" VerticalAlignment="Top" Height="44" Width="172" Click="Button_Click">
-            <WrapPanel/>
-        </Button>
-        <ListBox x:Name="ListBox_OpenedFNTS" Margin="361,0,0,0"/>
+        <Grid>
+            <Button HorizontalAlignment="Left" Margin="75,217,0,0" VerticalAlignment="Top" Height="44" Width="172" Click="Button_Click">
+                <WrapPanel/>
+            </Button>
+            <ListBox x:Name="ListBox_OpenedFNTS" Margin="361,0,0,0" SelectionChanged="ListBox_OpenedFNTS_SelectionChanged"/>
+        </Grid>
+        <Grid Margin="947,130,-947,-130">
+            <ListBox x:Name="ListBox_CurrentFNTOpened" Margin="0,0,352,0" SelectionChanged="ListBox_CurrentFNTOpened_SelectionChanged" Height="749" VerticalAlignment="Center">
 
+            </ListBox>
+            <TextBox x:Name="TextBox_EditSubtitle" Margin="469,0,0,516" Grid.ColumnSpan="4">
+
+            </TextBox>
+        </Grid>
     </Grid>
 </Window>

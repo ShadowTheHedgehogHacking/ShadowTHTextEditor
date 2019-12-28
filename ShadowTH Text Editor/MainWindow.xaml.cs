@@ -38,7 +38,7 @@ namespace ShadowTH_Text_Editor {
             }
             clearData();
             string originalPath = dialog.SelectedPath;
-            string[] foundFnts = Directory.GetFiles(dialog.SelectedPath, "*.fnt", SearchOption.AllDirectories);
+            string[] foundFnts = Directory.GetFiles(dialog.SelectedPath, "*_EN.fnt", SearchOption.AllDirectories);
             for (int i = 0; i < foundFnts.Length; i++) {
                 byte[] readFile = File.ReadAllBytes(foundFnts[i]);
                 FNT newFnt = FNT.ParseFNTFile(foundFnts[i], ref readFile);
@@ -50,7 +50,19 @@ namespace ShadowTH_Text_Editor {
         private void clearData() {
             openedFnts = new List<FNT>();
             ListBox_OpenedFNTS.Items.Clear();
+            ListBox_CurrentFNTOpened.Items.Clear();
 
+        }
+
+        private void ListBox_OpenedFNTS_SelectionChanged(object sender, SelectionChangedEventArgs e) {
+            ListBox_CurrentFNTOpened.Items.Clear();
+            foreach (String subtitle in openedFnts[ListBox_OpenedFNTS.SelectedIndex].subtitleList) {
+                ListBox_CurrentFNTOpened.Items.Add(subtitle);
+            }
+        }
+
+        private void ListBox_CurrentFNTOpened_SelectionChanged(object sender, SelectionChangedEventArgs e) {
+            TextBox_EditSubtitle.Text = ListBox_CurrentFNTOpened.SelectedItem.ToString();
         }
     }
 }
