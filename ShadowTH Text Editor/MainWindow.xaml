@@ -7,19 +7,16 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="765" Width="918">
     <Grid>
-        <Grid>
-            <Button HorizontalAlignment="Left" Margin="75,217,0,0" VerticalAlignment="Top" Height="44" Width="172" Click="Button_Click">
-                <WrapPanel/>
-            </Button>
-            <ListBox x:Name="ListBox_OpenedFNTS" Margin="361,0,0,0" SelectionChanged="ListBox_OpenedFNTS_SelectionChanged"/>
-        </Grid>
-        <Grid Margin="947,130,-947,-130">
-            <ListBox x:Name="ListBox_CurrentFNTOpened" Margin="0,0,352,0" SelectionChanged="ListBox_CurrentFNTOpened_SelectionChanged" Height="749" VerticalAlignment="Center">
+        <Button x:Name="Button_OpenFolder" HorizontalAlignment="Left" Margin="30,50,0,0" VerticalAlignment="Top" Height="44" Width="172" Click="Button_Click">
+            Select /fonts/ folder
+        </Button>
+        <ListBox x:Name="ListBox_OpenedFNTS" Margin="33,176,548,72" SelectionChanged="ListBox_OpenedFNTS_SelectionChanged"/>
+        <ListBox x:Name="ListBox_CurrentFNTOpened" Margin="557,293,87,0" SelectionChanged="ListBox_CurrentFNTOpened_SelectionChanged" Height="384" VerticalAlignment="Top">
 
-            </ListBox>
-            <TextBox x:Name="TextBox_EditSubtitle" Margin="469,0,0,516" Grid.ColumnSpan="4">
-
-            </TextBox>
-        </Grid>
+        </ListBox>
+        <TextBox x:Name="TextBox_EditSubtitle" Margin="557,50,87,543"/>
+        <TextBox HorizontalAlignment="Left" Margin="1962,427,0,0" Text="TextBox" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
+        <TextBox x:Name="TextBox_SearchText" HorizontalAlignment="Left" Margin="218,60,0,0" Text="" TextWrapping="Wrap" VerticalAlignment="Top" Width="299" Height="18" TextChanged="TextBox_SearchText_TextChanged"/>
+        <Button x:Name="Button_SaveCurrentSubtitle" Content="Save Subtitle Change" HorizontalAlignment="Left" Margin="587,226,0,0" VerticalAlignment="Top" Height="40" Width="192" Click="Button_SaveCurrentSubtitle_Click"/>
     </Grid>
 </Window>
