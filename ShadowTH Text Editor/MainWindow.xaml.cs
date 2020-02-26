@@ -31,11 +31,16 @@ namespace ShadowTH_Text_Editor {
         List<FNT> openedFnts;
         string originalPath;
         List<int> filteredIndicies;
+        List<Tuple<int, int>> filteredSubtitles;
+        int currentFontMainCollectionIndex;
+        List<int> currentFontSubtitleRelativeIndices;
 
         public MainWindow() {
             InitializeComponent();
             openedFnts = new List<FNT>();
             filteredIndicies = new List<int>();
+            filteredSubtitles = new List<Tuple<int, int>>();
+            currentFontSubtitleRelativeIndices = new List<int>();
         }
 
         private void Button_Click(object sender, RoutedEventArgs e) {
@@ -63,15 +68,29 @@ namespace ShadowTH_Text_Editor {
             openedFnts = new List<FNT>();
             ListBox_OpenedFNTS.Items.Clear();
             ListBox_CurrentFNTOpened.Items.Clear();
-
+            filteredIndicies.Clear();
+            filteredSubtitles.Clear();
         }
 
         private void ListBox_OpenedFNTS_SelectionChanged(object sender, SelectionChangedEventArgs e) {
             ListBox_CurrentFNTOpened.Items.Clear();
+            TextBox_EditSubtitle.Clear();
             if (filteredIndicies.Count == 0 || ListBox_OpenedFNTS.SelectedIndex == -1)
                 return;
-            foreach (String subtitle in openedFnts[filteredIndicies[ListBox_OpenedFNTS.SelectedIndex]].subtitleList) {
-                ListBox_CurrentFNTOpened.Items.Add(subtitle);
+            currentFontMainCollectionIndex = filteredIndicies[ListBox_OpenedFNTS.SelectedIndex];
+            var subtitleList = openedFnts[currentFontMainCollectionIndex].subtitleList;
+            if (filteredSubtitles.Count == 0) {
+                foreach (String subtitle in subtitleList) {
+                    ListBox_CurrentFNTOpened.Items.Add(subtitle);
+                    currentFontSubtitleRelativeIndices.Clear();
+                }
+            } else {
+                foreach (var fsubtitle in filteredSubtitles) {
+                    if (fsubtitle.Item1 == filteredIndicies[ListBox_OpenedFNTS.SelectedIndex]) {
+                        ListBox_CurrentFNTOpened.Items.Add(subtitleList[fsubtitle.Item2]);
+                        currentFontSubtitleRelativeIndices.Add(fsubtitle.Item2);
+                    }
+                }
             }
         }
 
@@ -84,13 +103,18 @@ namespace ShadowTH_Text_Editor {
         private void TextBox_SearchText_TextChanged(object sender, TextChangedEventArgs e) {
             ListBox_OpenedFNTS.Items.Clear();
             filteredIndicies = new List<int>();
+            filteredSubtitles = new List<Tuple<int, int>>();
             for (int font = 0; font < openedFnts.Count; font++) {
                 FNT curfnt = openedFnts[font];
-                foreach (String subtitle in curfnt.subtitleList) {
-                    if (subtitle.Contains(TextBox_SearchText.Text)) {
-                        ListBox_OpenedFNTS.Items.Add(curfnt.fileName.Split(originalPath + '\\')[1]);
-                        filteredIndicies.Add(font);
-                        break;
+                bool topLevel = false;
+                for (int subtitleIndex = 0; subtitleIndex < curfnt.subtitleList.Count; subtitleIndex++) {
+                    if (curfnt.subtitleList[subtitleIndex].Contains(TextBox_SearchText.Text)) {
+                        if (!topLevel) {
+                            ListBox_OpenedFNTS.Items.Add(curfnt.fileName.Split(originalPath + '\\')[1]);
+                            filteredIndicies.Add(font);
+                            topLevel = true;
+                        }
+                        filteredSubtitles.Add(new Tuple<int, int>(font, subtitleIndex));                   
                     }
                 }
             }
@@ -101,7 +125,8 @@ namespace ShadowTH_Text_Editor {
             int selectedSubtitle = ListBox_CurrentFNTOpened.SelectedIndex;
             if (selectedSubtitle == -1)
                 return;
-            openedFnts[filteredIndicies[ListBox_OpenedFNTS.SelectedIndex]].updateSubtitle(selectedSubtitle, TextBox_EditSubtitle.Text);
+            openedFnts[currentFontMainCollectionIndex].updateSubtitle(currentFontSubtitleRelativeIndices[selectedSubtitle], TextBox_EditSubtitle.Text);
+            //openedFnts[filteredIndicies[ListBox_OpenedFNTS.SelectedIndex]].updateSubtitle(selectedSubtitle, TextBox_EditSubtitle.Text);
             ListBox_CurrentFNTOpened.Items[selectedSubtitle] = TextBox_EditSubtitle.Text;
             TextBox_EditSubtitle.Clear();
             //ListBox_CurrentFNTOpened.SelectedItem =;
