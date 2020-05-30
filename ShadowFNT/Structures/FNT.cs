@@ -157,5 +157,23 @@ namespace ShadowFNT.Structures {
             updatedEntry.audioId = audioId;
             subtitleTable[subtitleEntry] = updatedEntry;
         }
+        
+        /// <summary>
+        /// Getter for AudioID of passed in subtitleEntry index
+        /// </summary>
+        /// <param name="subtitleEntry">Index of subtitle to get audioID</param>
+        /// <returns>int</returns>
+        public int getSubtitleAudioID(int subtitleEntry) {
+            return subtitleTable[subtitleEntry].audioId;             
+        }
+
+        /// <summary>
+        /// Getter for subtitleActiveTime of passed in subtitleEntry index
+        /// </summary>
+        /// <param name="subtitleEntry">Index of subtitle to get subtitleActiveTime</param>
+        /// <returns>int</returns>
+        public int getSubtitleActiveTime(int subtitleEntry) {
+            return subtitleTable[subtitleEntry].subtitleActiveTime;
+        }
     }
 }

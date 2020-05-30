@@ -4,19 +4,37 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ShadowTH_Text_Editor"
+        xmlns:models="clr-namespace:ShadowTH_Text_Editor.Models"
         mc:Ignorable="d"
         Title="MainWindow" Height="765" Width="918">
-    <Grid>
-        <Button x:Name="Button_OpenFolder" HorizontalAlignment="Left" Margin="30,50,0,0" VerticalAlignment="Top" Height="44" Width="172" Click="Button_Click">
+    <Window.Resources>
+        <DataTemplate DataType="{x:Type models:MyModelObject}">
+            <DockPanel Background="Yellow"/>
+        </DataTemplate>
+    </Window.Resources>
+    <Grid x:Name="mainGridPanel">
+        <StackPanel>
+            <Button x:Name="button1" Content="{Binding Name}"></Button>
+            <Button x:Name="button2" Content="{Binding BadName}"></Button>
+        </StackPanel>
+
+        <Button x:Name="Button_OpenFolder" HorizontalAlignment="Left" Margin="30,50,0,0" VerticalAlignment="Top" Height="44" Width="172" Click="Button_SelectFNTSClick">
             Select /fonts/ folder
         </Button>
         <ListBox x:Name="ListBox_OpenedFNTS" Margin="33,176,548,72" SelectionChanged="ListBox_OpenedFNTS_SelectionChanged"/>
-        <ListBox x:Name="ListBox_CurrentFNTOpened" Margin="557,293,87,0" SelectionChanged="ListBox_CurrentFNTOpened_SelectionChanged" Height="384" VerticalAlignment="Top">
+        <ListBox x:Name="ListBox_CurrentFNTOpened" Margin="624,341,20,0" SelectionChanged="ListBox_CurrentFNTOpened_SelectionChanged" Height="384" VerticalAlignment="Top">
 
         </ListBox>
-        <TextBox x:Name="TextBox_EditSubtitle" Margin="557,50,87,543"/>
+        <TextBox x:Name="TextBox_AudioID" Margin="388,135,401,543"/>
+        <TextBox x:Name="TextBox_EditSubtitle" Margin="624,96,20,497"/>
         <TextBox HorizontalAlignment="Left" Margin="1962,427,0,0" Text="TextBox" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
         <TextBox x:Name="TextBox_SearchText" HorizontalAlignment="Left" Margin="218,60,0,0" Text="" TextWrapping="Wrap" VerticalAlignment="Top" Width="299" Height="18" TextChanged="TextBox_SearchText_TextChanged"/>
-        <Button x:Name="Button_SaveCurrentSubtitle" Content="Save Subtitle Change" HorizontalAlignment="Left" Margin="587,226,0,0" VerticalAlignment="Top" Height="40" Width="192" Click="Button_SaveCurrentSubtitle_Click"/>
+        <Button x:Name="Button_SaveCurrentSubtitle" Content="Save Subtitle Change" HorizontalAlignment="Left" Margin="665,277,0,0" VerticalAlignment="Top" Height="40" Width="192" Click="Button_SaveCurrentSubtitle_Click"/>
+        <Button x:Name="Button_OpenAFS" HorizontalAlignment="Left" Margin="30,113,0,0" VerticalAlignment="Top" Height="44" Width="172" Click="Button_SelectAFSClick" Content="Select AFS File"/>
+        <TextBox x:Name="TextBox_AfsAudioIDName" Margin="388,222,401,452"/>
+        <TextBox x:Name="TextBox_SubtitleActiveTime" Margin="388,323,401,351"/>
+        <Button x:Name="Button_UpdateADX" HorizontalAlignment="Left" Margin="388,436,0,0" VerticalAlignment="Top" Height="44" Width="129" Click="Button_UpdateADXClick" Content="Update ADX"/>
+        <Button x:Name="Button_ExportAFS" HorizontalAlignment="Left" Margin="218,113,0,0" VerticalAlignment="Top" Height="44" Width="129" Click="Button_ExportAFSClick" Content="Export AFS File"/>
+        <Button x:Name="Button_ExtractADX" HorizontalAlignment="Left" Margin="388,485,0,0" VerticalAlignment="Top" Height="44" Width="129" Click="Button_ExtractADXClick" Content="Extract ADX"/>
     </Grid>
 </Window>
