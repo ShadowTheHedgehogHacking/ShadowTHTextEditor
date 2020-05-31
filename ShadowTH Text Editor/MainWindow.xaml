@@ -13,23 +13,30 @@
         </DataTemplate>
     </Window.Resources>
     <Grid x:Name="mainGridPanel">
-        <Button x:Name="Button_OpenFolder" HorizontalAlignment="Left" Margin="30,50,0,0" VerticalAlignment="Top" Height="44" Width="172" Click="Button_SelectFNTSClick">
+        <Button x:Name="Button_SelectFNTS" HorizontalAlignment="Left" Margin="30,50,0,0" VerticalAlignment="Top" Height="44" Width="172" Click="Button_SelectFNTSClick">
             Select /fonts/ folder
         </Button>
         <ListBox x:Name="ListBox_OpenedFNTS" ItemsSource="{Binding Name}" Margin="33,176,548,72" SelectionChanged="ListBox_OpenedFNTS_SelectionChanged"/>
-        <ListBox x:Name="ListBox_CurrentFNTOpened" Margin="624,341,20,0" SelectionChanged="ListBox_CurrentFNTOpened_SelectionChanged" Height="384" VerticalAlignment="Top">
-
-        </ListBox>
-        <TextBox x:Name="TextBox_AudioID" Margin="388,135,401,543"/>
+        <ListBox x:Name="ListBox_CurrentFNTOpened" Margin="624,341,20,0" SelectionChanged="ListBox_CurrentFNTOpened_SelectionChanged" Height="384" VerticalAlignment="Top"/>
         <TextBox x:Name="TextBox_EditSubtitle" Margin="624,96,20,497"/>
-        <TextBox HorizontalAlignment="Left" Margin="1962,427,0,0" Text="TextBox" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
-        <TextBox x:Name="TextBox_SearchText" HorizontalAlignment="Left" Margin="218,60,0,0" Text="" TextWrapping="Wrap" VerticalAlignment="Top" Width="299" Height="18" TextChanged="TextBox_SearchText_TextChanged"/>
-        <Button x:Name="Button_SaveCurrentSubtitle" Content="Save Subtitle Change" HorizontalAlignment="Left" Margin="665,277,0,0" VerticalAlignment="Top" Height="40" Width="192" Click="Button_SaveCurrentSubtitle_Click"/>
+        <GroupBox Header="Current Subtitle Attributes" Margin="398,96,317,435" Padding="10">
+            <StackPanel>
+                <TextBlock>ActiveTime</TextBlock>
+                <TextBox x:Name="TextBox_SubtitleActiveTime"/>
+                <TextBlock>AudioID</TextBlock>
+                <TextBox x:Name="TextBox_AudioID"/>
+                <TextBlock>Audio FileName</TextBlock>
+                <TextBlock x:Name="TextBlock_AfsAudioIDName"/>
+                <StackPanel Orientation="Horizontal">
+                    <Button x:Name="Button_ReplaceADX" Margin="0,0,10,0" HorizontalAlignment="Left" VerticalAlignment="Top" Click="Button_ReplaceADXClick" Content="Replace ADX"/>
+                    <Button x:Name="Button_ExtractADX" HorizontalAlignment="Left" VerticalAlignment="Top" Click="Button_ExtractADXClick" Content="Extract ADX"/>
+                </StackPanel>
+            </StackPanel>
+        </GroupBox>
+        <TextBox x:Name="TextBox_SearchText" HorizontalAlignment="Left" Margin="366,31,0,0" Text="" TextWrapping="Wrap" VerticalAlignment="Top" Width="432" Height="41" TextChanged="TextBox_SearchText_TextChanged"/>
+        <Button x:Name="Button_SaveCurrentSubtitle" Content="Save Subtitle Changes" HorizontalAlignment="Left" Margin="665,277,0,0" VerticalAlignment="Top" Height="40" Width="192" Click="Button_SaveCurrentSubtitle_Click"/>
         <Button x:Name="Button_OpenAFS" HorizontalAlignment="Left" Margin="30,113,0,0" VerticalAlignment="Top" Height="44" Width="172" Click="Button_SelectAFSClick" Content="Select AFS File"/>
-        <TextBox x:Name="TextBox_AfsAudioIDName" Margin="388,222,401,452"/>
-        <TextBox x:Name="TextBox_SubtitleActiveTime" Margin="388,323,401,351"/>
-        <Button x:Name="Button_UpdateADX" HorizontalAlignment="Left" Margin="388,436,0,0" VerticalAlignment="Top" Height="44" Width="129" Click="Button_UpdateADXClick" Content="Update ADX"/>
         <Button x:Name="Button_ExportAFS" HorizontalAlignment="Left" Margin="218,113,0,0" VerticalAlignment="Top" Height="44" Width="129" Click="Button_ExportAFSClick" Content="Export AFS File"/>
-        <Button x:Name="Button_ExtractADX" HorizontalAlignment="Left" Margin="388,485,0,0" VerticalAlignment="Top" Height="44" Width="129" Click="Button_ExtractADXClick" Content="Extract ADX"/>
+        <Button x:Name="Button_ExportChangedFNTs" HorizontalAlignment="Left" Margin="218,49,0,0" VerticalAlignment="Top" Height="45" Width="129" Click="Button_ExportChangedFNTsClick" Content="Export Changed FNTs"/>
     </Grid>
 </Window>

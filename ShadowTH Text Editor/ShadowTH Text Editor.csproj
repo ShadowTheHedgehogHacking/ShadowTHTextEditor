@@ -8,12 +8,26 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="res\EN.txd" />
+    <None Remove="res\EN00.met" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AFSLib" Version="1.0.0" />
     <PackageReference Include="Ookii.Dialogs.Wpf.NETCore" Version="2.1.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\ShadowFNT\ShadowFNT.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="res\EN.txd">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="res\EN00.met">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>

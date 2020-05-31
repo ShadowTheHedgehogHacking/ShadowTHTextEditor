@@ -3,6 +3,7 @@ using ShadowFNT.Structures;
 using ShadowTH_Text_Editor.Models;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -27,15 +28,16 @@ namespace ShadowTH_Text_Editor {
     ///
 
     public partial class MainWindow : Window {
+        List<FNT> initialFntsOpenedState;
         List<FNT> openedFnts;
 
-        int currentFnt;
+        FNT currentFnt;
         AfsArchive currentAfs;
 
         public MainWindow() {
             InitializeComponent();
+            SetAFSUI(false);
             FNTHolder button1DataContext = new FNTHolder() { Name = "I'm button 1" };
-
             //button1.DataContext = button1DataContext;
         }
 
@@ -53,53 +55,81 @@ namespace ShadowTH_Text_Editor {
             for (int i = 0; i < foundFnts.Length; i++) {
                 byte[] readFile = File.ReadAllBytes(foundFnts[i]);
                 FNT newFnt = FNT.ParseFNTFile(foundFnts[i], ref readFile, dialog.SelectedPath);
+                FNT originalFnt = FNT.ParseFNTFile(foundFnts[i], ref readFile, dialog.SelectedPath);
+
                 openedFnts.Add(newFnt);
+                initialFntsOpenedState.Add(originalFnt);
             }
+
             ListBox_OpenedFNTS.ItemsSource = openedFnts;
         }
 
         private void clearData() {
             openedFnts = new List<FNT>();
-            ListBox_CurrentFNTOpened.Items.Clear();
+            initialFntsOpenedState = new List<FNT>();
             currentAfs = null;
+            SetAFSUI(false);
+            clearUIData();
+        }
+
+        private void clearUIData() {
+            TextBox_EditSubtitle.Clear();
+            TextBlock_AfsAudioIDName.Text = "";
+            TextBox_AudioID.Clear();
+            TextBox_SubtitleActiveTime.Clear();
         }
 
         private void ListBox_OpenedFNTS_SelectionChanged(object sender, SelectionChangedEventArgs e) {
-            ListBox_CurrentFNTOpened.Items.Clear();
-            TextBox_EditSubtitle.Clear();
-            if (ListBox_OpenedFNTS.SelectedIndex == -1)
+            clearUIData();
+            if (ListBox_OpenedFNTS.SelectedIndex == -1) {
+                ListBox_CurrentFNTOpened.ItemsSource = null;
                 return;
-            currentFnt = ListBox_OpenedFNTS.SelectedIndex;
-            var subtitleList = openedFnts[currentFnt].subtitleList;
-            foreach (String subtitle in subtitleList) {
-                ListBox_CurrentFNTOpened.Items.Add(subtitle);
             }
+            currentFnt = (FNT)ListBox_OpenedFNTS.SelectedItem;
+            ListBox_CurrentFNTOpened.ItemsSource = currentFnt.subtitleList;
         }
 
         private void ListBox_CurrentFNTOpened_SelectionChanged(object sender, SelectionChangedEventArgs e) {
-            if (ListBox_CurrentFNTOpened.SelectedItem == null)
+            if (ListBox_CurrentFNTOpened.SelectedItem == null) {
+                clearUIData();
                 return;
+            }
+            var currentSubtitleIndex = currentFnt.subtitleList.IndexOf(ListBox_CurrentFNTOpened.SelectedItem.ToString());
+            if (currentSubtitleIndex == -1) {
+                clearUIData();
+                return;
+            }
+            var audioID = currentFnt.GetSubtitleAudioID(currentSubtitleIndex);
+
             TextBox_EditSubtitle.Text = ListBox_CurrentFNTOpened.SelectedItem.ToString();
-            TextBox_SubtitleActiveTime.Text = openedFnts[currentFnt].GetSubtitleActiveTime(ListBox_CurrentFNTOpened.SelectedIndex).ToString();
-            var audioID = openedFnts[currentFnt].GetSubtitleAudioID(ListBox_CurrentFNTOpened.SelectedIndex);
+            TextBox_SubtitleActiveTime.Text = currentFnt.GetSubtitleActiveTime(currentSubtitleIndex).ToString();
             TextBox_AudioID.Text = audioID.ToString();
-            if (currentAfs != null && audioID != -1) {
-                TextBox_AfsAudioIDName.Text = currentAfs.Files[audioID].Name;
+
+            if (currentAfs == null) {
+                TextBlock_AfsAudioIDName.Text = "AFS not loaded"; 
+            } else if (audioID != -1 && audioID < currentAfs.Files.Count) {
+                TextBlock_AfsAudioIDName.Text = currentAfs.Files[audioID].Name;
             } else {
-                TextBox_AfsAudioIDName.Text = "";
+                TextBlock_AfsAudioIDName.Text = "None";
             }
         }
 
         private void TextBox_SearchText_TextChanged(object sender, TextChangedEventArgs e) {
-
+            //clear current selection and clear UI (but not fnt data)
         }
 
         private void Button_SaveCurrentSubtitle_Click(object sender, RoutedEventArgs e) {
-            int selectedSubtitle = ListBox_CurrentFNTOpened.SelectedIndex;
-            if (selectedSubtitle == -1)
+            if (ListBox_CurrentFNTOpened.SelectedItem == null)
                 return;
-            openedFnts[currentFnt].UpdateSubtitle(selectedSubtitle, TextBox_EditSubtitle.Text);
-            ListBox_CurrentFNTOpened.Items[selectedSubtitle] = TextBox_EditSubtitle.Text;
+            var currentSubtitleIndex = currentFnt.subtitleList.IndexOf(ListBox_CurrentFNTOpened.SelectedItem.ToString());
+            if (currentSubtitleIndex == -1) { 
+                MessageBox.Show("Error, subtitle not found");
+                return;
+            }
+            currentFnt.UpdateSubtitle(currentSubtitleIndex, TextBox_EditSubtitle.Text);
+            currentFnt.UpdateSubtitleAudioID(currentSubtitleIndex, Int32.Parse(TextBox_AudioID.Text));
+            currentFnt.UpdateSubtitleActiveTime(currentSubtitleIndex, Int32.Parse(TextBox_SubtitleActiveTime.Text));
+            ListBox_CurrentFNTOpened.Items.Refresh();
             TextBox_EditSubtitle.Clear();           
         }
 
@@ -109,13 +139,13 @@ namespace ShadowTH_Text_Editor {
                 return;
             }
             if (!dialog.FileName.ToLower().EndsWith(".afs")) {
-                MessageBox.Show("Pick an 'afs' file", "Try Again");
+                MessageBox.Show("Pick an 'AFS' file", "Try Again");
                 return;
             }
             var data = File.ReadAllBytes(dialog.FileName);
             if (AfsArchive.TryFromFile(data, out var afsArchive)) {
                 currentAfs = afsArchive;
-                MessageBox.Show("Success");
+                SetAFSUI(true);
             };
         }
 
@@ -131,7 +161,7 @@ namespace ShadowTH_Text_Editor {
             }
         }
 
-        private void Button_UpdateADXClick(object sender, RoutedEventArgs e) {
+        private void Button_ReplaceADXClick(object sender, RoutedEventArgs e) {
             if (currentAfs == null)
                 return;
             var dialog = new Ookii.Dialogs.Wpf.VistaOpenFileDialog();
@@ -156,6 +186,33 @@ namespace ShadowTH_Text_Editor {
             if (dialog.FileName != "") {
                 File.WriteAllBytes(dialog.FileName, currentAfs.Files[Int32.Parse(TextBox_AudioID.Text)].Data);
             }
+        }
+
+        private void Button_ExportChangedFNTsClick(object sender, RoutedEventArgs e) {
+            List<FNT> filesToWrite = new List<FNT>();
+            String filesToWriteReportingString = "";
+            for (int i = 0; i < initialFntsOpenedState.Count; i++) {
+                if (initialFntsOpenedState[i].Equals(openedFnts[i]) == false) {
+                    filesToWrite.Add(openedFnts[i]);
+                    filesToWriteReportingString = filesToWriteReportingString + "\n" + openedFnts[i];
+                }
+            }
+            MessageBox.Show("Files to be written:" + filesToWriteReportingString);
+            //TODO: add optional checkbox to manually pick a path, by default overwrite original files
+            //      add optional checkbox to NOT replace met/txd
+            foreach (FNT fnt in filesToWrite) {
+                File.WriteAllBytes(fnt.fileName, fnt.BuildFNTFile().ToArray());
+                String prec = fnt.fileName.Remove(fnt.fileName.Length - 4);
+                File.Copy("res/EN.txd", prec + ".txd", true);
+                File.Copy("res/EN00.met", prec + "00.met", true);
+            }
+            clearData();
+        }
+
+        private void SetAFSUI(bool active) {
+            Button_ExportAFS.IsEnabled = active;
+            Button_ReplaceADX.IsEnabled = active;
+            Button_ExtractADX.IsEnabled = active;
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 
 namespace ShadowFNT.Structures {
@@ -54,6 +55,30 @@ namespace ShadowFNT.Structures {
             if (filterString != "")
                 return fileName.Split(filterString + '\\')[1];
             return fileName;
+        }
+
+        public override bool Equals(object obj) {
+            //don't forget to modify later if going to support adding new entries
+            FNT compareFnt = (FNT)obj;
+            for (int i = 0; i < subtitleList.Count; i++) {
+                if (subtitleList[i] != compareFnt.subtitleList[i])
+                    return false;
+                if (subtitleTable[i].startingPosition != compareFnt.subtitleTable[i].startingPosition)
+                    return false;
+                if (subtitleTable[i].externalAddress != compareFnt.subtitleTable[i].externalAddress)
+                    return false;
+                if (subtitleTable[i].textType != compareFnt.subtitleTable[i].textType)
+                    return false;
+                if (subtitleTable[i].subtitleActiveTime != compareFnt.subtitleTable[i].subtitleActiveTime)
+                    return false;
+                if (subtitleTable[i].audioId != compareFnt.subtitleTable[i].audioId)
+                    return false;
+            }
+            return true;
+        }
+
+        public override int GetHashCode() {
+            return base.GetHashCode();
         }
 
         /// <summary>
@@ -157,18 +182,18 @@ namespace ShadowFNT.Structures {
         }
 
         /// <summary>
-        /// Replaces the associated audio of a subtitle
+        /// Replaces the audioID of a subtitle
         /// </summary>
         /// <param name="subtitleEntry">Index of subtitle to update associated audio</param>
         /// <param name="audioId">Audio id to play (index in the AFS)</param>
-        public void UpdateSubtitleAudio(int subtitleEntry, int audioId) {
+        public void UpdateSubtitleAudioID(int subtitleEntry, int audioId) {
             SubtitleTableEntry updatedEntry = subtitleTable[subtitleEntry];
             updatedEntry.audioId = audioId;
             subtitleTable[subtitleEntry] = updatedEntry;
         }
         
         /// <summary>
-        /// Getter for AudioID of passed in subtitleEntry index
+        /// Getter for audioID of passed in subtitleEntry index
         /// </summary>
         /// <param name="subtitleEntry">Index of subtitle to get audioID</param>
         /// <returns>int</returns>
@@ -183,6 +208,12 @@ namespace ShadowFNT.Structures {
         /// <returns>int</returns>
         public int GetSubtitleActiveTime(int subtitleEntry) {
             return subtitleTable[subtitleEntry].subtitleActiveTime;
+        }
+
+        public void UpdateSubtitleActiveTime(int subtitleEntry, int activeTime) {
+            SubtitleTableEntry updatedEntry = subtitleTable[subtitleEntry];
+            updatedEntry.subtitleActiveTime = activeTime;
+            subtitleTable[subtitleEntry] = updatedEntry;
         }
     }
 }
