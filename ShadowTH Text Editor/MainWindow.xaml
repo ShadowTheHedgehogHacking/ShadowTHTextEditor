@@ -8,20 +8,15 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="765" Width="918">
     <Window.Resources>
-        <DataTemplate DataType="{x:Type models:MyModelObject}">
+        <DataTemplate DataType="{x:Type models:FNTHolder}">
             <DockPanel Background="Yellow"/>
         </DataTemplate>
     </Window.Resources>
     <Grid x:Name="mainGridPanel">
-        <StackPanel>
-            <Button x:Name="button1" Content="{Binding Name}"></Button>
-            <Button x:Name="button2" Content="{Binding BadName}"></Button>
-        </StackPanel>
-
         <Button x:Name="Button_OpenFolder" HorizontalAlignment="Left" Margin="30,50,0,0" VerticalAlignment="Top" Height="44" Width="172" Click="Button_SelectFNTSClick">
             Select /fonts/ folder
         </Button>
-        <ListBox x:Name="ListBox_OpenedFNTS" Margin="33,176,548,72" SelectionChanged="ListBox_OpenedFNTS_SelectionChanged"/>
+        <ListBox x:Name="ListBox_OpenedFNTS" ItemsSource="{Binding Name}" Margin="33,176,548,72" SelectionChanged="ListBox_OpenedFNTS_SelectionChanged"/>
         <ListBox x:Name="ListBox_CurrentFNTOpened" Margin="624,341,20,0" SelectionChanged="ListBox_CurrentFNTOpened_SelectionChanged" Height="384" VerticalAlignment="Top">
 
         </ListBox>

@@ -40,6 +40,7 @@ namespace ShadowFNT.Structures {
      */
     public struct FNT {
         public String fileName;
+        public String filterString;
         public int numberOfEntries;
         private List<SubtitleTableEntry> subtitleTable;
         public List<String> subtitleList;
@@ -49,16 +50,24 @@ namespace ShadowFNT.Structures {
             this.fileName = fileName;
         }
 
+        public override string ToString() {
+            if (filterString != "")
+                return fileName.Split(filterString + '\\')[1];
+            return fileName;
+        }
+
         /// <summary>
         /// Parses a .fnt file
         /// </summary>
         /// <param name="fileName">Full name (not SafeName) retrieved via a FilePicker</param>
         /// <param name="file">Bytes of file to parse</param>
+        /// <param name="filterString">String to remove when ToString() is called</param>
         /// <returns>FNT</returns>
-        public static FNT ParseFNTFile(String fileName, ref byte[] file) {
+        public static FNT ParseFNTFile(String fileName, ref byte[] file, String filterString = "") {
             FNT fnt = new FNT();
 
             fnt.fileName = fileName;
+            fnt.filterString = filterString;
 
             fnt.numberOfEntries = BitConverter.ToInt32(file, 0);
             int positionIndex = 4; // position of byte to read
@@ -133,7 +142,7 @@ namespace ShadowFNT.Structures {
         /// </summary>
         /// <param name="entryNumber">Index of the subtitle to update</param>
         /// <param name="updatedText">Null terminated string</param>
-        public void updateSubtitle(int entryNumber, String updatedText) {
+        public void UpdateSubtitle(int entryNumber, String updatedText) {
             int characterSizeDifference = updatedText.Length - subtitleList[entryNumber].Length;
             subtitleList[entryNumber] = updatedText;
 
@@ -152,7 +161,7 @@ namespace ShadowFNT.Structures {
         /// </summary>
         /// <param name="subtitleEntry">Index of subtitle to update associated audio</param>
         /// <param name="audioId">Audio id to play (index in the AFS)</param>
-        public void updateSubtitleAudio(int subtitleEntry, int audioId) {
+        public void UpdateSubtitleAudio(int subtitleEntry, int audioId) {
             SubtitleTableEntry updatedEntry = subtitleTable[subtitleEntry];
             updatedEntry.audioId = audioId;
             subtitleTable[subtitleEntry] = updatedEntry;
@@ -163,7 +172,7 @@ namespace ShadowFNT.Structures {
         /// </summary>
         /// <param name="subtitleEntry">Index of subtitle to get audioID</param>
         /// <returns>int</returns>
-        public int getSubtitleAudioID(int subtitleEntry) {
+        public int GetSubtitleAudioID(int subtitleEntry) {
             return subtitleTable[subtitleEntry].audioId;             
         }
 
@@ -172,7 +181,7 @@ namespace ShadowFNT.Structures {
         /// </summary>
         /// <param name="subtitleEntry">Index of subtitle to get subtitleActiveTime</param>
         /// <returns>int</returns>
-        public int getSubtitleActiveTime(int subtitleEntry) {
+        public int GetSubtitleActiveTime(int subtitleEntry) {
             return subtitleTable[subtitleEntry].subtitleActiveTime;
         }
     }

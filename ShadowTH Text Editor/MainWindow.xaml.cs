@@ -28,25 +28,15 @@ namespace ShadowTH_Text_Editor {
 
     public partial class MainWindow : Window {
         List<FNT> openedFnts;
-        string originalPath;
-        List<int> filteredIndicies;
-        List<Tuple<int, int>> filteredSubtitles;
-        int currentFontMainCollectionIndex;
-        List<int> currentFontSubtitleRelativeIndices;
+
+        int currentFnt;
         AfsArchive currentAfs;
 
         public MainWindow() {
             InitializeComponent();
-            MyModelObject button1DataContext = new MyModelObject() { Name = "I'm button 1" };
-            MyModelObject button2DataContext = new MyModelObject() { Name = "I'm button 2" };
+            FNTHolder button1DataContext = new FNTHolder() { Name = "I'm button 1" };
 
-            button1.DataContext = button1DataContext;
-            button2.DataContext = button2DataContext;
-
-            openedFnts = new List<FNT>();
-            filteredIndicies = new List<int>();
-            filteredSubtitles = new List<Tuple<int, int>>();
-            currentFontSubtitleRelativeIndices = new List<int>();
+            //button1.DataContext = button1DataContext;
         }
 
         private void Button_SelectFNTSClick(object sender, RoutedEventArgs e) {
@@ -59,45 +49,30 @@ namespace ShadowTH_Text_Editor {
                 return;
             }
             clearData();
-            originalPath = dialog.SelectedPath;
-            string[] foundFnts = Directory.GetFiles(originalPath, "*_EN.fnt", SearchOption.AllDirectories);
+            string[] foundFnts = Directory.GetFiles(dialog.SelectedPath, "*_EN.fnt", SearchOption.AllDirectories);
             for (int i = 0; i < foundFnts.Length; i++) {
                 byte[] readFile = File.ReadAllBytes(foundFnts[i]);
-                FNT newFnt = FNT.ParseFNTFile(foundFnts[i], ref readFile);
+                FNT newFnt = FNT.ParseFNTFile(foundFnts[i], ref readFile, dialog.SelectedPath);
                 openedFnts.Add(newFnt);
-                ListBox_OpenedFNTS.Items.Add(foundFnts[i].Split(originalPath + '\\')[1]);
-                filteredIndicies.Add(i);
             }
+            ListBox_OpenedFNTS.ItemsSource = openedFnts;
         }
 
         private void clearData() {
             openedFnts = new List<FNT>();
-            ListBox_OpenedFNTS.Items.Clear();
             ListBox_CurrentFNTOpened.Items.Clear();
-            filteredIndicies.Clear();
-            filteredSubtitles.Clear();
             currentAfs = null;
         }
 
         private void ListBox_OpenedFNTS_SelectionChanged(object sender, SelectionChangedEventArgs e) {
             ListBox_CurrentFNTOpened.Items.Clear();
             TextBox_EditSubtitle.Clear();
-            if (filteredIndicies.Count == 0 || ListBox_OpenedFNTS.SelectedIndex == -1)
+            if (ListBox_OpenedFNTS.SelectedIndex == -1)
                 return;
-            currentFontMainCollectionIndex = filteredIndicies[ListBox_OpenedFNTS.SelectedIndex];
-            var subtitleList = openedFnts[currentFontMainCollectionIndex].subtitleList;
-            if (filteredSubtitles.Count == 0) {
-                foreach (String subtitle in subtitleList) {
-                    ListBox_CurrentFNTOpened.Items.Add(subtitle);
-                    currentFontSubtitleRelativeIndices.Clear();
-                }
-            } else {
-                foreach (var fsubtitle in filteredSubtitles) {
-                    if (fsubtitle.Item1 == filteredIndicies[ListBox_OpenedFNTS.SelectedIndex]) {
-                        ListBox_CurrentFNTOpened.Items.Add(subtitleList[fsubtitle.Item2]);
-                        currentFontSubtitleRelativeIndices.Add(fsubtitle.Item2);
-                    }
-                }
+            currentFnt = ListBox_OpenedFNTS.SelectedIndex;
+            var subtitleList = openedFnts[currentFnt].subtitleList;
+            foreach (String subtitle in subtitleList) {
+                ListBox_CurrentFNTOpened.Items.Add(subtitle);
             }
         }
 
@@ -105,8 +80,8 @@ namespace ShadowTH_Text_Editor {
             if (ListBox_CurrentFNTOpened.SelectedItem == null)
                 return;
             TextBox_EditSubtitle.Text = ListBox_CurrentFNTOpened.SelectedItem.ToString();
-            TextBox_SubtitleActiveTime.Text = openedFnts[currentFontMainCollectionIndex].getSubtitleActiveTime(ListBox_CurrentFNTOpened.SelectedIndex).ToString();
-            var audioID = openedFnts[currentFontMainCollectionIndex].getSubtitleAudioID(ListBox_CurrentFNTOpened.SelectedIndex);
+            TextBox_SubtitleActiveTime.Text = openedFnts[currentFnt].GetSubtitleActiveTime(ListBox_CurrentFNTOpened.SelectedIndex).ToString();
+            var audioID = openedFnts[currentFnt].GetSubtitleAudioID(ListBox_CurrentFNTOpened.SelectedIndex);
             TextBox_AudioID.Text = audioID.ToString();
             if (currentAfs != null && audioID != -1) {
                 TextBox_AfsAudioIDName.Text = currentAfs.Files[audioID].Name;
@@ -116,23 +91,6 @@ namespace ShadowTH_Text_Editor {
         }
 
         private void TextBox_SearchText_TextChanged(object sender, TextChangedEventArgs e) {
-            ListBox_OpenedFNTS.Items.Clear();
-            filteredIndicies = new List<int>();
-            filteredSubtitles = new List<Tuple<int, int>>();
-            for (int font = 0; font < openedFnts.Count; font++) {
-                FNT curfnt = openedFnts[font];
-                bool topLevel = false;
-                for (int subtitleIndex = 0; subtitleIndex < curfnt.subtitleList.Count; subtitleIndex++) {
-                    if (curfnt.subtitleList[subtitleIndex].Contains(TextBox_SearchText.Text)) {
-                        if (!topLevel) {
-                            ListBox_OpenedFNTS.Items.Add(curfnt.fileName.Split(originalPath + '\\')[1]);
-                            filteredIndicies.Add(font);
-                            topLevel = true;
-                        }
-                        filteredSubtitles.Add(new Tuple<int, int>(font, subtitleIndex));                   
-                    }
-                }
-            }
 
         }
 
@@ -140,12 +98,9 @@ namespace ShadowTH_Text_Editor {
             int selectedSubtitle = ListBox_CurrentFNTOpened.SelectedIndex;
             if (selectedSubtitle == -1)
                 return;
-            openedFnts[currentFontMainCollectionIndex].updateSubtitle(currentFontSubtitleRelativeIndices[selectedSubtitle], TextBox_EditSubtitle.Text);
-            //openedFnts[filteredIndicies[ListBox_OpenedFNTS.SelectedIndex]].updateSubtitle(selectedSubtitle, TextBox_EditSubtitle.Text);
+            openedFnts[currentFnt].UpdateSubtitle(selectedSubtitle, TextBox_EditSubtitle.Text);
             ListBox_CurrentFNTOpened.Items[selectedSubtitle] = TextBox_EditSubtitle.Text;
-            TextBox_EditSubtitle.Clear();
-            //ListBox_CurrentFNTOpened.SelectedItem =;
-            
+            TextBox_EditSubtitle.Clear();           
         }
 
         private void Button_SelectAFSClick(object sender, RoutedEventArgs e) {
@@ -188,7 +143,7 @@ namespace ShadowTH_Text_Editor {
                 currentAfs.Files[Int32.Parse(TextBox_AudioID.Text)].Data = newData;
                 return;
             }
-            MessageBox.Show("RIP");
+            MessageBox.Show("Failed");
         }
 
         private void Button_ExtractADXClick(object sender, RoutedEventArgs e) {
