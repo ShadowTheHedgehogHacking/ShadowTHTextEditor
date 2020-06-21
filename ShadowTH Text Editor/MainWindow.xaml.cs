@@ -1,12 +1,12 @@
 ﻿using AFSLib;
 using ShadowFNT.Structures;
-using ShadowTH_Text_Editor.Models;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
+using System.ComponentModel;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 
 namespace ShadowTH_Text_Editor {
     /// <summary>
@@ -15,11 +15,10 @@ namespace ShadowTH_Text_Editor {
     /// </summary>
     /// 
     /// PLAN:
-    /// Rewrite following MVVM
-    /// Keep track of which .FNT are modified, at save export 'global supported' .met/.txd overwriting originals, warn if ex mets found
-    /// Support editing subtitle length
-    /// Support replacing and extracting associated audio from audioID and opened AFS (DONE)
-    /// Search also filters by subtitles rather than just FNT parent (DONE, but implemented poorly, need to MVVM and use INotifyPropertyChanged & Binding)
+    /// Keep track of which .FNT are modified, at save export 'global supported' .met/.txd overwriting originals, warn if ex mets found | DONE, minus ex met
+    /// Support editing subtitle time | DONE
+    /// Support replacing and extracting associated audio from audioID and opened AFS | DONE
+    /// Search also filters by subtitles rather than just FNT parent | need to MVVM and use INotifyPropertyChanged & Binding
     /// 
     /// bonus: 
     /// - preview based on AFS
@@ -33,12 +32,11 @@ namespace ShadowTH_Text_Editor {
 
         FNT currentFnt;
         AfsArchive currentAfs;
+        ICollectionView displayFntsView, displaySubtitleListView;
 
         public MainWindow() {
             InitializeComponent();
             SetAFSUI(false);
-            FNTHolder button1DataContext = new FNTHolder() { Name = "I'm button 1" };
-            //button1.DataContext = button1DataContext;
         }
 
         private void Button_SelectFNTSClick(object sender, RoutedEventArgs e) {
@@ -60,8 +58,8 @@ namespace ShadowTH_Text_Editor {
                 openedFnts.Add(newFnt);
                 initialFntsOpenedState.Add(originalFnt);
             }
-
-            ListBox_OpenedFNTS.ItemsSource = openedFnts;
+            displayFntsView = CollectionViewSource.GetDefaultView(openedFnts);
+            ListBox_OpenedFNTS.ItemsSource = displayFntsView;
         }
 
         private void clearData() {
@@ -86,7 +84,10 @@ namespace ShadowTH_Text_Editor {
                 return;
             }
             currentFnt = (FNT)ListBox_OpenedFNTS.SelectedItem;
-            ListBox_CurrentFNTOpened.ItemsSource = currentFnt.subtitleList;
+            displaySubtitleListView = CollectionViewSource.GetDefaultView(currentFnt.subtitleList);
+
+            ListBox_CurrentFNTOpened.ItemsSource = displaySubtitleListView;
+
         }
 
         private void ListBox_CurrentFNTOpened_SelectionChanged(object sender, SelectionChangedEventArgs e) {
@@ -115,7 +116,23 @@ namespace ShadowTH_Text_Editor {
         }
 
         private void TextBox_SearchText_TextChanged(object sender, TextChangedEventArgs e) {
-            //clear current selection and clear UI (but not fnt data)
+            displayFntsView = CollectionViewSource.GetDefaultView(openedFnts);
+            ListBox_OpenedFNTS.ItemsSource = displayFntsView;
+            //displayFntsView = CollectionViewSource.
+            /*List<FNT> filteredFnts = new List<FNT>();
+            for (int font = 0; font < openedFnts.Count; font++) {
+                FNT curfnt = openedFnts[font];
+                bool showFNT = false;
+                for (int subtitleIndex = 0; subtitleIndex < curfnt.subtitleList.Count; subtitleIndex++) {
+                    if (curfnt.subtitleList[subtitleIndex].Contains(TextBox_SearchText.Text)) {
+                        if (!showFNT) {
+                            filteredFnts.Add(font);
+                            showFNT = true;
+                        }
+                        filteredSubtitles.Add(new Tuple<int, int>(font, subtitleIndex));
+                    }
+                }
+            }*/
         }
 
         private void Button_SaveCurrentSubtitle_Click(object sender, RoutedEventArgs e) {
@@ -213,6 +230,12 @@ namespace ShadowTH_Text_Editor {
             Button_ExportAFS.IsEnabled = active;
             Button_ReplaceADX.IsEnabled = active;
             Button_ExtractADX.IsEnabled = active;
+        }
+
+        private void Button_TextToSpeechADXClick(object sender, RoutedEventArgs e) {
+            if (currentAfs == null || TextBox_AudioID.Text == "None" || TextBox_EditSubtitle.Text == "")
+                return;
+            //not implemented in main release
         }
     }
 }
