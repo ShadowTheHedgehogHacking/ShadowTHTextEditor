@@ -7,23 +7,31 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using MessageBox = System.Windows.MessageBox;
 
 namespace ShadowTH_Text_Editor {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
-    /// Everything because lazy - to be rewritten in MVVM
+    /// Everything because lazy
     /// </summary>
     /// 
     /// PLAN:
     /// Keep track of which .FNT are modified, at save export 'global supported' .met/.txd overwriting originals, warn if ex mets found | DONE, minus ex met
     /// Support editing subtitle time | DONE
     /// Support replacing and extracting associated audio from audioID and opened AFS | DONE
-    /// Search also filters by subtitles rather than just FNT parent | need to MVVM and use INotifyPropertyChanged & Binding
+    /// Search also filters by subtitles rather than just FNT parent | DONE
+    /// 
+    /// Next steps: 
+    /// - case sensitive toggle for search
+    /// - warn for ex mets
+    /// - checkbox for MET/TXD override
+    /// - allow exporting elsewhere
     /// 
     /// bonus: 
     /// - preview based on AFS
     /// - Add text to speech AFS option
     /// - Add google translate option
+    /// - Support other lang selection + met/txd
     ///
 
     public partial class MainWindow : Window {
@@ -68,6 +76,8 @@ namespace ShadowTH_Text_Editor {
             currentAfs = null;
             SetAFSUI(false);
             clearUIData();
+            ListBox_OpenedFNTS.ItemsSource = null;
+            ListBox_CurrentFNTOpened.ItemsSource = null;
         }
 
         private void clearUIData() {
@@ -87,6 +97,7 @@ namespace ShadowTH_Text_Editor {
             displaySubtitleListView = CollectionViewSource.GetDefaultView(currentFnt.subtitleList);
 
             ListBox_CurrentFNTOpened.ItemsSource = displaySubtitleListView;
+            UpdateDisplaySubtitleListView();
 
         }
 
@@ -107,7 +118,7 @@ namespace ShadowTH_Text_Editor {
             TextBox_AudioID.Text = audioID.ToString();
 
             if (currentAfs == null) {
-                TextBlock_AfsAudioIDName.Text = "AFS not loaded"; 
+                TextBlock_AfsAudioIDName.Text = "AFS not loaded";
             } else if (audioID != -1 && audioID < currentAfs.Files.Count) {
                 TextBlock_AfsAudioIDName.Text = currentAfs.Files[audioID].Name;
             } else {
@@ -116,23 +127,33 @@ namespace ShadowTH_Text_Editor {
         }
 
         private void TextBox_SearchText_TextChanged(object sender, TextChangedEventArgs e) {
-            displayFntsView = CollectionViewSource.GetDefaultView(openedFnts);
-            ListBox_OpenedFNTS.ItemsSource = displayFntsView;
-            //displayFntsView = CollectionViewSource.
-            /*List<FNT> filteredFnts = new List<FNT>();
-            for (int font = 0; font < openedFnts.Count; font++) {
-                FNT curfnt = openedFnts[font];
-                bool showFNT = false;
-                for (int subtitleIndex = 0; subtitleIndex < curfnt.subtitleList.Count; subtitleIndex++) {
-                    if (curfnt.subtitleList[subtitleIndex].Contains(TextBox_SearchText.Text)) {
-                        if (!showFNT) {
-                            filteredFnts.Add(font);
-                            showFNT = true;
-                        }
-                        filteredSubtitles.Add(new Tuple<int, int>(font, subtitleIndex));
-                    }
+            UpdateDisplayFntsView();
+            UpdateDisplaySubtitleListView();
+        }
+
+        private void UpdateDisplayFntsView() {
+            if (displayFntsView == null)
+                return;
+            displayFntsView.Filter = fnt => {
+                FNT curfnt = (FNT)fnt;
+                foreach (String subtitle in curfnt.subtitleList) {
+                    if (subtitle.Contains(TextBox_SearchText.Text))
+                        return true;
                 }
-            }*/
+                return false;
+            };
+            displayFntsView.Refresh();
+        }
+
+        private void UpdateDisplaySubtitleListView() {
+            if (displaySubtitleListView == null)
+                return;
+            displaySubtitleListView.Filter = subtitle => {
+                if (((String)subtitle).Contains(TextBox_SearchText.Text))
+                    return true;
+                return false;
+            };
+            displaySubtitleListView.Refresh();
         }
 
         private void Button_SaveCurrentSubtitle_Click(object sender, RoutedEventArgs e) {
@@ -146,8 +167,9 @@ namespace ShadowTH_Text_Editor {
             currentFnt.UpdateSubtitle(currentSubtitleIndex, TextBox_EditSubtitle.Text);
             currentFnt.UpdateSubtitleAudioID(currentSubtitleIndex, Int32.Parse(TextBox_AudioID.Text));
             currentFnt.UpdateSubtitleActiveTime(currentSubtitleIndex, Int32.Parse(TextBox_SubtitleActiveTime.Text));
-            ListBox_CurrentFNTOpened.Items.Refresh();
-            TextBox_EditSubtitle.Clear();           
+            UpdateDisplayFntsView();
+            UpdateDisplaySubtitleListView();
+            TextBox_EditSubtitle.Clear();
         }
 
         private void Button_SelectAFSClick(object sender, RoutedEventArgs e) {
@@ -235,7 +257,7 @@ namespace ShadowTH_Text_Editor {
         private void Button_TextToSpeechADXClick(object sender, RoutedEventArgs e) {
             if (currentAfs == null || TextBox_AudioID.Text == "None" || TextBox_EditSubtitle.Text == "")
                 return;
-            //not implemented in main release
+            //not implemented in main release, fork and implement
         }
     }
 }
