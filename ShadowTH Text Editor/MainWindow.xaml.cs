@@ -94,6 +94,7 @@ namespace ShadowTH_Text_Editor {
                 return;
             }
             currentFnt = (FNT)ListBox_OpenedFNTS.SelectedItem;
+            ListBox_CurrentFNTOpened.SelectedIndex = -1;
             displaySubtitleListView = CollectionViewSource.GetDefaultView(currentFnt.subtitleList);
 
             ListBox_CurrentFNTOpened.ItemsSource = displaySubtitleListView;
@@ -137,7 +138,7 @@ namespace ShadowTH_Text_Editor {
             displayFntsView.Filter = fnt => {
                 FNT curfnt = (FNT)fnt;
                 for (int i = 0; i < curfnt.subtitleList.Count; i++) {
-                    if (curfnt.subtitleList[i].ToLower().Contains(TextBox_SearchText.Text)) {
+                    if (curfnt.subtitleList[i].ToLower().Contains(TextBox_SearchText.Text.ToLower())) {
                         if (TextBox_SearchAudioFileName.Text == "" || currentAfs == null)
                             return true;
 
@@ -146,7 +147,7 @@ namespace ShadowTH_Text_Editor {
                         if (audioId == -1)
                             continue;
 
-                        if (currentAfs.Files[audioId].Name.Contains(TextBox_SearchAudioFileName.Text))
+                        if (currentAfs.Files[audioId].Name.Contains(TextBox_SearchAudioFileName.Text.ToLower()))
                             return true;
                     }
                 }
@@ -160,7 +161,7 @@ namespace ShadowTH_Text_Editor {
                 return;
             displaySubtitleListView.Filter = sub => {
                 String subtitle = (String)sub;
-                if (subtitle.ToLower().Contains(TextBox_SearchText.Text)) {
+                if (subtitle.ToLower().Contains(TextBox_SearchText.Text.ToLower())) {
                     if (TextBox_SearchAudioFileName.Text == "" || currentAfs == null)
                         return true;
 
@@ -169,7 +170,7 @@ namespace ShadowTH_Text_Editor {
                     if (audioId == -1)
                         return false;
 
-                    if (currentAfs.Files[audioId].Name.Contains(TextBox_SearchAudioFileName.Text))
+                    if (currentAfs.Files[audioId].Name.Contains(TextBox_SearchAudioFileName.Text.ToLower()))
                         return true;
                 }
                 return false;

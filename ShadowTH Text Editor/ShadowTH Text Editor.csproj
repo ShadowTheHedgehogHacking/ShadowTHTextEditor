@@ -10,6 +10,7 @@
   <ItemGroup>
     <None Remove="res\EN.txd" />
     <None Remove="res\EN00.met" />
+    <None Remove="ShadowFNT.ico" />
   </ItemGroup>
 
   <ItemGroup>
@@ -30,6 +31,12 @@
     <Content Include="res\EN00.met">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="ShadowFNT.ico">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
 
 </Project>

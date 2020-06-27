@@ -5,18 +5,32 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ShadowTH_Text_Editor"
         mc:Ignorable="d"
-        Title="ShadowTH Text Editor / FNT Editor" Height="765" Width="918" MinWidth="918" MinHeight="765" MaxHeight="765" MaxWidth="918" ResizeMode="CanMinimize">
+        Title="ShadowTH Text Editor / FNT Editor" Height="765" Width="918" MinWidth="918" MinHeight="765" MaxHeight="765" MaxWidth="918" Icon="ShadowFNT.ico" ResizeMode="CanMinimize">
     <Grid x:Name="mainGridPanel">
-        <Button x:Name="Button_SelectFNTS" HorizontalAlignment="Center" Margin="0,10,0,0" VerticalAlignment="Top" Height="19" Width="118" Click="Button_SelectFNTSClick">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="137*"/>
+            <ColumnDefinition Width="169*"/>
+        </Grid.ColumnDefinitions>
+        <Menu Margin="0,0,0,705" Grid.ColumnSpan="2">
+            <MenuItem Header="_Open">
+                <MenuItem Header="Open /fonts/ Folder" />
+                <MenuItem Header="Open AFS File" />
+            </MenuItem>
+            <MenuItem Header="_Save">
+                <MenuItem Header="Save All Changed FNTs" />
+                <MenuItem Header="Save AFS File" />
+            </MenuItem>
+        </Menu>
+        <Button x:Name="Button_SelectFNTS" HorizontalAlignment="Left" Margin="213,74,0,0" VerticalAlignment="Top" Height="19" Width="118" Click="Button_SelectFNTSClick" Grid.Column="1">
             Select /fonts/ folder
         </Button>
-        <GroupBox Header="FNT Files" Margin="10,176,683,55" Padding="10">
+        <GroupBox Header="FNT Files" Margin="10,176,176,55" Padding="10">
             <ListBox x:Name="ListBox_OpenedFNTS" SelectionChanged="ListBox_OpenedFNTS_SelectionChanged"/>
         </GroupBox>
-        <GroupBox Header="Subtitles" Margin="271,176,326,55" Padding="10">
+        <GroupBox Header="Subtitles" Margin="271,176,326,55" Padding="10" Grid.ColumnSpan="2">
             <ListBox x:Name="ListBox_CurrentFNTOpened" SelectionChanged="ListBox_CurrentFNTOpened_SelectionChanged"/>
         </GroupBox>
-        <GroupBox Header="Current Subtitle Attributes" Margin="624,176,10,162" Padding="10">
+        <GroupBox Header="Current Subtitle Attributes" Margin="193,176,30,162" Padding="10" Grid.Column="1">
             <StackPanel>
                 <TextBlock>ActiveTime</TextBlock>
                 <TextBox x:Name="TextBox_SubtitleActiveTime"/>
@@ -35,7 +49,7 @@
 
             </StackPanel>
         </GroupBox>
-        <GroupBox Header="Search Filters" Margin="10,34,326,575" Padding="10">
+        <GroupBox Header="Search Filters" Margin="10,34,326,575" Padding="10" Grid.ColumnSpan="2">
             <StackPanel Orientation="Horizontal">
                 <StackPanel>
                     <TextBlock>Search for Subtitle Text</TextBlock>
@@ -48,8 +62,8 @@
             </StackPanel>
         </GroupBox>
 
-        <Button x:Name="Button_OpenAFS" HorizontalAlignment="Left" Margin="694,10,0,0" VerticalAlignment="Top" Height="19" Width="85" Click="Button_SelectAFSClick" Content="Select AFS File"/>
-        <Button x:Name="Button_ExportAFS" HorizontalAlignment="Left" Margin="798,10,0,0" VerticalAlignment="Top" Height="19" Width="90" Click="Button_ExportAFSClick" Content="Export AFS File"/>
-        <Button x:Name="Button_ExportChangedFNTs" HorizontalAlignment="Left" Margin="537,10,0,0" VerticalAlignment="Top" Height="19" Width="120" Click="Button_ExportChangedFNTsClick" Content="Export Changed FNTs"/>
+        <Button x:Name="Button_OpenAFS" HorizontalAlignment="Left" Margin="367,74,0,0" VerticalAlignment="Top" Height="19" Width="85" Click="Button_SelectAFSClick" Content="Select AFS File" Grid.Column="1"/>
+        <Button x:Name="Button_ExportAFS" HorizontalAlignment="Left" Margin="362,104,0,0" VerticalAlignment="Top" Height="19" Width="90" Click="Button_ExportAFSClick" Content="Export AFS File" Grid.Column="1"/>
+        <Button x:Name="Button_ExportChangedFNTs" HorizontalAlignment="Left" Margin="213,104,0,0" VerticalAlignment="Top" Height="19" Width="120" Click="Button_ExportChangedFNTsClick" Content="Export Changed FNTs" Grid.Column="1"/>
     </Grid>
 </Window>
