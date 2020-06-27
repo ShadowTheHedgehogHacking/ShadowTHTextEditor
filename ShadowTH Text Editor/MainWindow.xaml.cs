@@ -126,7 +126,7 @@ namespace ShadowTH_Text_Editor {
             }
         }
 
-        private void TextBox_SearchText_TextChanged(object sender, TextChangedEventArgs e) {
+        private void TextBox_SearchFilters_TextChanged(object sender, TextChangedEventArgs e) {
             UpdateDisplayFntsView();
             UpdateDisplaySubtitleListView();
         }
@@ -136,9 +136,19 @@ namespace ShadowTH_Text_Editor {
                 return;
             displayFntsView.Filter = fnt => {
                 FNT curfnt = (FNT)fnt;
-                foreach (String subtitle in curfnt.subtitleList) {
-                    if (subtitle.Contains(TextBox_SearchText.Text))
-                        return true;
+                for (int i = 0; i < curfnt.subtitleList.Count; i++) {
+                    if (curfnt.subtitleList[i].ToLower().Contains(TextBox_SearchText.Text)) {
+                        if (TextBox_SearchAudioFileName.Text == "" || currentAfs == null)
+                            return true;
+
+                        var audioId = curfnt.GetSubtitleAudioID(i);
+
+                        if (audioId == -1)
+                            continue;
+
+                        if (currentAfs.Files[audioId].Name.Contains(TextBox_SearchAudioFileName.Text))
+                            return true;
+                    }
                 }
                 return false;
             };
@@ -148,9 +158,20 @@ namespace ShadowTH_Text_Editor {
         private void UpdateDisplaySubtitleListView() {
             if (displaySubtitleListView == null)
                 return;
-            displaySubtitleListView.Filter = subtitle => {
-                if (((String)subtitle).Contains(TextBox_SearchText.Text))
-                    return true;
+            displaySubtitleListView.Filter = sub => {
+                String subtitle = (String)sub;
+                if (subtitle.ToLower().Contains(TextBox_SearchText.Text)) {
+                    if (TextBox_SearchAudioFileName.Text == "" || currentAfs == null)
+                        return true;
+
+                    var audioId = currentFnt.GetSubtitleAudioID(currentFnt.subtitleList.IndexOf(subtitle));
+
+                    if (audioId == -1)
+                        return false;
+
+                    if (currentAfs.Files[audioId].Name.Contains(TextBox_SearchAudioFileName.Text))
+                        return true;
+                }
                 return false;
             };
             displaySubtitleListView.Refresh();
@@ -254,10 +275,9 @@ namespace ShadowTH_Text_Editor {
             Button_ExtractADX.IsEnabled = active;
         }
 
-        private void Button_TextToSpeechADXClick(object sender, RoutedEventArgs e) {
+        private void Button_PlaySoundClick(object sender, RoutedEventArgs e) {
             if (currentAfs == null || TextBox_AudioID.Text == "None" || TextBox_EditSubtitle.Text == "")
                 return;
-            //not implemented in main release, fork and implement
         }
     }
 }
