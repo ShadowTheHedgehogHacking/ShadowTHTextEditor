@@ -7,14 +7,14 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Forms;
 using MessageBox = System.Windows.MessageBox;
 
 namespace ShadowTH_Text_Editor {
     public partial class MainWindow : Window {
         List<FNT> initialFntsOpenedState;
         List<FNT> openedFnts;
-
+        String lastOpenDir;
+        bool localeWarningSeen = false;
         FNT currentFnt;
         AfsArchive currentAfs;
         ICollectionView displayFntsView, displaySubtitleListView;
@@ -32,12 +32,19 @@ namespace ShadowTH_Text_Editor {
                 MessageBox.Show("Pick the 'fonts' folder extracted from Shadow The Hedgehog", "Try Again");
                 return;
             }
-            clearData();
-            string[] foundFnts = Directory.GetFiles(dialog.SelectedPath, "*_EN.fnt", SearchOption.AllDirectories);
+            lastOpenDir = dialog.SelectedPath;
+            ProcessFNTS();
+        }
+
+        private void ProcessFNTS() {
+            ClearData();
+            if (lastOpenDir == null) return;
+            String localeSwitcher = ComboBox_LocaleSwitcher.SelectedItem.ToString();
+            string[] foundFnts = Directory.GetFiles(lastOpenDir, "*_" + localeSwitcher.Substring(localeSwitcher.Length - 2) + ".fnt", SearchOption.AllDirectories);
             for (int i = 0; i < foundFnts.Length; i++) {
                 byte[] readFile = File.ReadAllBytes(foundFnts[i]);
-                FNT newFnt = FNT.ParseFNTFile(foundFnts[i], ref readFile, dialog.SelectedPath);
-                FNT originalFnt = FNT.ParseFNTFile(foundFnts[i], ref readFile, dialog.SelectedPath);
+                FNT newFnt = FNT.ParseFNTFile(foundFnts[i], ref readFile, lastOpenDir);
+                FNT originalFnt = FNT.ParseFNTFile(foundFnts[i], ref readFile, lastOpenDir);
 
                 openedFnts.Add(newFnt);
                 initialFntsOpenedState.Add(originalFnt);
@@ -47,19 +54,19 @@ namespace ShadowTH_Text_Editor {
             ListBox_OpenedFNTS.ItemsSource = displayFntsView;
         }
 
-        private void clearData() {
+        private void ClearData() {
             openedFnts = new List<FNT>();
             initialFntsOpenedState = new List<FNT>();
             currentAfs = null;
             Button_OpenAFS.IsEnabled = false;
             Button_ExportAFS.IsEnabled = false;
             Button_ExportChangedFNTs.IsEnabled = false;
-            clearUIData();
+            ClearUIData();
             ListBox_OpenedFNTS.ItemsSource = null;
             ListBox_CurrentFNTOpened.ItemsSource = null;
         }
 
-        private void clearUIData() {
+        private void ClearUIData() {
             TextBox_EditSubtitle.Clear();
             TextBlock_AfsAudioIDName.Text = "";
             TextBox_AudioID.Clear();
@@ -67,7 +74,7 @@ namespace ShadowTH_Text_Editor {
         }
 
         private void ListBox_OpenedFNTS_SelectionChanged(object sender, SelectionChangedEventArgs e) {
-            clearUIData();
+            ClearUIData();
             if (ListBox_OpenedFNTS.SelectedIndex == -1) {
                 ListBox_CurrentFNTOpened.ItemsSource = null;
                 return;
@@ -83,12 +90,12 @@ namespace ShadowTH_Text_Editor {
 
         private void ListBox_CurrentFNTOpened_SelectionChanged(object sender, SelectionChangedEventArgs e) {
             if (ListBox_CurrentFNTOpened.SelectedItem == null) {
-                clearUIData();
+                ClearUIData();
                 return;
             }
             var currentSubtitleIndex = currentFnt.subtitleList.IndexOf(ListBox_CurrentFNTOpened.SelectedItem.ToString());
             if (currentSubtitleIndex == -1) {
-                clearUIData();
+                ClearUIData();
                 return;
             }
             var audioID = currentFnt.GetSubtitleAudioID(currentSubtitleIndex);
@@ -183,6 +190,7 @@ namespace ShadowTH_Text_Editor {
 
         private void Button_SelectAFSClick(object sender, RoutedEventArgs e) {
             var dialog = new Ookii.Dialogs.Wpf.VistaOpenFileDialog();
+            dialog.Filter = "AFS files (*.afs)|*.afs|All files (*.*)|*.*";
             if (dialog.ShowDialog() == false) {
                 return;
             }
@@ -254,6 +262,19 @@ namespace ShadowTH_Text_Editor {
                 "https://github.com/ShadowTheHedgehogHacking\n\nto check for updates for this software.", "About ShadowTH Text Editor / FNT Editor");
         }
 
+        private void ComboBox_LocaleSwitcher_SelectionChanged(object sender, SelectionChangedEventArgs e) {
+            if (initialFntsOpenedState == null) return;
+            ProcessFNTS();
+        }
+
+        private void ComboBox_LocaleSwitcher_DropDownClosed(object sender, EventArgs e) {
+            if (!localeWarningSeen) {
+                MessageBox.Show("Saving in languages other than English is currently unsupported.\n" +
+                    "Attempting this will cause issues, as the \'global\' .met used does not contain full non-English characters.");
+                localeWarningSeen = true;
+            }
+        }
+
         private void Button_ExportChangedFNTsClick(object sender, RoutedEventArgs e) {
             List<FNT> filesToWrite = new List<FNT>();
             String filesToWriteReportingString = "";
@@ -292,7 +313,7 @@ namespace ShadowTH_Text_Editor {
                     }
                 }
             }
-            clearData();
+            ClearData();
         }
     }
 }

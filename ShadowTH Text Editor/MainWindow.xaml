@@ -27,7 +27,7 @@
         </GroupBox>
         <GroupBox Header="FNT Files" Margin="10,155,180,10" Padding="10" Grid.ColumnSpan="3">
             <StackPanel>
-                <ComboBox>
+                <ComboBox x:Name="ComboBox_LocaleSwitcher" SelectionChanged="ComboBox_LocaleSwitcher_SelectionChanged" DropDownClosed="ComboBox_LocaleSwitcher_DropDownClosed">
                     <ComboBoxItem IsSelected="True">EN</ComboBoxItem>
                     <ComboBoxItem>FR</ComboBoxItem>
                     <ComboBoxItem>GE</ComboBoxItem>
