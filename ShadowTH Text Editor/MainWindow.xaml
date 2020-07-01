@@ -1,0 +1,81 @@
+﻿<Window x:Class="ShadowTH_Text_Editor.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ShadowTH_Text_Editor"
+        mc:Ignorable="d"
+        Title="Shadow The Hedgehog Text Editor / FNT Editor" Height="720" Width="900" MinWidth="900" MinHeight="720" MaxHeight="720" MaxWidth="900" Icon="ShadowFNT.ico" ResizeMode="CanMinimize">
+    <Grid x:Name="mainGridPanel">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="16*"/>
+            <ColumnDefinition Width="7*"/>
+            <ColumnDefinition Width="114*"/>
+            <ColumnDefinition Width="169*"/>
+        </Grid.ColumnDefinitions>
+        <GroupBox Header="File Controls" Margin="175,10,10,530" Grid.Column="3">
+            <StackPanel Margin="10,0,-6,0">
+                <StackPanel Orientation="Horizontal" Margin="-4,20,0,10">
+                    <Button x:Name="Button_SelectFNTS" Margin="5,0,20,0" VerticalAlignment="Top" Width="125" Height="30" Click="Button_SelectFNTSClick" Grid.Column="1">Open /fonts/ Folder</Button>
+                    <Button x:Name="Button_ExportChangedFNTs" IsEnabled="False" VerticalAlignment="Top" Width="125" Height="30" Click="Button_ExportChangedFNTsClick" Content="Save All Changed FNTs" Grid.Column="1" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="-4,2.5,0,10">
+                    <Button x:Name="Button_OpenAFS" IsEnabled="False" Margin="5,10,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Width="125" Height="30" Click="Button_SelectAFSClick" Content="Open AFS File" Grid.Column="1"/>
+                    <Button x:Name="Button_ExportAFS" IsEnabled="False" Margin="20,10,20,0" HorizontalAlignment="Left" VerticalAlignment="Top" Width="125" Height="30" Click="Button_ExportAFSClick" Content="Save AFS File" Grid.Column="1"/>
+                </StackPanel>
+            </StackPanel>
+        </GroupBox>
+        <GroupBox Header="FNT Files" Margin="10,155,180,10" Padding="10" Grid.ColumnSpan="3">
+            <StackPanel>
+                <ComboBox x:Name="ComboBox_LocaleSwitcher" SelectionChanged="ComboBox_LocaleSwitcher_SelectionChanged" DropDownClosed="ComboBox_LocaleSwitcher_DropDownClosed">
+                    <ComboBoxItem IsSelected="True">EN</ComboBoxItem>
+                    <ComboBoxItem>FR</ComboBoxItem>
+                    <ComboBoxItem>GE</ComboBoxItem>
+                    <ComboBoxItem>IT</ComboBoxItem>
+                    <ComboBoxItem>JP</ComboBoxItem>
+                    <ComboBoxItem>SP</ComboBoxItem>
+                </ComboBox>
+                <ListBox x:Name="ListBox_OpenedFNTS" Margin="0,10,0,0" Height="440" SelectionChanged="ListBox_OpenedFNTS_SelectionChanged"/>
+             </StackPanel>
+        </GroupBox>
+        <GroupBox Header="Subtitles" Margin="165,155,326,10" Padding="10" Grid.ColumnSpan="2" Grid.Column="2">
+            <ListBox x:Name="ListBox_CurrentFNTOpened" SelectionChanged="ListBox_CurrentFNTOpened_SelectionChanged"/>
+        </GroupBox>
+        <GroupBox Header="Current Subtitle Attributes" Margin="175,155,10,125" Padding="10" Grid.Column="3">
+            <StackPanel>
+                <TextBlock>Active Time</TextBlock>
+                <TextBox x:Name="TextBox_SubtitleActiveTime"/>
+                <TextBlock>Audio ID</TextBlock>
+                <TextBox x:Name="TextBox_AudioID"/>
+                <TextBlock>Audio Filename</TextBlock>
+                <TextBlock x:Name="TextBlock_AfsAudioIDName" Margin="0,5,0,10"/>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                    <Button x:Name="Button_ReplaceADX" IsEnabled="False" Margin="0,0,10,0" Width="125" Height="30" HorizontalAlignment="Left" VerticalAlignment="Top" Click="Button_ReplaceADXClick" Content="Replace ADX"/>
+                    <Button x:Name="Button_ExtractADX" IsEnabled="False" Margin="10,0,0,0" Width="125" Height="30" HorizontalAlignment="Left" VerticalAlignment="Top" Click="Button_ExtractADXClick" Content="Extract ADX"/>
+                </StackPanel>
+                <TextBlock>Text</TextBlock>
+                <TextBox x:Name="TextBox_EditSubtitle" TextWrapping="Wrap" AcceptsReturn="True" Height="145"/>
+                <Button x:Name="Button_SaveCurrentSubtitle" Height="30" Margin="50,10,50,0" Content="Save Subtitle Changes" Click="Button_SaveCurrentSubtitle_Click"/>
+            </StackPanel>
+        </GroupBox>
+        <GroupBox Header="Search Filters" Margin="10,10,325,530" Padding="10" Grid.ColumnSpan="4">
+            <StackPanel Orientation="Vertical" Margin="0,0,0,0"  Height="104" Width="515">
+                <StackPanel>
+                    <TextBlock><Run Text="Search for Subtitle Text"/></TextBlock>
+                    <TextBox x:Name="TextBox_SearchText" AcceptsReturn="True" HorizontalAlignment="Left" VerticalContentAlignment="Center" Text="" TextWrapping="Wrap" TextChanged="TextBox_SearchFilters_TextChanged" Margin="0,0,0,10" Height="25" Width="515"/>
+                </StackPanel>
+                <StackPanel>
+                    <TextBlock><Run Text="Search for Audio Filename"/></TextBlock>
+                    <TextBox x:Name="TextBox_SearchAudioFileName" AcceptsReturn="True" HorizontalAlignment="Left" VerticalContentAlignment="Center" Text="" TextWrapping="Wrap" TextChanged="TextBox_SearchFilters_TextChanged" Height="25" Width="515"/>
+                </StackPanel>
+            </StackPanel>
+        </GroupBox>
+        <GroupBox Header="Program Controls" Margin="175,560,10,10" Grid.Column="3">
+            <StackPanel>
+                <CheckBox x:Name="CheckBox_ChooseWhereToSave" Margin="0,10" Content="Pick folder on Save"/>
+                <CheckBox x:Name="CheckBox_NoReplaceMetTxd" Content="Do not replace .met and .txd"/>
+                <Button x:Name="Button_About" Margin="220,5,0,0" Height="30" Click="Button_About_Click" Width="65">About</Button>
+            </StackPanel>
+        </GroupBox>
+    </Grid>
+</Window>

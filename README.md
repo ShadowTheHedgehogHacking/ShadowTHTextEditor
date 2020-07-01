@@ -1,19 +1,21 @@
-<div align="center"><h1>ShadowTH Text Editor (Prototype/WinForms Edition)</h1>
-<img src="https://raw.githubusercontent.com/ShadowTheHedgehogHacking/ShadowTHTextEditor/master/res/prototype.png" align="center" />
+<div align="center"><h1>Shadow The Hedgehog Text Editor</h1>
+<img src="https://raw.githubusercontent.com/ShadowTheHedgehogHacking/ShadowTHTextEditor/master/res/neweditor.png" align="center" />
 </div>
 
 
 
+FNT editor for Shadow The Hedgehog.
 
-Simple .fnt editor for ShadowTH.
+## Dependencies:
+* Requires .NET Core 3.1 (or higher).
 
+## Features:
+* Handles the entire /font folder (with locale support).
+* Support for linking, replacing, and extracting associated audio from AFS archive.
+* Filter by subtitle in FNT and/or audio filename from AFS archive.
+* Switcher for different locales (CURRENTLY ONLY THE ENGLISH (EN) LOCALE CAN SAVE CORRECTLY).
 
-## This prototype:
-* Produces .fnt format in 1:1 form
-* Allows for any length of text per subtitle
-* Only handles one .fnt file at a time
-* Does NOT automatically edit the .met/.txd (coming soon?)
+## Note:
+By default ShadowTH uses an ampersand (&) to represent the trademark symbol (™).
 
-## Note: 
-ShadowTH uses an ampersand (&) to represent the trademark symbol (™).
-If you actually want to use & somewhere... you can't.
+The provided .met file makes it so the trademark symbol is represented by the copyright symbol (©️), freeing & for use.
