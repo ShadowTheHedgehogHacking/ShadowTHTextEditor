@@ -7,33 +7,10 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Forms;
 using MessageBox = System.Windows.MessageBox;
 
 namespace ShadowTH_Text_Editor {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// Everything because lazy
-    /// </summary>
-    /// 
-    /// PLAN:
-    /// Keep track of which .FNT are modified, at save export 'global supported' .met/.txd overwriting originals, warn if ex mets found | DONE, minus ex met
-    /// Support editing subtitle time | DONE
-    /// Support replacing and extracting associated audio from audioID and opened AFS | DONE
-    /// Search also filters by subtitles rather than just FNT parent | DONE
-    /// 
-    /// Next steps: 
-    /// - case sensitive toggle for search
-    /// - warn for ex mets
-    /// - checkbox for MET/TXD override
-    /// - allow exporting elsewhere
-    /// 
-    /// bonus: 
-    /// - preview based on AFS
-    /// - Add text to speech AFS option
-    /// - Add google translate option
-    /// - Support other lang selection + met/txd
-    ///
-
     public partial class MainWindow : Window {
         List<FNT> initialFntsOpenedState;
         List<FNT> openedFnts;
@@ -44,7 +21,6 @@ namespace ShadowTH_Text_Editor {
 
         public MainWindow() {
             InitializeComponent();
-            SetAFSUI(false);
         }
 
         private void Button_SelectFNTSClick(object sender, RoutedEventArgs e) {
@@ -66,6 +42,7 @@ namespace ShadowTH_Text_Editor {
                 openedFnts.Add(newFnt);
                 initialFntsOpenedState.Add(originalFnt);
             }
+            Button_OpenAFS.IsEnabled = true;
             displayFntsView = CollectionViewSource.GetDefaultView(openedFnts);
             ListBox_OpenedFNTS.ItemsSource = displayFntsView;
         }
@@ -74,7 +51,9 @@ namespace ShadowTH_Text_Editor {
             openedFnts = new List<FNT>();
             initialFntsOpenedState = new List<FNT>();
             currentAfs = null;
-            SetAFSUI(false);
+            Button_OpenAFS.IsEnabled = false;
+            Button_ExportAFS.IsEnabled = false;
+            Button_ExportChangedFNTs.IsEnabled = false;
             clearUIData();
             ListBox_OpenedFNTS.ItemsSource = null;
             ListBox_CurrentFNTOpened.ItemsSource = null;
@@ -120,10 +99,16 @@ namespace ShadowTH_Text_Editor {
 
             if (currentAfs == null) {
                 TextBlock_AfsAudioIDName.Text = "AFS not loaded";
+                Button_ExtractADX.IsEnabled = false;
+                Button_ReplaceADX.IsEnabled = false;
             } else if (audioID != -1 && audioID < currentAfs.Files.Count) {
                 TextBlock_AfsAudioIDName.Text = currentAfs.Files[audioID].Name;
+                Button_ExtractADX.IsEnabled = true;
+                Button_ReplaceADX.IsEnabled = true;
             } else {
                 TextBlock_AfsAudioIDName.Text = "None";
+                Button_ExtractADX.IsEnabled = false;
+                Button_ReplaceADX.IsEnabled = false;
             }
         }
 
@@ -183,7 +168,7 @@ namespace ShadowTH_Text_Editor {
                 return;
             var currentSubtitleIndex = currentFnt.subtitleList.IndexOf(ListBox_CurrentFNTOpened.SelectedItem.ToString());
             if (currentSubtitleIndex == -1) { 
-                MessageBox.Show("Error, subtitle not found");
+                MessageBox.Show("Error, subtitle not found, report this bug");
                 return;
             }
             currentFnt.UpdateSubtitle(currentSubtitleIndex, TextBox_EditSubtitle.Text);
@@ -191,7 +176,9 @@ namespace ShadowTH_Text_Editor {
             currentFnt.UpdateSubtitleActiveTime(currentSubtitleIndex, Int32.Parse(TextBox_SubtitleActiveTime.Text));
             UpdateDisplayFntsView();
             UpdateDisplaySubtitleListView();
+            Button_ExportChangedFNTs.IsEnabled = true;
             TextBox_EditSubtitle.Clear();
+            ListBox_CurrentFNTOpened.SelectedIndex = currentSubtitleIndex;
         }
 
         private void Button_SelectAFSClick(object sender, RoutedEventArgs e) {
@@ -206,7 +193,15 @@ namespace ShadowTH_Text_Editor {
             var data = File.ReadAllBytes(dialog.FileName);
             if (AfsArchive.TryFromFile(data, out var afsArchive)) {
                 currentAfs = afsArchive;
-                SetAFSUI(true);
+                Button_ExportAFS.IsEnabled = true;
+                if (ListBox_CurrentFNTOpened.SelectedItem == null)
+                    return;
+                var currentSubtitleIndex = currentFnt.subtitleList.IndexOf(ListBox_CurrentFNTOpened.SelectedItem.ToString());
+                if (currentSubtitleIndex == -1) {
+                    return;
+                }
+                ListBox_CurrentFNTOpened.SelectedIndex = -1;
+                ListBox_CurrentFNTOpened.SelectedIndex = currentSubtitleIndex;
             };
         }
 
@@ -241,12 +236,22 @@ namespace ShadowTH_Text_Editor {
             if (currentAfs == null)
                 return;
             var dialog = new Ookii.Dialogs.Wpf.VistaSaveFileDialog();
+            dialog.FileName = TextBlock_AfsAudioIDName.Text;
             if (dialog.ShowDialog() == false) {
                 return;
             }
             if (dialog.FileName != "") {
                 File.WriteAllBytes(dialog.FileName, currentAfs.Files[Int32.Parse(TextBox_AudioID.Text)].Data);
             }
+        }
+
+        private void Button_About_Click(object sender, RoutedEventArgs e) {
+            MessageBox.Show("Created by dreamsyntax\n" +
+                ".fnt struct reversal done by LimblessVector\n" +
+                ".met/.txd universal map by TheHatedGravity\n" +
+                "Uses AFSLib by Sewer56 for AFS support\n" +
+                "Uses Ookii.Dialogs for dialogs\n\n" +
+                "https://github.com/ShadowTheHedgehogHacking\n\nto check for updates for this software.", "About ShadowTH Text Editor / FNT Editor");
         }
 
         private void Button_ExportChangedFNTsClick(object sender, RoutedEventArgs e) {
@@ -259,26 +264,35 @@ namespace ShadowTH_Text_Editor {
                 }
             }
             MessageBox.Show("Files to be written:" + filesToWriteReportingString);
-            //TODO: add optional checkbox to manually pick a path, by default overwrite original files
-            //      add optional checkbox to NOT replace met/txd
+            var customSavePath = "";
+            if (CheckBox_ChooseWhereToSave.IsChecked == true) {
+                var dialog = new Ookii.Dialogs.Wpf.VistaFolderBrowserDialog();
+                if (dialog.ShowDialog() == false) {
+                    MessageBox.Show("Save cancelled");
+                    return;
+                }
+                customSavePath = dialog.SelectedPath;
+            }
             foreach (FNT fnt in filesToWrite) {
-                File.WriteAllBytes(fnt.fileName, fnt.BuildFNTFile().ToArray());
-                String prec = fnt.fileName.Remove(fnt.fileName.Length - 4);
-                File.Copy("res/EN.txd", prec + ".txd", true);
-                File.Copy("res/EN00.met", prec + "00.met", true);
+                if (CheckBox_ChooseWhereToSave.IsChecked == true) {
+                    var newFntFilePath = customSavePath + '\\' + fnt.fileName.Split(fnt.filterString + '\\')[1];
+                    Directory.CreateDirectory(Directory.GetParent(newFntFilePath).FullName);
+                    File.WriteAllBytes(newFntFilePath, fnt.BuildFNTFile().ToArray());
+                    if (CheckBox_NoReplaceMetTxd.IsChecked == false) {
+                        String prec = newFntFilePath.Remove(newFntFilePath.Length - 4);
+                        File.Copy("res/EN.txd", prec + ".txd", true);
+                        File.Copy("res/EN00.met", prec + "00.met", true);
+                    }
+                } else {
+                    File.WriteAllBytes(fnt.fileName, fnt.BuildFNTFile().ToArray());
+                    if (CheckBox_NoReplaceMetTxd.IsChecked == false) {
+                        String prec = fnt.fileName.Remove(fnt.fileName.Length - 4);
+                        File.Copy("res/EN.txd", prec + ".txd", true);
+                        File.Copy("res/EN00.met", prec + "00.met", true);
+                    }
+                }
             }
             clearData();
-        }
-
-        private void SetAFSUI(bool active) {
-            Button_ExportAFS.IsEnabled = active;
-            Button_ReplaceADX.IsEnabled = active;
-            Button_ExtractADX.IsEnabled = active;
-        }
-
-        private void Button_PlaySoundClick(object sender, RoutedEventArgs e) {
-            if (currentAfs == null || TextBox_AudioID.Text == "None" || TextBox_EditSubtitle.Text == "")
-                return;
         }
     }
 }
