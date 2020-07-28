@@ -4,9 +4,13 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Net;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using MessageBox = System.Windows.MessageBox;
 
 namespace ShadowTH_Text_Editor {
@@ -273,6 +277,22 @@ namespace ShadowTH_Text_Editor {
                     "Attempting this will cause issues, as the \'global\' .met used does not contain full non-English characters.");
                 localeWarningSeen = true;
             }
+        }
+
+        private void Button_TranslateCurrentSubtitle_Click(object sender, RoutedEventArgs e) {
+            if (ListBox_CurrentFNTOpened.SelectedItem == null)
+                return;
+            var currentSubtitleIndex = currentFnt.subtitleList.IndexOf(ListBox_CurrentFNTOpened.SelectedItem.ToString());
+            if (currentSubtitleIndex == -1) {
+                MessageBox.Show("Error, subtitle not found, report this bug");
+                return;
+            }
+            currentFnt.UpdateSubtitle(currentSubtitleIndex, Translator.Translate(TextBox_EditSubtitle.Text));
+            UpdateDisplayFntsView();
+            UpdateDisplaySubtitleListView();
+            Button_ExportChangedFNTs.IsEnabled = true;
+            TextBox_EditSubtitle.Clear();
+            ListBox_CurrentFNTOpened.SelectedIndex = currentSubtitleIndex;
         }
 
         private void Button_ExportChangedFNTsClick(object sender, RoutedEventArgs e) {

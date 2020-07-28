@@ -55,7 +55,10 @@
                 </StackPanel>
                 <TextBlock>Text</TextBlock>
                 <TextBox x:Name="TextBox_EditSubtitle" TextWrapping="Wrap" AcceptsReturn="True" Height="145"/>
-                <Button x:Name="Button_SaveCurrentSubtitle" Height="30" Margin="50,10,50,0" Content="Save Subtitle Changes" Click="Button_SaveCurrentSubtitle_Click"/>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                    <Button x:Name="Button_TranslateCurrentSubtitle" Height="20" Margin="5,5,50,0" Content="Gogl Tansalte" Click="Button_TranslateCurrentSubtitle_Click"/>
+                    <Button x:Name="Button_SaveCurrentSubtitle" Height="20" Margin="5,5,50,0" Content="Save Subtitle Changes" Click="Button_SaveCurrentSubtitle_Click"/>
+                </StackPanel>
             </StackPanel>
         </GroupBox>
         <GroupBox Header="Search Filters" Margin="10,10,325,530" Padding="10" Grid.ColumnSpan="4">
