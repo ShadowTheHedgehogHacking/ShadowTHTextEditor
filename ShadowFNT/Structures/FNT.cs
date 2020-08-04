@@ -20,11 +20,11 @@ namespace ShadowFNT.Structures {
             0x04: Unknown. External address?
             0x08: Text type. Byte. See Text types table.
             0x0C: Subtitle active time?
-            0x10: AFS Audio ID | FFFFFFFF for cutscene lines.
+            0x10: AFS Audio ID | -1 for cutscene lines.
         }
 
         TextTypes {
-            14 - Menu Text.
+            14 - Menu Text. 
             28 - Idle lines.
             64 - Blank/skip entry?
             78 - Partner betrayal lines?
@@ -107,7 +107,7 @@ namespace ShadowFNT.Structures {
                 SubtitleTableEntry entry = new SubtitleTableEntry {
                     startingPosition = BitConverter.ToInt32(file, positionIndex),
                     externalAddress = BitConverter.ToInt32(file, positionIndex + 4),
-                    textType = BitConverter.ToInt32(file, positionIndex + 8),
+                    textType = (SubtitleTextType)BitConverter.ToInt32(file, positionIndex + 8),
                     subtitleActiveTime = BitConverter.ToInt32(file, positionIndex + 12),
                     audioId = BitConverter.ToInt32(file, positionIndex + 16)
                 };
@@ -121,6 +121,7 @@ namespace ShadowFNT.Structures {
                 int subtitleLength;
                 if (i == fnt.subtitleTable.Count - 1)
                     // if last subtitleTable entry, size is originalFilesize - entry index
+                    // TODO: fix this to end on null
                     subtitleLength = file.Length - fnt.subtitleTable[i].startingPosition;
                 else
                     // otherwise calculate based on next entry in list
@@ -147,7 +148,7 @@ namespace ShadowFNT.Structures {
             for (int i = 0; i < numberOfEntries; i++) {
                 BitConverter.GetBytes(subtitleTable[i].startingPosition).ToList().ForEach(b => { fntFile.Add(b); });
                 BitConverter.GetBytes(subtitleTable[i].externalAddress).ToList().ForEach(b => { fntFile.Add(b); });
-                BitConverter.GetBytes(subtitleTable[i].textType).ToList().ForEach(b => { fntFile.Add(b); });
+                BitConverter.GetBytes((int)subtitleTable[i].textType).ToList().ForEach(b => { fntFile.Add(b); });
                 BitConverter.GetBytes(subtitleTable[i].subtitleActiveTime).ToList().ForEach(b => { fntFile.Add(b); });
                 BitConverter.GetBytes(subtitleTable[i].audioId).ToList().ForEach(b => { fntFile.Add(b); });
             }
@@ -199,6 +200,34 @@ namespace ShadowFNT.Structures {
         public int GetSubtitleAudioID(int subtitleEntry) {
             return subtitleTable[subtitleEntry].audioId;             
         }
+
+        public int GetSubtitleExternalAddress(int subtitleEntry) {
+            return subtitleTable[subtitleEntry].externalAddress;
+        }
+
+        public void UpdateSubtitleExternalAddress(int subtitleEntry, int externalAddressValue) {
+            SubtitleTableEntry updatedEntry = subtitleTable[subtitleEntry];
+            updatedEntry.externalAddress = externalAddressValue;
+            subtitleTable[subtitleEntry] = updatedEntry;
+        }
+
+        public SubtitleTextType GetSubtitleTextType(int subtitleEntry) {
+            return subtitleTable[subtitleEntry].textType;
+        }
+
+        public void UpdateSubtitleTextType(int subtitleEntry, int enumIndex) {
+            SubtitleTableEntry updatedEntry = subtitleTable[subtitleEntry];
+            /*//    E e = E.C;
+            int index = Array.IndexOf(Enum.GetValues(e.GetType()), e);
+            // index is 2
+
+            E f = (E)(Enum.GetValues(e.GetType())).GetValue(index);
+            // f is  E.C*/
+            SubtitleTextType temp = SubtitleTextType.BLANK_SKIP_ENTRY;
+            updatedEntry.textType = (SubtitleTextType)(Enum.GetValues(temp.GetType())).GetValue(enumIndex);
+            subtitleTable[subtitleEntry] = updatedEntry;
+        }
+
 
         /// <summary>
         /// Getter for subtitleActiveTime of passed in subtitleEntry index

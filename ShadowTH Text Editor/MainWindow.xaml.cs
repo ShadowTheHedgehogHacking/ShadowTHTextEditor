@@ -101,6 +101,9 @@ namespace ShadowTH_Text_Editor {
             var audioID = currentFnt.GetSubtitleAudioID(currentSubtitleIndex);
 
             TextBox_EditSubtitle.Text = ListBox_CurrentFNTOpened.SelectedItem.ToString();
+            TextBox_SubtitleExternalAddress.Text = currentFnt.GetSubtitleExternalAddress(currentSubtitleIndex).ToString();
+            SubtitleTextType currentTextType = currentFnt.GetSubtitleTextType(currentSubtitleIndex);
+            ComboBox_SubtitleTextType.SelectedIndex = Array.IndexOf(Enum.GetValues(currentTextType.GetType()), currentTextType);
             TextBox_SubtitleActiveTime.Text = currentFnt.GetSubtitleActiveTime(currentSubtitleIndex).ToString();
             TextBox_AudioID.Text = audioID.ToString();
 
@@ -179,6 +182,8 @@ namespace ShadowTH_Text_Editor {
                 return;
             }
             currentFnt.UpdateSubtitle(currentSubtitleIndex, TextBox_EditSubtitle.Text);
+            currentFnt.UpdateSubtitleExternalAddress(currentSubtitleIndex, Int32.Parse(TextBox_SubtitleExternalAddress.Text));
+            currentFnt.UpdateSubtitleTextType(currentSubtitleIndex, ComboBox_SubtitleTextType.SelectedIndex);
             currentFnt.UpdateSubtitleAudioID(currentSubtitleIndex, Int32.Parse(TextBox_AudioID.Text));
             currentFnt.UpdateSubtitleActiveTime(currentSubtitleIndex, Int32.Parse(TextBox_SubtitleActiveTime.Text));
             UpdateDisplayFntsView();
