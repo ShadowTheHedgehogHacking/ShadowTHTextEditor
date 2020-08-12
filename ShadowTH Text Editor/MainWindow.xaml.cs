@@ -17,7 +17,7 @@ namespace ShadowTH_Text_Editor {
         bool localeWarningSeen = false;
         FNT currentFnt;
         AfsArchive currentAfs;
-        ICollectionView displayFntsView, displaySubtitleListView;
+        ICollectionView displayFntsView, displayTableListView;
 
         public MainWindow() {
             InitializeComponent();
@@ -51,7 +51,7 @@ namespace ShadowTH_Text_Editor {
             }
             Button_OpenAFS.IsEnabled = true;
             displayFntsView = CollectionViewSource.GetDefaultView(openedFnts);
-            ListBox_OpenedFNTS.ItemsSource = displayFntsView;
+            ListBox_AllFNTS.ItemsSource = displayFntsView;
         }
 
         private void ClearData() {
@@ -62,8 +62,8 @@ namespace ShadowTH_Text_Editor {
             Button_ExportAFS.IsEnabled = false;
             Button_ExportChangedFNTs.IsEnabled = false;
             ClearUIData();
-            ListBox_OpenedFNTS.ItemsSource = null;
-            ListBox_CurrentFNTOpened.ItemsSource = null;
+            ListBox_AllFNTS.ItemsSource = null;
+            ListBox_CurrentFNT.ItemsSource = null;
         }
 
         private void ClearUIData() {
@@ -75,35 +75,36 @@ namespace ShadowTH_Text_Editor {
 
         private void ListBox_OpenedFNTS_SelectionChanged(object sender, SelectionChangedEventArgs e) {
             ClearUIData();
-            if (ListBox_OpenedFNTS.SelectedIndex == -1) {
-                ListBox_CurrentFNTOpened.ItemsSource = null;
+            if (ListBox_AllFNTS.SelectedIndex == -1) {
+                ListBox_CurrentFNT.ItemsSource = null;
                 return;
             }
-            currentFnt = (FNT)ListBox_OpenedFNTS.SelectedItem;
-            ListBox_CurrentFNTOpened.SelectedIndex = -1;
-            displaySubtitleListView = CollectionViewSource.GetDefaultView(currentFnt.subtitleList);
+            currentFnt = (FNT)ListBox_AllFNTS.SelectedItem;
+            ListBox_CurrentFNT.SelectedIndex = -1;
+            displayTableListView = CollectionViewSource.GetDefaultView(currentFnt.subtitleTable);
 
-            ListBox_CurrentFNTOpened.ItemsSource = displaySubtitleListView;
-            UpdateDisplaySubtitleListView();
+            ListBox_CurrentFNT.ItemsSource = displayTableListView;
+            UpdateDisplayTableListView();
 
         }
 
-        private void ListBox_CurrentFNTOpened_SelectionChanged(object sender, SelectionChangedEventArgs e) {
-            if (ListBox_CurrentFNTOpened.SelectedItem == null) {
+        private void ListBox_CurrentFNT_SelectionChanged(object sender, SelectionChangedEventArgs e) {
+            if (ListBox_CurrentFNT.SelectedItem == null) {
                 ClearUIData();
                 return;
             }
-            var currentSubtitleIndex = currentFnt.subtitleList.IndexOf(ListBox_CurrentFNTOpened.SelectedItem.ToString());
+            var currentSubtitleIndex = currentFnt.subtitleTable.IndexOf((TableEntry)ListBox_CurrentFNT.SelectedItem);//currentFnt.subtitleList.IndexOf(ListBox_CurrentFNT.SelectedItem.ToString());
             if (currentSubtitleIndex == -1) {
                 ClearUIData();
                 return;
             }
             var audioID = currentFnt.GetSubtitleAudioID(currentSubtitleIndex);
 
-            TextBox_EditSubtitle.Text = ListBox_CurrentFNTOpened.SelectedItem.ToString();
-            TextBox_SubtitleExternalAddress.Text = currentFnt.GetSubtitleExternalAddress(currentSubtitleIndex).ToString();
-            SubtitleTextType currentTextType = currentFnt.GetSubtitleTextType(currentSubtitleIndex);
-            ComboBox_SubtitleTextType.SelectedIndex = Array.IndexOf(Enum.GetValues(currentTextType.GetType()), currentTextType);
+            TextBlock_SubtitleAddress.Text = currentFnt.GetSubtitleAddress(currentSubtitleIndex).ToString();
+            TextBox_EditSubtitle.Text = ListBox_CurrentFNT.SelectedItem.ToString();
+            TextBox_MessageIdBranchSequence.Text = currentFnt.GetEntryMessageIdBranchSequence(currentSubtitleIndex).ToString();
+            EntryType currentTextType = currentFnt.GetEntryType(currentSubtitleIndex);
+            ComboBox_EntryType.SelectedIndex = Array.IndexOf(Enum.GetValues(currentTextType.GetType()), currentTextType);
             TextBox_SubtitleActiveTime.Text = currentFnt.GetSubtitleActiveTime(currentSubtitleIndex).ToString();
             TextBox_AudioID.Text = audioID.ToString();
 
@@ -124,7 +125,7 @@ namespace ShadowTH_Text_Editor {
 
         private void TextBox_SearchFilters_TextChanged(object sender, TextChangedEventArgs e) {
             UpdateDisplayFntsView();
-            UpdateDisplaySubtitleListView();
+            UpdateDisplayTableListView();
         }
 
         private void UpdateDisplayFntsView() {
@@ -151,10 +152,10 @@ namespace ShadowTH_Text_Editor {
             displayFntsView.Refresh();
         }
 
-        private void UpdateDisplaySubtitleListView() {
-            if (displaySubtitleListView == null)
+        private void UpdateDisplayTableListView() {
+            if (displayTableListView == null)
                 return;
-            displaySubtitleListView.Filter = sub => {
+            /*displayTableListView.Filter = sub => {
                 String subtitle = (String)sub;
                 if (subtitle.ToLower().Contains(TextBox_SearchText.Text.ToLower())) {
                     if (TextBox_SearchAudioFileName.Text == "" || currentAfs == null)
@@ -169,33 +170,34 @@ namespace ShadowTH_Text_Editor {
                         return true;
                 }
                 return false;
-            };
-            displaySubtitleListView.Refresh();
+            };*/
+            displayTableListView.Refresh();
         }
 
         private void Button_SaveCurrentSubtitle_Click(object sender, RoutedEventArgs e) {
-            if (ListBox_CurrentFNTOpened.SelectedItem == null)
+            if (ListBox_CurrentFNT.SelectedItem == null)
                 return;
-            var currentSubtitleIndex = currentFnt.subtitleList.IndexOf(ListBox_CurrentFNTOpened.SelectedItem.ToString());
+            var currentSubtitleIndex = currentFnt.subtitleList.IndexOf(ListBox_CurrentFNT.SelectedItem.ToString());
             if (currentSubtitleIndex == -1) { 
                 MessageBox.Show("Error, subtitle not found, report this bug");
                 return;
             }
             currentFnt.UpdateSubtitle(currentSubtitleIndex, TextBox_EditSubtitle.Text);
-            currentFnt.UpdateSubtitleExternalAddress(currentSubtitleIndex, Int32.Parse(TextBox_SubtitleExternalAddress.Text));
-            currentFnt.UpdateSubtitleTextType(currentSubtitleIndex, ComboBox_SubtitleTextType.SelectedIndex);
+            currentFnt.UpdateSubtitleExternalAddress(currentSubtitleIndex, Int32.Parse(TextBox_MessageIdBranchSequence.Text));
+            currentFnt.UpdateSubtitleTextType(currentSubtitleIndex, ComboBox_EntryType.SelectedIndex);
             currentFnt.UpdateSubtitleAudioID(currentSubtitleIndex, Int32.Parse(TextBox_AudioID.Text));
             currentFnt.UpdateSubtitleActiveTime(currentSubtitleIndex, Int32.Parse(TextBox_SubtitleActiveTime.Text));
             UpdateDisplayFntsView();
-            UpdateDisplaySubtitleListView();
+            UpdateDisplayTableListView();
             Button_ExportChangedFNTs.IsEnabled = true;
             TextBox_EditSubtitle.Clear();
-            ListBox_CurrentFNTOpened.SelectedIndex = currentSubtitleIndex;
+            ListBox_CurrentFNT.SelectedIndex = currentSubtitleIndex;
         }
 
         private void Button_SelectAFSClick(object sender, RoutedEventArgs e) {
-            var dialog = new Ookii.Dialogs.Wpf.VistaOpenFileDialog();
-            dialog.Filter = "AFS files (*.afs)|*.afs|All files (*.*)|*.*";
+            var dialog = new Ookii.Dialogs.Wpf.VistaOpenFileDialog {
+                Filter = "AFS files (*.afs)|*.afs|All files (*.*)|*.*"
+            };
             if (dialog.ShowDialog() == false) {
                 return;
             }
@@ -207,14 +209,14 @@ namespace ShadowTH_Text_Editor {
             if (AfsArchive.TryFromFile(data, out var afsArchive)) {
                 currentAfs = afsArchive;
                 Button_ExportAFS.IsEnabled = true;
-                if (ListBox_CurrentFNTOpened.SelectedItem == null)
+                if (ListBox_CurrentFNT.SelectedItem == null)
                     return;
-                var currentSubtitleIndex = currentFnt.subtitleList.IndexOf(ListBox_CurrentFNTOpened.SelectedItem.ToString());
+                var currentSubtitleIndex = currentFnt.subtitleList.IndexOf(ListBox_CurrentFNT.SelectedItem.ToString());
                 if (currentSubtitleIndex == -1) {
                     return;
                 }
-                ListBox_CurrentFNTOpened.SelectedIndex = -1;
-                ListBox_CurrentFNTOpened.SelectedIndex = currentSubtitleIndex;
+                ListBox_CurrentFNT.SelectedIndex = -1;
+                ListBox_CurrentFNT.SelectedIndex = currentSubtitleIndex;
             };
         }
 

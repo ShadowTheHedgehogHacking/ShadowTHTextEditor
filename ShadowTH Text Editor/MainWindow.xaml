@@ -35,18 +35,20 @@
                     <ComboBoxItem>JP</ComboBoxItem>
                     <ComboBoxItem>SP</ComboBoxItem>
                 </ComboBox>
-                <ListBox x:Name="ListBox_OpenedFNTS" Margin="0,10,0,0" Height="440" SelectionChanged="ListBox_OpenedFNTS_SelectionChanged"/>
+                <ListBox x:Name="ListBox_AllFNTS" Margin="0,10,0,0" Height="440" SelectionChanged="ListBox_OpenedFNTS_SelectionChanged"/>
              </StackPanel>
         </GroupBox>
         <GroupBox Header="Subtitles" Margin="165,155,326,10" Padding="10" Grid.ColumnSpan="2" Grid.Column="2">
-            <ListBox x:Name="ListBox_CurrentFNTOpened" SelectionChanged="ListBox_CurrentFNTOpened_SelectionChanged"/>
+            <ListBox x:Name="ListBox_CurrentFNT" SelectionChanged="ListBox_CurrentFNT_SelectionChanged"/>
         </GroupBox>
-        <GroupBox Header="Current Subtitle Attributes" Margin="175,155,10,125" Padding="10" Grid.Column="3">
+        <GroupBox Header="Current Entry Attributes" Margin="175,155,10,85" Padding="10" Grid.Column="3">
             <StackPanel>
-                <TextBlock>External Address</TextBlock>
-                <TextBox x:Name="TextBox_SubtitleExternalAddress"/>
+                <TextBlock>Subtitle Address</TextBlock>
+                <TextBlock x:Name="TextBlock_SubtitleAddress"/>
+                <TextBlock>Message ID / Branch / Sequence</TextBlock>
+                <TextBox x:Name="TextBox_MessageIdBranchSequence"/>
                 <TextBlock>Text Type</TextBlock>
-                <ComboBox x:Name="ComboBox_SubtitleTextType">
+                <ComboBox x:Name="ComboBox_EntryType">
                     <ComboBoxItem>MENU</ComboBoxItem>
                     <ComboBoxItem>IDLE</ComboBoxItem>
                     <ComboBoxItem>BLANK_SKIP_ENTRY</ComboBoxItem>
@@ -86,11 +88,11 @@
                 </StackPanel>
             </StackPanel>
         </GroupBox>
-        <GroupBox Header="Program Controls" Margin="175,560,10,10" Grid.Column="3">
+        <GroupBox Header="Program Controls" Margin="175,595,10,10" Grid.Column="3">
             <StackPanel>
                 <CheckBox x:Name="CheckBox_ChooseWhereToSave" Margin="0,10" Content="Pick folder on Save"/>
                 <CheckBox x:Name="CheckBox_NoReplaceMetTxd" Content="Do not replace .met and .txd"/>
-                <Button x:Name="Button_About" Margin="220,5,0,0" Height="30" Click="Button_About_Click" Width="65">About</Button>
+                <Button x:Name="Button_About" Margin="220,-30,0,0" Height="30" Click="Button_About_Click" Width="65">About</Button>
             </StackPanel>
         </GroupBox>
     </Grid>

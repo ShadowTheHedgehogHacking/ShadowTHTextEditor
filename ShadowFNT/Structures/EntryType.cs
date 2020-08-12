@@ -1,5 +1,5 @@
 ﻿namespace ShadowFNT.Structures {
-    public enum SubtitleTextType {
+    public enum EntryType {
         MENU=0x14,
         IDLE=0x28,
         BLANK_SKIP_ENTRY=0x64,

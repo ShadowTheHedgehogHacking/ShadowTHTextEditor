@@ -42,7 +42,7 @@ namespace ShadowFNT.Structures {
         public String fileName;
         public String filterString;
         public int numberOfEntries;
-        private List<SubtitleTableEntry> subtitleTable;
+        public List<TableEntry> subtitleTable;
         public List<String> subtitleList;
 
         public FNT(String fileName, ref byte[] file) {
@@ -62,11 +62,11 @@ namespace ShadowFNT.Structures {
             for (int i = 0; i < subtitleList.Count; i++) {
                 if (subtitleList[i] != compareFnt.subtitleList[i])
                     return false;
-                if (subtitleTable[i].startingPosition != compareFnt.subtitleTable[i].startingPosition)
+                if (subtitleTable[i].subtitleAddress != compareFnt.subtitleTable[i].subtitleAddress)
                     return false;
-                if (subtitleTable[i].externalAddress != compareFnt.subtitleTable[i].externalAddress)
+                if (subtitleTable[i].messageIdBranchSequence != compareFnt.subtitleTable[i].messageIdBranchSequence)
                     return false;
-                if (subtitleTable[i].textType != compareFnt.subtitleTable[i].textType)
+                if (subtitleTable[i].entryType != compareFnt.subtitleTable[i].entryType)
                     return false;
                 if (subtitleTable[i].subtitleActiveTime != compareFnt.subtitleTable[i].subtitleActiveTime)
                     return false;
@@ -96,7 +96,7 @@ namespace ShadowFNT.Structures {
             fnt.numberOfEntries = BitConverter.ToInt32(file, 0);
             int positionIndex = 4; // position of byte to read
 
-            fnt.subtitleTable = new List<SubtitleTableEntry>();
+            fnt.subtitleTable = new List<TableEntry>();
             fnt.subtitleList = new List<String>();
 
             // Length of single table entry
@@ -104,10 +104,10 @@ namespace ShadowFNT.Structures {
 
             // read table entries
             for (int i = 0; i < fnt.numberOfEntries; i++) {
-                SubtitleTableEntry entry = new SubtitleTableEntry {
-                    startingPosition = BitConverter.ToInt32(file, positionIndex),
-                    externalAddress = BitConverter.ToInt32(file, positionIndex + 4),
-                    textType = (SubtitleTextType)BitConverter.ToInt32(file, positionIndex + 8),
+                TableEntry entry = new TableEntry {
+                    subtitleAddress = BitConverter.ToInt32(file, positionIndex),
+                    messageIdBranchSequence = BitConverter.ToInt32(file, positionIndex + 4),
+                    entryType = (EntryType)BitConverter.ToInt32(file, positionIndex + 8),
                     subtitleActiveTime = BitConverter.ToInt32(file, positionIndex + 12),
                     audioId = BitConverter.ToInt32(file, positionIndex + 16)
                 };
@@ -122,17 +122,23 @@ namespace ShadowFNT.Structures {
                 if (i == fnt.subtitleTable.Count - 1)
                     // if last subtitleTable entry, size is originalFilesize - entry index
                     // TODO: fix this to end on null
-                    subtitleLength = file.Length - fnt.subtitleTable[i].startingPosition;
+                    subtitleLength = file.Length - fnt.subtitleTable[i].subtitleAddress;
                 else
                     // otherwise calculate based on next entry in list
-                    subtitleLength = fnt.subtitleTable[i + 1].startingPosition - fnt.subtitleTable[i].startingPosition;
+                    subtitleLength = fnt.subtitleTable[i + 1].subtitleAddress - fnt.subtitleTable[i].subtitleAddress;
 
                 String subtitle = Encoding.Unicode.GetString(file, positionIndex, subtitleLength);
-                fnt.subtitleList.Add(subtitle);
+                fnt.UpdateSubtitleText(i, subtitle);
+                //fnt.subtitleList.Add(subtitle);
                 positionIndex += subtitleLength;
             }
 
             return fnt;
+        }
+
+        public int GetSubtitleAddress(int subtitleEntry) {
+            return subtitleTable[subtitleEntry].subtitleAddress;
+
         }
 
         /// <summary>
@@ -146,9 +152,9 @@ namespace ShadowFNT.Structures {
 
             // write table entries
             for (int i = 0; i < numberOfEntries; i++) {
-                BitConverter.GetBytes(subtitleTable[i].startingPosition).ToList().ForEach(b => { fntFile.Add(b); });
-                BitConverter.GetBytes(subtitleTable[i].externalAddress).ToList().ForEach(b => { fntFile.Add(b); });
-                BitConverter.GetBytes((int)subtitleTable[i].textType).ToList().ForEach(b => { fntFile.Add(b); });
+                BitConverter.GetBytes(subtitleTable[i].subtitleAddress).ToList().ForEach(b => { fntFile.Add(b); });
+                BitConverter.GetBytes(subtitleTable[i].messageIdBranchSequence).ToList().ForEach(b => { fntFile.Add(b); });
+                BitConverter.GetBytes((int)subtitleTable[i].entryType).ToList().ForEach(b => { fntFile.Add(b); });
                 BitConverter.GetBytes(subtitleTable[i].subtitleActiveTime).ToList().ForEach(b => { fntFile.Add(b); });
                 BitConverter.GetBytes(subtitleTable[i].audioId).ToList().ForEach(b => { fntFile.Add(b); });
             }
@@ -158,6 +164,12 @@ namespace ShadowFNT.Structures {
                 Encoding.Unicode.GetBytes(subtitleList[i]).ToList().ForEach(b => { fntFile.Add(b); });
 
             return fntFile;
+        }
+
+        public void UpdateSubtitleText(int subtitleEntry, String updatedText) {
+            TableEntry updatedEntry = subtitleTable[subtitleEntry];
+            updatedEntry.subtitle = updatedText;
+            subtitleTable[subtitleEntry] = updatedEntry;
         }
 
         /// <summary>
@@ -174,8 +186,8 @@ namespace ShadowFNT.Structures {
             // Update SubtitleTableEntry of all succeeding elements to account for length change
             if (characterSizeDifference != 0) {
                 for (int i = entryNumber + 1; i < subtitleList.Count; i++) {
-                    SubtitleTableEntry updatedEntry = subtitleTable[i];
-                    updatedEntry.startingPosition = subtitleTable[i].startingPosition + characterSizeDifference * 2;
+                    TableEntry updatedEntry = subtitleTable[i];
+                    updatedEntry.subtitleAddress = subtitleTable[i].subtitleAddress + characterSizeDifference * 2;
                     subtitleTable[i] = updatedEntry;
                 }
             }
@@ -187,7 +199,7 @@ namespace ShadowFNT.Structures {
         /// <param name="subtitleEntry">Index of subtitle to update associated audio</param>
         /// <param name="audioId">Audio id to play (index in the AFS)</param>
         public void UpdateSubtitleAudioID(int subtitleEntry, int audioId) {
-            SubtitleTableEntry updatedEntry = subtitleTable[subtitleEntry];
+            TableEntry updatedEntry = subtitleTable[subtitleEntry];
             updatedEntry.audioId = audioId;
             subtitleTable[subtitleEntry] = updatedEntry;
         }
@@ -201,30 +213,30 @@ namespace ShadowFNT.Structures {
             return subtitleTable[subtitleEntry].audioId;             
         }
 
-        public int GetSubtitleExternalAddress(int subtitleEntry) {
-            return subtitleTable[subtitleEntry].externalAddress;
+        public int GetEntryMessageIdBranchSequence(int subtitleEntry) {
+            return subtitleTable[subtitleEntry].messageIdBranchSequence;
         }
 
         public void UpdateSubtitleExternalAddress(int subtitleEntry, int externalAddressValue) {
-            SubtitleTableEntry updatedEntry = subtitleTable[subtitleEntry];
-            updatedEntry.externalAddress = externalAddressValue;
+            TableEntry updatedEntry = subtitleTable[subtitleEntry];
+            updatedEntry.messageIdBranchSequence = externalAddressValue;
             subtitleTable[subtitleEntry] = updatedEntry;
         }
 
-        public SubtitleTextType GetSubtitleTextType(int subtitleEntry) {
-            return subtitleTable[subtitleEntry].textType;
+        public EntryType GetEntryType(int subtitleEntry) {
+            return subtitleTable[subtitleEntry].entryType;
         }
 
         public void UpdateSubtitleTextType(int subtitleEntry, int enumIndex) {
-            SubtitleTableEntry updatedEntry = subtitleTable[subtitleEntry];
+            TableEntry updatedEntry = subtitleTable[subtitleEntry];
             /*//    E e = E.C;
             int index = Array.IndexOf(Enum.GetValues(e.GetType()), e);
             // index is 2
 
             E f = (E)(Enum.GetValues(e.GetType())).GetValue(index);
             // f is  E.C*/
-            SubtitleTextType temp = SubtitleTextType.BLANK_SKIP_ENTRY;
-            updatedEntry.textType = (SubtitleTextType)(Enum.GetValues(temp.GetType())).GetValue(enumIndex);
+            EntryType temp = EntryType.BLANK_SKIP_ENTRY;
+            updatedEntry.entryType = (EntryType)(Enum.GetValues(temp.GetType())).GetValue(enumIndex);
             subtitleTable[subtitleEntry] = updatedEntry;
         }
 
@@ -239,7 +251,7 @@ namespace ShadowFNT.Structures {
         }
 
         public void UpdateSubtitleActiveTime(int subtitleEntry, int activeTime) {
-            SubtitleTableEntry updatedEntry = subtitleTable[subtitleEntry];
+            TableEntry updatedEntry = subtitleTable[subtitleEntry];
             updatedEntry.subtitleActiveTime = activeTime;
             subtitleTable[subtitleEntry] = updatedEntry;
         }
