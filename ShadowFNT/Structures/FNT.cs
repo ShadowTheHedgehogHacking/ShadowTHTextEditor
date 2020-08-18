@@ -150,6 +150,10 @@ namespace ShadowFNT.Structures {
             return fntFile;
         }
 
+        public String GetSubtitle(int entryNumber) {
+            return subtitleTable[entryNumber].subtitle;
+        }
+
         /// <summary>
         /// Update an entry's subtitle.
         /// Performs a safe expand/shrink of all succeeding entries.

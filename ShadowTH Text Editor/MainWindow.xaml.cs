@@ -101,7 +101,7 @@ namespace ShadowTH_Text_Editor {
             var audioID = currentFnt.GetSubtitleAudioID(currentSubtitleIndex);
 
             TextBlock_SubtitleAddress.Text = currentFnt.GetSubtitleAddress(currentSubtitleIndex).ToString();
-            TextBox_EditSubtitle.Text = ListBox_CurrentFNT.SelectedItem.ToString();
+            TextBox_EditSubtitle.Text = currentFnt.GetSubtitle(currentSubtitleIndex);
             TextBox_MessageIdBranchSequence.Text = currentFnt.GetEntryMessageIdBranchSequence(currentSubtitleIndex).ToString();
             EntryType currentTextType = currentFnt.GetEntryType(currentSubtitleIndex);
             ComboBox_EntryType.SelectedIndex = Array.IndexOf(Enum.GetValues(currentTextType.GetType()), currentTextType);
@@ -131,10 +131,10 @@ namespace ShadowTH_Text_Editor {
         private void UpdateDisplayFntsView() {
             if (displayFntsView == null)
                 return;
-            /*displayFntsView.Filter = fnt => {
+            displayFntsView.Filter = fnt => {
                 FNT curfnt = (FNT)fnt;
-                for (int i = 0; i < curfnt.subtitleList.Count; i++) {
-                    if (curfnt.subtitleList[i].ToLower().Contains(TextBox_SearchText.Text.ToLower())) {
+                for (int i = 0; i < curfnt.subtitleTable.Count; i++) {
+                    if (curfnt.subtitleTable[i].subtitle.ToLower().Contains(TextBox_SearchText.Text.ToLower())) {
                         if (TextBox_SearchAudioFileName.Text == "" || currentAfs == null)
                             return true;
 
@@ -148,20 +148,20 @@ namespace ShadowTH_Text_Editor {
                     }
                 }
                 return false;
-            };*/
+            };
             displayFntsView.Refresh();
         }
 
         private void UpdateDisplayTableListView() {
             if (displayTableListView == null)
                 return;
-            /*displayTableListView.Filter = sub => {
-                String subtitle = (String)sub;
-                if (subtitle.ToLower().Contains(TextBox_SearchText.Text.ToLower())) {
+            displayTableListView.Filter = entry => {
+                TableEntry tblEntry = (TableEntry)entry;
+                if (tblEntry.subtitle.ToLower().Contains(TextBox_SearchText.Text.ToLower())) {
                     if (TextBox_SearchAudioFileName.Text == "" || currentAfs == null)
                         return true;
 
-                    var audioId = currentFnt.GetSubtitleAudioID(currentFnt.subtitleList.IndexOf(subtitle));
+                    var audioId = currentFnt.GetSubtitleAudioID(currentFnt.subtitleTable.IndexOf(tblEntry));
 
                     if (audioId == -1)
                         return false;
@@ -170,7 +170,7 @@ namespace ShadowTH_Text_Editor {
                         return true;
                 }
                 return false;
-            };*/
+            };
             displayTableListView.Refresh();
         }
 
@@ -178,7 +178,6 @@ namespace ShadowTH_Text_Editor {
             if (ListBox_CurrentFNT.SelectedItem == null)
                 return;
             var currentEntryIndex = currentFnt.subtitleTable.IndexOf((TableEntry)ListBox_CurrentFNT.SelectedItem);
-            //var currentSubtitleIndex = ListBox_CurrentFNTOpened.SelectedIndex;
             if (currentEntryIndex == -1) { 
                 MessageBox.Show("Error, subtitle not found, report this bug");
                 return;
