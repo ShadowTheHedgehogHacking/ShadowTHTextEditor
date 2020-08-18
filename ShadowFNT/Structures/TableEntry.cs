@@ -12,7 +12,7 @@ namespace ShadowFNT.Structures {
 
         public override string ToString() {
             if (subtitle.Equals("\0"))
-                return subtitleAddress.ToString();
+                return "NULL SUBTITLE | Address: " + subtitleAddress.ToString();
             return subtitle;
         }
     }

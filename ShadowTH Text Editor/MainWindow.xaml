@@ -38,25 +38,25 @@
                 <ListBox x:Name="ListBox_AllFNTS" Margin="0,10,0,0" Height="440" SelectionChanged="ListBox_OpenedFNTS_SelectionChanged"/>
              </StackPanel>
         </GroupBox>
-        <GroupBox Header="Subtitles" Margin="165,155,326,10" Padding="10" Grid.ColumnSpan="2" Grid.Column="2">
+        <GroupBox Header="Entries" Margin="165,155,326,10" Padding="10" Grid.ColumnSpan="2" Grid.Column="2">
             <ListBox x:Name="ListBox_CurrentFNT" SelectionChanged="ListBox_CurrentFNT_SelectionChanged"/>
         </GroupBox>
         <GroupBox Header="Current Entry Attributes" Margin="175,155,10,85" Padding="10" Grid.Column="3">
             <StackPanel>
-                <TextBlock>Subtitle Address</TextBlock>
+				<TextBlock>Text Address</TextBlock>
                 <TextBlock x:Name="TextBlock_SubtitleAddress"/>
                 <TextBlock>Message ID / Branch / Sequence</TextBlock>
                 <TextBox x:Name="TextBox_MessageIdBranchSequence"/>
-                <TextBlock>Text Type</TextBlock>
+				<TextBlock>Text Type</TextBlock>
                 <ComboBox x:Name="ComboBox_EntryType">
                     <ComboBoxItem>MENU</ComboBoxItem>
                     <ComboBoxItem>IDLE</ComboBoxItem>
-                    <ComboBoxItem>BLANK_SKIP_ENTRY</ComboBoxItem>
-                    <ComboBoxItem>PARTNER_KILL_ENEMY</ComboBoxItem>
+					<ComboBoxItem>BACKGROUND_VOICE</ComboBoxItem>
+					<ComboBoxItem>PARTNER_ENEMY_DEFEATED</ComboBoxItem>
                     <ComboBoxItem>AUTOMATIC</ComboBoxItem>
                     <ComboBoxItem>PARTNER_SWAP</ComboBoxItem>
-                    <ComboBoxItem>PARTNER_OBJ_REACTION</ComboBoxItem>
-                    <ComboBoxItem>TRIGGER_OBJ</ComboBoxItem>
+					<ComboBoxItem>PARTNER_OBJECTIVE</ComboBoxItem>
+					<ComboBoxItem>TRIGGER_OBJECT</ComboBoxItem>
                     <ComboBoxItem>PARTNER_MEET</ComboBoxItem>
                     <ComboBoxItem>CUTSCENE</ComboBoxItem>
                     <ComboBoxItem>FINAL_ENTRY</ComboBoxItem>
@@ -73,7 +73,7 @@
                 </StackPanel>
                 <TextBlock>Text</TextBlock>
                 <TextBox x:Name="TextBox_EditSubtitle" TextWrapping="Wrap" AcceptsReturn="True" Height="70"/>
-                <Button x:Name="Button_SaveCurrentSubtitle" Height="30" Margin="50,10,50,0" Content="Save Subtitle Changes" Click="Button_SaveCurrentSubtitle_Click"/>
+                <Button x:Name="Button_SaveCurrentEntry" Height="30" Margin="50,10,50,0" Content="Save Entry Changes" Click="Button_SaveCurrentEntry_Click"/>
             </StackPanel>
         </GroupBox>
         <GroupBox Header="Search Filters" Margin="10,10,325,530" Padding="10" Grid.ColumnSpan="4">

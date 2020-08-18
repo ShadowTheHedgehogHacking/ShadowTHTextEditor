@@ -1,28 +1,26 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
-
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop" ToolsVersion="Current">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <RootNamespace>ShadowTH_Text_Editor</RootNamespace>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>ShadowFNT.ico</ApplicationIcon>
+    <FileUpgradeFlags>40</FileUpgradeFlags>
+    <UpgradeBackupLocation>X:\CodingEnvironment\Other SourceCode\ShadowTH Text Editor\Backup\ShadowTH Text Editor\</UpgradeBackupLocation>
+    <OldToolsVersion>2.0</OldToolsVersion>
   </PropertyGroup>
-
   <ItemGroup>
     <None Remove="res\EN.txd" />
     <None Remove="res\EN00.met" />
     <None Remove="ShadowFNT.ico" />
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="AFSLib" Version="1.0.0" />
     <PackageReference Include="Ookii.Dialogs.Wpf.NETCore" Version="2.1.0" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\ShadowFNT\ShadowFNT.csproj" />
   </ItemGroup>
-
   <ItemGroup>
     <Content Include="res\EN.txd">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -31,11 +29,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-
   <ItemGroup>
     <Resource Include="ShadowFNT.ico">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
   </ItemGroup>
-
 </Project>

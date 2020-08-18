@@ -93,8 +93,7 @@ namespace ShadowTH_Text_Editor {
                 ClearUIData();
                 return;
             }
-            var currentSubtitleIndex = currentFnt.subtitleTable.IndexOf((TableEntry)ListBox_CurrentFNT.SelectedItem);//currentFnt.subtitleList.IndexOf(ListBox_CurrentFNT.SelectedItem.ToString());
-            //var currentSubtitleIndex = ListBox_CurrentFNTOpened.SelectedIndex;
+            var currentSubtitleIndex = currentFnt.subtitleTable.IndexOf((TableEntry)ListBox_CurrentFNT.SelectedItem);
             if (currentSubtitleIndex == -1) {
                 ClearUIData();
                 return;
@@ -132,7 +131,7 @@ namespace ShadowTH_Text_Editor {
         private void UpdateDisplayFntsView() {
             if (displayFntsView == null)
                 return;
-            displayFntsView.Filter = fnt => {
+            /*displayFntsView.Filter = fnt => {
                 FNT curfnt = (FNT)fnt;
                 for (int i = 0; i < curfnt.subtitleList.Count; i++) {
                     if (curfnt.subtitleList[i].ToLower().Contains(TextBox_SearchText.Text.ToLower())) {
@@ -149,7 +148,7 @@ namespace ShadowTH_Text_Editor {
                     }
                 }
                 return false;
-            };
+            };*/
             displayFntsView.Refresh();
         }
 
@@ -175,25 +174,25 @@ namespace ShadowTH_Text_Editor {
             displayTableListView.Refresh();
         }
 
-        private void Button_SaveCurrentSubtitle_Click(object sender, RoutedEventArgs e) {
+        private void Button_SaveCurrentEntry_Click(object sender, RoutedEventArgs e) {
             if (ListBox_CurrentFNT.SelectedItem == null)
                 return;
-            var currentSubtitleIndex = currentFnt.subtitleList.IndexOf(ListBox_CurrentFNT.SelectedItem.ToString());
+            var currentEntryIndex = currentFnt.subtitleTable.IndexOf((TableEntry)ListBox_CurrentFNT.SelectedItem);
             //var currentSubtitleIndex = ListBox_CurrentFNTOpened.SelectedIndex;
-            if (currentSubtitleIndex == -1) { 
+            if (currentEntryIndex == -1) { 
                 MessageBox.Show("Error, subtitle not found, report this bug");
                 return;
             }
-            currentFnt.UpdateSubtitle(currentSubtitleIndex, TextBox_EditSubtitle.Text);
-            currentFnt.UpdateSubtitleExternalAddress(currentSubtitleIndex, Int32.Parse(TextBox_MessageIdBranchSequence.Text));
-            currentFnt.UpdateSubtitleTextType(currentSubtitleIndex, ComboBox_EntryType.SelectedIndex);
-            currentFnt.UpdateSubtitleAudioID(currentSubtitleIndex, Int32.Parse(TextBox_AudioID.Text));
-            currentFnt.UpdateSubtitleActiveTime(currentSubtitleIndex, Int32.Parse(TextBox_SubtitleActiveTime.Text));
+            currentFnt.UpdateSubtitle(currentEntryIndex, TextBox_EditSubtitle.Text);
+            currentFnt.UpdateSubtitleExternalAddress(currentEntryIndex, Int32.Parse(TextBox_MessageIdBranchSequence.Text));
+            currentFnt.UpdateSubtitleTextType(currentEntryIndex, ComboBox_EntryType.SelectedIndex);
+            currentFnt.UpdateSubtitleAudioID(currentEntryIndex, Int32.Parse(TextBox_AudioID.Text));
+            currentFnt.UpdateSubtitleActiveTime(currentEntryIndex, Int32.Parse(TextBox_SubtitleActiveTime.Text));
             UpdateDisplayFntsView();
             UpdateDisplayTableListView();
             Button_ExportChangedFNTs.IsEnabled = true;
             TextBox_EditSubtitle.Clear();
-            ListBox_CurrentFNT.SelectedIndex = currentSubtitleIndex;
+            ListBox_CurrentFNT.SelectedIndex = currentEntryIndex;
         }
 
         private void Button_SelectAFSClick(object sender, RoutedEventArgs e) {
@@ -213,7 +212,7 @@ namespace ShadowTH_Text_Editor {
                 Button_ExportAFS.IsEnabled = true;
                 if (ListBox_CurrentFNT.SelectedItem == null)
                     return;
-                var currentSubtitleIndex = currentFnt.subtitleList.IndexOf(ListBox_CurrentFNT.SelectedItem.ToString());
+                var currentSubtitleIndex = currentFnt.subtitleTable.IndexOf((TableEntry)ListBox_CurrentFNT.SelectedItem);
                 if (currentSubtitleIndex == -1) {
                     return;
                 }
@@ -243,7 +242,7 @@ namespace ShadowTH_Text_Editor {
             }
             if (dialog.FileName != "") {
                 var newData = File.ReadAllBytes(dialog.FileName);
-                currentAfs.Files[Int32.Parse(TextBox_AudioID.Text)].Data = newData;
+                currentAfs.Files[int.Parse(TextBox_AudioID.Text)].Data = newData;
                 return;
             }
             MessageBox.Show("Failed");
@@ -258,7 +257,7 @@ namespace ShadowTH_Text_Editor {
                 return;
             }
             if (dialog.FileName != "") {
-                File.WriteAllBytes(dialog.FileName, currentAfs.Files[Int32.Parse(TextBox_AudioID.Text)].Data);
+                File.WriteAllBytes(dialog.FileName, currentAfs.Files[int.Parse(TextBox_AudioID.Text)].Data);
             }
         }
 
