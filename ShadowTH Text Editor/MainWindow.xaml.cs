@@ -94,6 +94,7 @@ namespace ShadowTH_Text_Editor {
                 return;
             }
             var currentSubtitleIndex = currentFnt.subtitleTable.IndexOf((TableEntry)ListBox_CurrentFNT.SelectedItem);//currentFnt.subtitleList.IndexOf(ListBox_CurrentFNT.SelectedItem.ToString());
+            //var currentSubtitleIndex = ListBox_CurrentFNTOpened.SelectedIndex;
             if (currentSubtitleIndex == -1) {
                 ClearUIData();
                 return;
@@ -178,6 +179,7 @@ namespace ShadowTH_Text_Editor {
             if (ListBox_CurrentFNT.SelectedItem == null)
                 return;
             var currentSubtitleIndex = currentFnt.subtitleList.IndexOf(ListBox_CurrentFNT.SelectedItem.ToString());
+            //var currentSubtitleIndex = ListBox_CurrentFNTOpened.SelectedIndex;
             if (currentSubtitleIndex == -1) { 
                 MessageBox.Show("Error, subtitle not found, report this bug");
                 return;
