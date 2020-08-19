@@ -191,8 +191,8 @@ namespace ShadowTH_Text_Editor {
             UpdateDisplayTableListView();
             Button_ExportChangedFNTs.IsEnabled = true;
             TextBox_EditSubtitle.Clear();
-            ListBox_CurrentFNT.SelectedIndex = currentEntryIndex;
-        }
+            ListBox_CurrentFNT.SelectedIndex = ListBox_CurrentFNT.Items.IndexOf(currentFnt.subtitleTable[currentEntryIndex]);
+         }
 
         private void Button_SelectAFSClick(object sender, RoutedEventArgs e) {
             var dialog = new Ookii.Dialogs.Wpf.VistaOpenFileDialog {
