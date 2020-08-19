@@ -6,78 +6,24 @@ using System.Text;
 namespace ShadowFNT.Structures {
 
     /*
-        .fnt file
-        Everything is little endian.
+    .fnt file
+    Everything is little endian.
 
-        fnt {
-            Header: length 0x4. Number of entries.
-            list of TableEntries
-            list of UTF-16 Strings
-        }
-
-        TableEntry {
-            0x00: Text line internal address (subtitleList entry start position)
-            0x04: Unknown. External address?
-            0x08: Text type. Byte. See Text types table.
-            0x0C: Subtitle active time?
-            0x10: AFS Audio ID | -1 for cutscene lines.
-        }
-
-        TextTypes {
-            14 - Menu Text. 
-            28 - Idle lines.
-            64 - Blank/skip entry?
-            78 - Partner betrayal lines?
-            96 - Automatic lines?
-            A0 - Partner Swap lines?
-            B4 - Partner objective reaction?
-            C8 - Trigger object line? Always in the second-last entry ("No").
-            E6 - Partner meet lines.
-            FA - Cutscene lines.
-            FF - Final Entry. ("Message" in No Message)
-        }
-
-     */
+    fnt {
+        Header : Number of entries | int
+        list of TableEntry
+        list of UTF-16 Strings (Note: for convenience and eq(), sticking Strings inside TableEntry, but will be written per original file)
+    }
+    */
     public struct FNT {
         public String fileName;
         public String filterString;
         public int numberOfEntries;
-        private List<SubtitleTableEntry> subtitleTable;
-        public List<String> subtitleList;
+        public List<TableEntry> entryTable;
 
         public FNT(String fileName, ref byte[] file) {
             this = ParseFNTFile(fileName, ref file);
             this.fileName = fileName;
-        }
-
-        public override string ToString() {
-            if (filterString != "")
-                return fileName.Split(filterString + '\\')[1];
-            return fileName;
-        }
-
-        public override bool Equals(object obj) {
-            //don't forget to modify later if going to support adding new entries
-            FNT compareFnt = (FNT)obj;
-            for (int i = 0; i < subtitleList.Count; i++) {
-                if (subtitleList[i] != compareFnt.subtitleList[i])
-                    return false;
-                if (subtitleTable[i].startingPosition != compareFnt.subtitleTable[i].startingPosition)
-                    return false;
-                if (subtitleTable[i].externalAddress != compareFnt.subtitleTable[i].externalAddress)
-                    return false;
-                if (subtitleTable[i].textType != compareFnt.subtitleTable[i].textType)
-                    return false;
-                if (subtitleTable[i].subtitleActiveTime != compareFnt.subtitleTable[i].subtitleActiveTime)
-                    return false;
-                if (subtitleTable[i].audioId != compareFnt.subtitleTable[i].audioId)
-                    return false;
-            }
-            return true;
-        }
-
-        public override int GetHashCode() {
-            return base.GetHashCode();
         }
 
         /// <summary>
@@ -96,39 +42,41 @@ namespace ShadowFNT.Structures {
             fnt.numberOfEntries = BitConverter.ToInt32(file, 0);
             int positionIndex = 4; // position of byte to read
 
-            fnt.subtitleTable = new List<SubtitleTableEntry>();
-            fnt.subtitleList = new List<String>();
+            fnt.entryTable = new List<TableEntry>();
 
             // Length of single table entry
             int subtitleTableEntryStructSize = 0x14;
 
             // read table entries
             for (int i = 0; i < fnt.numberOfEntries; i++) {
-                SubtitleTableEntry entry = new SubtitleTableEntry {
-                    startingPosition = BitConverter.ToInt32(file, positionIndex),
-                    externalAddress = BitConverter.ToInt32(file, positionIndex + 4),
-                    textType = (SubtitleTextType)BitConverter.ToInt32(file, positionIndex + 8),
+                TableEntry entry = new TableEntry {
+                    subtitleAddress = BitConverter.ToInt32(file, positionIndex),
+                    messageIdBranchSequence = BitConverter.ToInt32(file, positionIndex + 4),
+                    entryType = (EntryType)BitConverter.ToInt32(file, positionIndex + 8),
                     subtitleActiveTime = BitConverter.ToInt32(file, positionIndex + 12),
                     audioId = BitConverter.ToInt32(file, positionIndex + 16)
                 };
 
-                fnt.subtitleTable.Add(entry);
+                fnt.entryTable.Add(entry);
                 positionIndex += subtitleTableEntryStructSize;
             }
 
             // read UTF-16 strings
             for (int i = 0; i < fnt.numberOfEntries; i++) {
                 int subtitleLength;
-                if (i == fnt.subtitleTable.Count - 1)
+                String subtitle;
+                if (i == fnt.entryTable.Count - 1) {
                     // if last subtitleTable entry, size is originalFilesize - entry index
-                    // TODO: fix this to end on null
-                    subtitleLength = file.Length - fnt.subtitleTable[i].startingPosition;
-                else
+                    // however the original .fnt files sometimes have junk strings at the end
+                    // end at first "\0"
+                    subtitleLength = file.Length - fnt.entryTable[i].subtitleAddress;
+                    subtitle = Encoding.Unicode.GetString(file, positionIndex, subtitleLength).Split("\0")[0];
+                } else {
                     // otherwise calculate based on next entry in list
-                    subtitleLength = fnt.subtitleTable[i + 1].startingPosition - fnt.subtitleTable[i].startingPosition;
-
-                String subtitle = Encoding.Unicode.GetString(file, positionIndex, subtitleLength);
-                fnt.subtitleList.Add(subtitle);
+                    subtitleLength = fnt.entryTable[i + 1].subtitleAddress - fnt.entryTable[i].subtitleAddress;
+                    subtitle = Encoding.Unicode.GetString(file, positionIndex, subtitleLength);
+                }
+                fnt.UpdateEntrySubtitle(i, subtitle);
                 positionIndex += subtitleLength;
             }
 
@@ -146,102 +94,174 @@ namespace ShadowFNT.Structures {
 
             // write table entries
             for (int i = 0; i < numberOfEntries; i++) {
-                BitConverter.GetBytes(subtitleTable[i].startingPosition).ToList().ForEach(b => { fntFile.Add(b); });
-                BitConverter.GetBytes(subtitleTable[i].externalAddress).ToList().ForEach(b => { fntFile.Add(b); });
-                BitConverter.GetBytes((int)subtitleTable[i].textType).ToList().ForEach(b => { fntFile.Add(b); });
-                BitConverter.GetBytes(subtitleTable[i].subtitleActiveTime).ToList().ForEach(b => { fntFile.Add(b); });
-                BitConverter.GetBytes(subtitleTable[i].audioId).ToList().ForEach(b => { fntFile.Add(b); });
+                BitConverter.GetBytes(entryTable[i].subtitleAddress).ToList().ForEach(b => { fntFile.Add(b); });
+                BitConverter.GetBytes(entryTable[i].messageIdBranchSequence).ToList().ForEach(b => { fntFile.Add(b); });
+                BitConverter.GetBytes((int)entryTable[i].entryType).ToList().ForEach(b => { fntFile.Add(b); });
+                BitConverter.GetBytes(entryTable[i].subtitleActiveTime).ToList().ForEach(b => { fntFile.Add(b); });
+                BitConverter.GetBytes(entryTable[i].audioId).ToList().ForEach(b => { fntFile.Add(b); });
             }
 
             // write UTF-16 entries
             for (int i = 0; i < numberOfEntries; i++)
-                Encoding.Unicode.GetBytes(subtitleList[i]).ToList().ForEach(b => { fntFile.Add(b); });
+                Encoding.Unicode.GetBytes(entryTable[i].subtitle).ToList().ForEach(b => { fntFile.Add(b); });
 
             return fntFile;
         }
 
-        /// <summary>
-        /// Update an entry's displayed text.
-        /// This function will perform a safe expand/shrink of all succeeding entries in the subtitleList.
-        /// 
-        /// </summary>
-        /// <param name="entryNumber">Index of the subtitle to update</param>
-        /// <param name="updatedText">Null terminated string</param>
-        public void UpdateSubtitle(int entryNumber, String updatedText) {
-            int characterSizeDifference = updatedText.Length - subtitleList[entryNumber].Length;
-            subtitleList[entryNumber] = updatedText;
+        public override string ToString() {
+            if (filterString != "")
+                return fileName.Split(filterString + '\\')[1];
+            return fileName;
+        }
 
-            // Update SubtitleTableEntry of all succeeding elements to account for length change
-            if (characterSizeDifference != 0) {
-                for (int i = entryNumber + 1; i < subtitleList.Count; i++) {
-                    SubtitleTableEntry updatedEntry = subtitleTable[i];
-                    updatedEntry.startingPosition = subtitleTable[i].startingPosition + characterSizeDifference * 2;
-                    subtitleTable[i] = updatedEntry;
-                }
+        public override bool Equals(object obj) {
+            //don't forget to modify later if going to support adding new entries
+            FNT compareFnt = (FNT)obj;
+            for (int i = 0; i < entryTable.Count; i++) {
+                if (entryTable[i].subtitle != compareFnt.entryTable[i].subtitle)
+                    return false;
+                if (entryTable[i].subtitleAddress != compareFnt.entryTable[i].subtitleAddress)
+                    return false;
+                if (entryTable[i].messageIdBranchSequence != compareFnt.entryTable[i].messageIdBranchSequence)
+                    return false;
+                if (entryTable[i].entryType != compareFnt.entryTable[i].entryType)
+                    return false;
+                if (entryTable[i].subtitleActiveTime != compareFnt.entryTable[i].subtitleActiveTime)
+                    return false;
+                if (entryTable[i].audioId != compareFnt.entryTable[i].audioId)
+                    return false;
             }
+            return true;
+        }
+
+        public override int GetHashCode() {
+            return base.GetHashCode();
         }
 
         /// <summary>
-        /// Replaces the audioID of a subtitle
+        /// Getter for subtitleAddress of passed in entry index
         /// </summary>
-        /// <param name="subtitleEntry">Index of subtitle to update associated audio</param>
-        /// <param name="audioId">Audio id to play (index in the AFS)</param>
-        public void UpdateSubtitleAudioID(int subtitleEntry, int audioId) {
-            SubtitleTableEntry updatedEntry = subtitleTable[subtitleEntry];
-            updatedEntry.audioId = audioId;
-            subtitleTable[subtitleEntry] = updatedEntry;
-        }
-        
-        /// <summary>
-        /// Getter for audioID of passed in subtitleEntry index
-        /// </summary>
-        /// <param name="subtitleEntry">Index of subtitle to get audioID</param>
+        /// <param name="tableEntryIndex">Index of entry to get from</param>
         /// <returns>int</returns>
-        public int GetSubtitleAudioID(int subtitleEntry) {
-            return subtitleTable[subtitleEntry].audioId;             
+        public int GetEntrySubtitleAddress(int tableEntryIndex) {
+            return entryTable[tableEntryIndex].subtitleAddress;
         }
 
-        public int GetSubtitleExternalAddress(int subtitleEntry) {
-            return subtitleTable[subtitleEntry].externalAddress;
+        /// <summary>
+        /// Getter for messageIdBranchSequence of passed in entry index
+        /// </summary>
+        /// <param name="tableEntryIndex">Index of entry to get from</param>
+        /// <returns>int</returns>
+        public int GetEntryMessageIdBranchSequence(int tableEntryIndex) {
+            return entryTable[tableEntryIndex].messageIdBranchSequence;
         }
 
-        public void UpdateSubtitleExternalAddress(int subtitleEntry, int externalAddressValue) {
-            SubtitleTableEntry updatedEntry = subtitleTable[subtitleEntry];
-            updatedEntry.externalAddress = externalAddressValue;
-            subtitleTable[subtitleEntry] = updatedEntry;
+        /// <summary>
+        /// Update a tableEntry's messageIdBranchSequence
+        /// </summary>
+        /// <param name="tableEntryIndex">Index of entry to update</param>
+        /// <param name="messageIdBranchSequence">Updated messageIdBranchSequence value</param>
+        public void UpdateEntryMessageIdBranchSequence(int tableEntryIndex, int messageIdBranchSequence) {
+            TableEntry updatedEntry = entryTable[tableEntryIndex];
+            updatedEntry.messageIdBranchSequence = messageIdBranchSequence;
+            entryTable[tableEntryIndex] = updatedEntry;
         }
 
-        public SubtitleTextType GetSubtitleTextType(int subtitleEntry) {
-            return subtitleTable[subtitleEntry].textType;
+        /// <summary>
+        /// Getter for EntryType of passed in entry index
+        /// </summary>
+        /// <param name="tableEntryIndex">Index of entry to get from</param>
+        /// <returns>EntryType</returns>
+        public EntryType GetEntryEntryType(int tableEntryIndex) {
+            return entryTable[tableEntryIndex].entryType;
         }
 
-        public void UpdateSubtitleTextType(int subtitleEntry, int enumIndex) {
-            SubtitleTableEntry updatedEntry = subtitleTable[subtitleEntry];
-            /*//    E e = E.C;
-            int index = Array.IndexOf(Enum.GetValues(e.GetType()), e);
-            // index is 2
-
-            E f = (E)(Enum.GetValues(e.GetType())).GetValue(index);
-            // f is  E.C*/
-            SubtitleTextType temp = SubtitleTextType.BLANK_SKIP_ENTRY;
-            updatedEntry.textType = (SubtitleTextType)(Enum.GetValues(temp.GetType())).GetValue(enumIndex);
-            subtitleTable[subtitleEntry] = updatedEntry;
+        /// <summary>
+        /// Update a tableEntry's EntryType
+        /// </summary>
+        /// <param name="tableEntryIndex">Index of entry to update</param>
+        /// <param name="enumIndex">Updated EntryType value</param>
+        public void UpdateEntryEntryType(int tableEntryIndex, int enumIndex) {
+            TableEntry updatedEntry = entryTable[tableEntryIndex];
+            EntryType temp = EntryType.BACKGROUND_VOICE; //stub entry to get enum values
+            updatedEntry.entryType = (EntryType)(Enum.GetValues(temp.GetType())).GetValue(enumIndex);
+            entryTable[tableEntryIndex] = updatedEntry;
         }
-
 
         /// <summary>
         /// Getter for subtitleActiveTime of passed in subtitleEntry index
         /// </summary>
-        /// <param name="subtitleEntry">Index of subtitle to get subtitleActiveTime</param>
+        /// <param name="tableEntryIndex">Index of entry to get subtitleActiveTime</param>
         /// <returns>int</returns>
-        public int GetSubtitleActiveTime(int subtitleEntry) {
-            return subtitleTable[subtitleEntry].subtitleActiveTime;
+        public int GetEntryActiveTime(int tableEntryIndex) {
+            return entryTable[tableEntryIndex].subtitleActiveTime;
         }
 
-        public void UpdateSubtitleActiveTime(int subtitleEntry, int activeTime) {
-            SubtitleTableEntry updatedEntry = subtitleTable[subtitleEntry];
+        /// <summary>
+        /// Update a tableEntry's activeTime
+        /// </summary>
+        /// <param name="tableEntryIndex">Index of entry to update</param>
+        /// <param name="activeTime">Updated activeTime value</param>
+        public void UpdateEntryActiveTime(int tableEntryIndex, int activeTime) {
+            TableEntry updatedEntry = entryTable[tableEntryIndex];
             updatedEntry.subtitleActiveTime = activeTime;
-            subtitleTable[subtitleEntry] = updatedEntry;
+            entryTable[tableEntryIndex] = updatedEntry;
+        }
+
+        /// <summary>
+        /// Getter for AudioID of an entry
+        /// </summary>
+        /// <param name="tableEntryIndex">Index of entry to get from</param>
+        /// <returns>int</returns>
+        public int GetEntryAudioID(int tableEntryIndex) {
+            return entryTable[tableEntryIndex].audioId;
+        }
+
+        /// <summary>
+        /// Sets the AudioID of an entry
+        /// </summary>
+        /// <param name="tableEntryIndex">Index of entry to update</param>
+        /// <param name="audioId">AudioID to play (index in the AFS)</param>
+        public void UpdateEntryAudioID(int tableEntryIndex, int audioId) {
+            TableEntry updatedEntry = entryTable[tableEntryIndex];
+            updatedEntry.audioId = audioId;
+            entryTable[tableEntryIndex] = updatedEntry;
+        }
+
+        /// <summary>
+        /// Get the subtitle string of an entry
+        /// </summary>
+        /// <param name="tableEntryIndex"></param>
+        /// <returns>String</returns>
+        public String GetEntrySubtitle(int tableEntryIndex) {
+            return entryTable[tableEntryIndex].subtitle;
+        }
+
+        /// <summary>
+        /// Update an entry's subtitle
+        /// Performs a safe expand/shrink of all succeeding entries
+        /// </summary>
+        /// <param name="tableEntryIndex">Index of entry to update</param>
+        /// <param name="updatedText">Null terminated string</param>
+        public void UpdateEntrySubtitle(int tableEntryIndex, String updatedText) {
+            TableEntry entry = entryTable[tableEntryIndex];
+            int characterSizeDifference = 0;
+
+            if (entry.subtitle != null) {
+                characterSizeDifference = updatedText.Length - entry.subtitle.Length;
+            }
+
+            entry.subtitle = updatedText;
+            entryTable[tableEntryIndex] = entry;
+
+            // Update TableEntry of all succeeding elements to account for length change
+            if (characterSizeDifference != 0) {
+                for (int i = tableEntryIndex + 1; i < entryTable.Count; i++) {
+                    TableEntry succeedingEntry = entryTable[i];
+                    succeedingEntry.subtitleAddress = entryTable[i].subtitleAddress + characterSizeDifference * 2;
+                    entryTable[i] = succeedingEntry;
+                }
+            }
         }
     }
 }
