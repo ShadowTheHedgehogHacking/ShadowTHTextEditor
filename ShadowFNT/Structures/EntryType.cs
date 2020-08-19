@@ -1,6 +1,5 @@
 ﻿namespace ShadowFNT.Structures {
-
-public enum EntryType {
+    public enum EntryType {
         MENU=0x14,
         IDLE=0x28,
         BACKGROUND_VOICE=0x64,

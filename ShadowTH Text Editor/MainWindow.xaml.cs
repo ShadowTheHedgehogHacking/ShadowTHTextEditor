@@ -81,7 +81,7 @@ namespace ShadowTH_Text_Editor {
             }
             currentFnt = (FNT)ListBox_AllFNTS.SelectedItem;
             ListBox_CurrentFNT.SelectedIndex = -1;
-            displayTableListView = CollectionViewSource.GetDefaultView(currentFnt.subtitleTable);
+            displayTableListView = CollectionViewSource.GetDefaultView(currentFnt.entryTable);
 
             ListBox_CurrentFNT.ItemsSource = displayTableListView;
             UpdateDisplayTableListView();
@@ -93,19 +93,19 @@ namespace ShadowTH_Text_Editor {
                 ClearUIData();
                 return;
             }
-            var currentSubtitleIndex = currentFnt.subtitleTable.IndexOf((TableEntry)ListBox_CurrentFNT.SelectedItem);
+            var currentSubtitleIndex = currentFnt.entryTable.IndexOf((TableEntry)ListBox_CurrentFNT.SelectedItem);
             if (currentSubtitleIndex == -1) {
                 ClearUIData();
                 return;
             }
-            var audioID = currentFnt.GetSubtitleAudioID(currentSubtitleIndex);
+            var audioID = currentFnt.GetEntryAudioID(currentSubtitleIndex);
 
-            TextBlock_SubtitleAddress.Text = currentFnt.GetSubtitleAddress(currentSubtitleIndex).ToString();
-            TextBox_EditSubtitle.Text = currentFnt.GetSubtitle(currentSubtitleIndex);
+            TextBlock_SubtitleAddress.Text = currentFnt.GetEntrySubtitleAddress(currentSubtitleIndex).ToString();
+            TextBox_EditSubtitle.Text = currentFnt.GetEntrySubtitle(currentSubtitleIndex);
             TextBox_MessageIdBranchSequence.Text = currentFnt.GetEntryMessageIdBranchSequence(currentSubtitleIndex).ToString();
-            EntryType currentTextType = currentFnt.GetEntryType(currentSubtitleIndex);
+            EntryType currentTextType = currentFnt.GetEntryEntryType(currentSubtitleIndex);
             ComboBox_EntryType.SelectedIndex = Array.IndexOf(Enum.GetValues(currentTextType.GetType()), currentTextType);
-            TextBox_SubtitleActiveTime.Text = currentFnt.GetSubtitleActiveTime(currentSubtitleIndex).ToString();
+            TextBox_SubtitleActiveTime.Text = currentFnt.GetEntryActiveTime(currentSubtitleIndex).ToString();
             TextBox_AudioID.Text = audioID.ToString();
 
             if (currentAfs == null) {
@@ -133,12 +133,12 @@ namespace ShadowTH_Text_Editor {
                 return;
             displayFntsView.Filter = fnt => {
                 FNT curfnt = (FNT)fnt;
-                for (int i = 0; i < curfnt.subtitleTable.Count; i++) {
-                    if (curfnt.subtitleTable[i].subtitle.ToLower().Contains(TextBox_SearchText.Text.ToLower())) {
+                for (int i = 0; i < curfnt.entryTable.Count; i++) {
+                    if (curfnt.entryTable[i].subtitle.ToLower().Contains(TextBox_SearchText.Text.ToLower())) {
                         if (TextBox_SearchAudioFileName.Text == "" || currentAfs == null)
                             return true;
 
-                        var audioId = curfnt.GetSubtitleAudioID(i);
+                        var audioId = curfnt.GetEntryAudioID(i);
 
                         if (audioId == -1)
                             continue;
@@ -161,7 +161,7 @@ namespace ShadowTH_Text_Editor {
                     if (TextBox_SearchAudioFileName.Text == "" || currentAfs == null)
                         return true;
 
-                    var audioId = currentFnt.GetSubtitleAudioID(currentFnt.subtitleTable.IndexOf(tblEntry));
+                    var audioId = currentFnt.GetEntryAudioID(currentFnt.entryTable.IndexOf(tblEntry));
 
                     if (audioId == -1)
                         return false;
@@ -177,21 +177,21 @@ namespace ShadowTH_Text_Editor {
         private void Button_SaveCurrentEntry_Click(object sender, RoutedEventArgs e) {
             if (ListBox_CurrentFNT.SelectedItem == null)
                 return;
-            var currentEntryIndex = currentFnt.subtitleTable.IndexOf((TableEntry)ListBox_CurrentFNT.SelectedItem);
+            var currentEntryIndex = currentFnt.entryTable.IndexOf((TableEntry)ListBox_CurrentFNT.SelectedItem);
             if (currentEntryIndex == -1) { 
                 MessageBox.Show("Error, subtitle not found, report this bug");
                 return;
             }
-            currentFnt.UpdateSubtitle(currentEntryIndex, TextBox_EditSubtitle.Text);
-            currentFnt.UpdateSubtitleExternalAddress(currentEntryIndex, Int32.Parse(TextBox_MessageIdBranchSequence.Text));
-            currentFnt.UpdateSubtitleTextType(currentEntryIndex, ComboBox_EntryType.SelectedIndex);
-            currentFnt.UpdateSubtitleAudioID(currentEntryIndex, Int32.Parse(TextBox_AudioID.Text));
-            currentFnt.UpdateSubtitleActiveTime(currentEntryIndex, Int32.Parse(TextBox_SubtitleActiveTime.Text));
+            currentFnt.UpdateEntrySubtitle(currentEntryIndex, TextBox_EditSubtitle.Text);
+            currentFnt.UpdateEntryMessageIdBranchSequence(currentEntryIndex, Int32.Parse(TextBox_MessageIdBranchSequence.Text));
+            currentFnt.UpdateEntryEntryType(currentEntryIndex, ComboBox_EntryType.SelectedIndex);
+            currentFnt.UpdateEntryAudioID(currentEntryIndex, Int32.Parse(TextBox_AudioID.Text));
+            currentFnt.UpdateEntryActiveTime(currentEntryIndex, Int32.Parse(TextBox_SubtitleActiveTime.Text));
             UpdateDisplayFntsView();
             UpdateDisplayTableListView();
             Button_ExportChangedFNTs.IsEnabled = true;
             TextBox_EditSubtitle.Clear();
-            ListBox_CurrentFNT.SelectedIndex = ListBox_CurrentFNT.Items.IndexOf(currentFnt.subtitleTable[currentEntryIndex]);
+            ListBox_CurrentFNT.SelectedIndex = ListBox_CurrentFNT.Items.IndexOf(currentFnt.entryTable[currentEntryIndex]);
          }
 
         private void Button_SelectAFSClick(object sender, RoutedEventArgs e) {
@@ -211,7 +211,7 @@ namespace ShadowTH_Text_Editor {
                 Button_ExportAFS.IsEnabled = true;
                 if (ListBox_CurrentFNT.SelectedItem == null)
                     return;
-                var currentSubtitleIndex = currentFnt.subtitleTable.IndexOf((TableEntry)ListBox_CurrentFNT.SelectedItem);
+                var currentSubtitleIndex = currentFnt.entryTable.IndexOf((TableEntry)ListBox_CurrentFNT.SelectedItem);
                 if (currentSubtitleIndex == -1) {
                     return;
                 }
@@ -263,10 +263,10 @@ namespace ShadowTH_Text_Editor {
         private void Button_About_Click(object sender, RoutedEventArgs e) {
             MessageBox.Show("Created by dreamsyntax\n" +
                 ".fnt struct reversal done by LimblessVector\n" +
-                ".met/.txd universal map by TheHatedGravity\n" +
+                ".met/.txd universal map and design work by TheHatedGravity\n" +
                 "Uses AFSLib by Sewer56 for AFS support\n" +
                 "Uses Ookii.Dialogs for dialogs\n\n" +
-                "https://github.com/ShadowTheHedgehogHacking\n\nto check for updates for this software.", "About ShadowTH Text Editor / FNT Editor");
+                "https://github.com/ShadowTheHedgehogHacking\n\nto check for updates for this software.", "About ShadowTH Text Editor / FNT Editor v1.2");
         }
 
         private void ComboBox_LocaleSwitcher_SelectionChanged(object sender, SelectionChangedEventArgs e) {
