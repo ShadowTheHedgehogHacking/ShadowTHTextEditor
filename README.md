@@ -1,6 +1,8 @@
 <div align="center"><h1>Shadow The Hedgehog Text Editor</h1>
-<img src="https://raw.githubusercontent.com/ShadowTheHedgehogHacking/ShadowTHTextEditor/master/res/neweditor.png" align="center" />
+<img src="https://raw.githubusercontent.com/ShadowTheHedgehogHacking/ShadowTHTextEditor/master/res/preview.png" align="center" />
 </div>
+
+
 
 
 
