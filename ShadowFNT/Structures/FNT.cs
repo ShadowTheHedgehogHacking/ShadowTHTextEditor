@@ -263,5 +263,35 @@ namespace ShadowFNT.Structures {
                 }
             }
         }
+
+        public int InsertNewEntry(int newEntryMessageIdBranchSequence) {
+            int successor = -1;
+            for (int i = 0; i < entryTable.Count; i++) {
+                if (newEntryMessageIdBranchSequence < entryTable[i].messageIdBranchSequence) {
+                    successor = i;
+                    break;
+                } else if (newEntryMessageIdBranchSequence == entryTable[i].messageIdBranchSequence) {
+                    break;
+                }
+            }
+            if (successor == -1)
+                return -1;
+            TableEntry newEntry = new TableEntry {
+                subtitleAddress = entryTable[successor].subtitleAddress,
+                messageIdBranchSequence = newEntryMessageIdBranchSequence,
+                entryType = EntryType.TRIGGER_OBJECT,
+                subtitleActiveTime = 0,
+                audioId = -1,
+                subtitle = "\0"
+            };
+            entryTable.Insert(successor, newEntry);
+            //correct subtitleAddress for all succeeding entries: add 2
+            for (int i = successor+1; i<entryTable.Count; i++) {
+                TableEntry succeedingEntry = entryTable[i];
+                succeedingEntry.subtitleAddress = entryTable[i].subtitleAddress + 2;
+                entryTable[i] = succeedingEntry;
+            }
+            return 0;
+        }
     }
 }
