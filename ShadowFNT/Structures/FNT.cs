@@ -115,7 +115,6 @@ namespace ShadowFNT.Structures {
         }
 
         public override bool Equals(object obj) {
-            //don't forget to modify later if going to support adding new entries
             FNT compareFnt = (FNT)obj;
             for (int i = 0; i < entryTable.Count; i++) {
                 if (entryTable[i].subtitle != compareFnt.entryTable[i].subtitle)
@@ -264,6 +263,11 @@ namespace ShadowFNT.Structures {
             }
         }
 
+        /// <summary>
+        /// Create a new entry and add it based on the MessageIdBranchSequence while shifting all successor positions
+        /// </summary>
+        /// <param name="newEntryMessageIdBranchSequence">MessageIdBranchSequence of new entry to determine where to insert in the table</param>
+        /// <returns>-1 = did not add, 0 = success</returns>
         public int InsertNewEntry(int newEntryMessageIdBranchSequence) {
             int successor = -1;
             for (int i = 0; i < entryTable.Count; i++) {
