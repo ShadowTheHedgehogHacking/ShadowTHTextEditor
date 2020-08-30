@@ -36,27 +36,27 @@
                     <ComboBoxItem>SP</ComboBoxItem>
                 </ComboBox>
                 <ListBox x:Name="ListBox_AllFNTS" Margin="0,10,0,0" Height="440" SelectionChanged="ListBox_OpenedFNTS_SelectionChanged"/>
-             </StackPanel>
+            </StackPanel>
         </GroupBox>
-        <GroupBox Header="Entries" Margin="165,155,326,10" Padding="10" Grid.ColumnSpan="2" Grid.Column="2">
+        <GroupBox Header="Entries" Margin="165,155,326,85" Padding="10" Grid.ColumnSpan="2" Grid.Column="2">
             <ListBox x:Name="ListBox_CurrentFNT" SelectionChanged="ListBox_CurrentFNT_SelectionChanged"/>
         </GroupBox>
         <GroupBox Header="Current Entry Attributes" Margin="175,155,10,85" Padding="10" Grid.Column="3">
             <StackPanel>
-				<TextBlock>Text Address</TextBlock>
+                <TextBlock>Text Address</TextBlock>
                 <TextBlock x:Name="TextBlock_SubtitleAddress"/>
                 <TextBlock>Message ID / Branch / Sequence</TextBlock>
                 <TextBox x:Name="TextBox_MessageIdBranchSequence"/>
-				<TextBlock>Text Type</TextBlock>
+                <TextBlock>Text Type</TextBlock>
                 <ComboBox x:Name="ComboBox_EntryType">
                     <ComboBoxItem>MENU</ComboBoxItem>
                     <ComboBoxItem>IDLE</ComboBoxItem>
-					<ComboBoxItem>BACKGROUND_VOICE</ComboBoxItem>
-					<ComboBoxItem>PARTNER_ENEMY_DEFEATED</ComboBoxItem>
+                    <ComboBoxItem>BACKGROUND_VOICE</ComboBoxItem>
+                    <ComboBoxItem>PARTNER_ENEMY_DEFEATED</ComboBoxItem>
                     <ComboBoxItem>AUTOMATIC</ComboBoxItem>
                     <ComboBoxItem>PARTNER_SWAP</ComboBoxItem>
-					<ComboBoxItem>PARTNER_OBJECTIVE</ComboBoxItem>
-					<ComboBoxItem>TRIGGER_OBJECT</ComboBoxItem>
+                    <ComboBoxItem>PARTNER_OBJECTIVE</ComboBoxItem>
+                    <ComboBoxItem>TRIGGER_OBJECT</ComboBoxItem>
                     <ComboBoxItem>PARTNER_MEET</ComboBoxItem>
                     <ComboBoxItem>CUTSCENE</ComboBoxItem>
                     <ComboBoxItem>FINAL_ENTRY</ComboBoxItem>
@@ -93,6 +93,14 @@
                 <CheckBox x:Name="CheckBox_ChooseWhereToSave" Margin="0,10" Content="Pick folder on Save"/>
                 <CheckBox x:Name="CheckBox_NoReplaceMetTxd" Content="Do not replace .met and .txd"/>
                 <Button x:Name="Button_About" Margin="220,-30,0,0" Height="30" Click="Button_About_Click" Width="65">About</Button>
+            </StackPanel>
+        </GroupBox>
+        <GroupBox Header="Add New Entry" Margin="166,595,327,10" Grid.Column="2" Grid.ColumnSpan="2">
+            <StackPanel>
+                <TextBlock Margin="10,0,0,0">Message ID / Branch / Sequence</TextBlock>
+                <TextBox x:Name="TextBox_AddEntryMessageID" Margin="30,10,150,0"  Width="125" Height="15" TextChanged="TextBox_AddEntryMessageID_TextChanged"/>
+                <Button x:Name="AddEntry_Button" Margin="100,-22,0,0" IsEnabled="False" Width="65" Height="30" Content="Add Entry" Click="AddEntry_Button_Click"/>
+                <Button x:Name="AddEntry_Question_Button" Margin="200,-30,0,0" Width="25" Height="30" Content="?" Click="AddEntry_Question_Button_Click"/>
             </StackPanel>
         </GroupBox>
     </Grid>

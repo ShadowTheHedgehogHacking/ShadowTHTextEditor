@@ -115,7 +115,6 @@ namespace ShadowFNT.Structures {
         }
 
         public override bool Equals(object obj) {
-            //don't forget to modify later if going to support adding new entries
             FNT compareFnt = (FNT)obj;
             for (int i = 0; i < entryTable.Count; i++) {
                 if (entryTable[i].subtitle != compareFnt.entryTable[i].subtitle)
@@ -262,6 +261,41 @@ namespace ShadowFNT.Structures {
                     entryTable[i] = succeedingEntry;
                 }
             }
+        }
+
+        /// <summary>
+        /// Create a new entry and add it based on the MessageIdBranchSequence while shifting all successor positions
+        /// </summary>
+        /// <param name="newEntryMessageIdBranchSequence">MessageIdBranchSequence of new entry to determine where to insert in the table</param>
+        /// <returns>-1 = did not add, 0 = success</returns>
+        public int InsertNewEntry(int newEntryMessageIdBranchSequence) {
+            int successor = -1;
+            for (int i = 0; i < entryTable.Count; i++) {
+                if (newEntryMessageIdBranchSequence < entryTable[i].messageIdBranchSequence) {
+                    successor = i;
+                    break;
+                } else if (newEntryMessageIdBranchSequence == entryTable[i].messageIdBranchSequence) {
+                    break;
+                }
+            }
+            if (successor == -1)
+                return -1;
+            TableEntry newEntry = new TableEntry {
+                subtitleAddress = entryTable[successor].subtitleAddress,
+                messageIdBranchSequence = newEntryMessageIdBranchSequence,
+                entryType = EntryType.TRIGGER_OBJECT,
+                subtitleActiveTime = 0,
+                audioId = -1,
+                subtitle = "\0"
+            };
+            entryTable.Insert(successor, newEntry);
+            //correct subtitleAddress for all succeeding entries: add 2
+            for (int i = successor+1; i<entryTable.Count; i++) {
+                TableEntry succeedingEntry = entryTable[i];
+                succeedingEntry.subtitleAddress = entryTable[i].subtitleAddress + 2;
+                entryTable[i] = succeedingEntry;
+            }
+            return 0;
         }
     }
 }

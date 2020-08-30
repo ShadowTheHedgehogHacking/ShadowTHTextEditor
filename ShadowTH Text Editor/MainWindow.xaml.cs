@@ -67,6 +67,8 @@ namespace ShadowTH_Text_Editor {
         }
 
         private void ClearUIData() {
+            TextBlock_SubtitleAddress.Text = "";
+            TextBox_MessageIdBranchSequence.Clear();
             TextBox_EditSubtitle.Clear();
             TextBlock_AfsAudioIDName.Text = "";
             TextBox_AudioID.Clear();
@@ -121,7 +123,7 @@ namespace ShadowTH_Text_Editor {
                 Button_ExtractADX.IsEnabled = false;
                 Button_ReplaceADX.IsEnabled = false;
             }
-        }
+        }          
 
         private void TextBox_SearchFilters_TextChanged(object sender, TextChangedEventArgs e) {
             UpdateDisplayFntsView();
@@ -183,10 +185,10 @@ namespace ShadowTH_Text_Editor {
                 return;
             }
             currentFnt.UpdateEntrySubtitle(currentEntryIndex, TextBox_EditSubtitle.Text);
-            currentFnt.UpdateEntryMessageIdBranchSequence(currentEntryIndex, Int32.Parse(TextBox_MessageIdBranchSequence.Text));
+            currentFnt.UpdateEntryMessageIdBranchSequence(currentEntryIndex, int.Parse(TextBox_MessageIdBranchSequence.Text));
             currentFnt.UpdateEntryEntryType(currentEntryIndex, ComboBox_EntryType.SelectedIndex);
-            currentFnt.UpdateEntryAudioID(currentEntryIndex, Int32.Parse(TextBox_AudioID.Text));
-            currentFnt.UpdateEntryActiveTime(currentEntryIndex, Int32.Parse(TextBox_SubtitleActiveTime.Text));
+            currentFnt.UpdateEntryAudioID(currentEntryIndex, int.Parse(TextBox_AudioID.Text));
+            currentFnt.UpdateEntryActiveTime(currentEntryIndex, int.Parse(TextBox_SubtitleActiveTime.Text));
             UpdateDisplayFntsView();
             UpdateDisplayTableListView();
             Button_ExportChangedFNTs.IsEnabled = true;
@@ -266,7 +268,7 @@ namespace ShadowTH_Text_Editor {
                 ".met/.txd universal map and design work by TheHatedGravity\n" +
                 "Uses AFSLib by Sewer56 for AFS support\n" +
                 "Uses Ookii.Dialogs for dialogs\n\n" +
-                "https://github.com/ShadowTheHedgehogHacking\n\nto check for updates for this software.", "About ShadowTH Text Editor / FNT Editor v1.2");
+                "https://github.com/ShadowTheHedgehogHacking\n\nto check for updates for this software.", "About ShadowTH Text Editor / FNT Editor v1.3");
         }
 
         private void ComboBox_LocaleSwitcher_SelectionChanged(object sender, SelectionChangedEventArgs e) {
@@ -280,6 +282,27 @@ namespace ShadowTH_Text_Editor {
                     "Attempting this will cause issues, as the \'global\' .met used does not contain full non-English characters.");
                 localeWarningSeen = true;
             }
+        }
+
+        private void TextBox_AddEntryMessageID_TextChanged(object sender, TextChangedEventArgs e) {
+            if (TextBox_AddEntryMessageID.Text == "")
+                AddEntry_Button.IsEnabled = false;
+            else
+                AddEntry_Button.IsEnabled = true;
+        }
+
+        private void AddEntry_Button_Click(object sender, RoutedEventArgs e) {
+            int result = currentFnt.InsertNewEntry(int.Parse(TextBox_AddEntryMessageID.Text));
+            displayTableListView.Refresh();
+            if (result == -1) {
+                MessageBox.Show("Failed to add, make sure BranchId you picked is not in use\n and is not the first/last entry");
+            } else {
+                MessageBox.Show("Added successfully");
+            }
+        }
+
+        private void AddEntry_Question_Button_Click(object sender, RoutedEventArgs e) {
+            MessageBox.Show("Add a new entry to a fnt.\n\nSpecify the Message ID / Branch / Sequence int to automatically assign the proper position in the fnt.\nAllows for chaining subtitles/audio by adding +1 to an existing number.\n\nDo not add prior to the first or after the last entry in a fnt.\n\nFormat: XYZ\n    X=Message ID\n    Y=Branch\n    Z=Sequence\n\nExample: 25101\nMessage ID = 25\nBranch = 1 (Normal)\nSequence = 01 (second entry in a chain)\n\nExample branch:\n25000 = Dark\n25100 = Normal\n25200 = Hero\n\nExample sequence:\n25100 = first entry\n25101 = second entry");
         }
 
         private void Button_ExportChangedFNTsClick(object sender, RoutedEventArgs e) {
