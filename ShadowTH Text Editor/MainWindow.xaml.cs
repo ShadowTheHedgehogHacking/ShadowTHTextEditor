@@ -114,14 +114,17 @@ namespace ShadowTH_Text_Editor {
                 TextBlock_AfsAudioIDName.Text = "AFS not loaded";
                 Button_ExtractADX.IsEnabled = false;
                 Button_ReplaceADX.IsEnabled = false;
+                Button_PreviewADX.IsEnabled = false;
             } else if (audioID != -1 && audioID < currentAfs.Files.Count) {
                 TextBlock_AfsAudioIDName.Text = currentAfs.Files[audioID].Name;
                 Button_ExtractADX.IsEnabled = true;
                 Button_ReplaceADX.IsEnabled = true;
+                Button_PreviewADX.IsEnabled = true;
             } else {
                 TextBlock_AfsAudioIDName.Text = "None";
                 Button_ExtractADX.IsEnabled = false;
                 Button_ReplaceADX.IsEnabled = false;
+                Button_PreviewADX.IsEnabled = false;
             }
         }          
 
@@ -260,6 +263,25 @@ namespace ShadowTH_Text_Editor {
             if (dialog.FileName != "") {
                 File.WriteAllBytes(dialog.FileName, currentAfs.Files[int.Parse(TextBox_AudioID.Text)].Data);
             }
+        }
+
+        private void Button_PreviewADXClick(object sender, RoutedEventArgs e) {
+            if (currentAfs == null)
+                return;
+            var audioId = currentFnt.GetEntryAudioID(currentFnt.entryTable.IndexOf((TableEntry)ListBox_CurrentFNT.SelectedItem));
+            if (audioId == -1)
+                return;
+
+            var decoder = new VGAudio.Containers.Adx.AdxReader();
+            var audio = decoder.Read(currentAfs.Files[audioId].Data);
+            var writer = new VGAudio.Containers.Wave.WaveWriter();
+            MemoryStream stream = new MemoryStream();
+            writer.WriteToStream(audio, stream);
+
+            var player = new System.Media.SoundPlayer();
+            stream.Position = 0;
+            player.Stream = stream;
+            player.Play();
         }
 
         private void Button_About_Click(object sender, RoutedEventArgs e) {
