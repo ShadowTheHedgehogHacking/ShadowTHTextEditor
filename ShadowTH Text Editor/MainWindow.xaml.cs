@@ -61,6 +61,8 @@ namespace ShadowTH_Text_Editor {
             Button_OpenAFS.IsEnabled = false;
             Button_ExportAFS.IsEnabled = false;
             Button_ExportChangedFNTs.IsEnabled = false;
+            Button_PreviewADX.IsEnabled = false;
+            Button_AddEntry.IsEnabled = false;
             ClearUIData();
             ListBox_AllFNTS.ItemsSource = null;
             ListBox_CurrentFNT.ItemsSource = null;
@@ -73,6 +75,7 @@ namespace ShadowTH_Text_Editor {
             TextBlock_AfsAudioIDName.Text = "";
             TextBox_AudioID.Clear();
             TextBox_SubtitleActiveTime.Clear();
+            Button_DeleteEntry.IsEnabled = false;
         }
 
         private void ListBox_OpenedFNTS_SelectionChanged(object sender, SelectionChangedEventArgs e) {
@@ -100,6 +103,7 @@ namespace ShadowTH_Text_Editor {
                 ClearUIData();
                 return;
             }
+            Button_DeleteEntry.IsEnabled = true;
             var audioID = currentFnt.GetEntryAudioID(currentSubtitleIndex);
 
             TextBlock_SubtitleAddress.Text = currentFnt.GetEntrySubtitleAddress(currentSubtitleIndex).ToString();
@@ -286,11 +290,12 @@ namespace ShadowTH_Text_Editor {
 
         private void Button_About_Click(object sender, RoutedEventArgs e) {
             MessageBox.Show("Created by dreamsyntax\n" +
-                ".fnt struct reversal done by LimblessVector\n" +
+                ".fnt struct reversal done by LimblessVector & dreamsyntax\n" +
                 ".met/.txd universal map and design work by TheHatedGravity\n" +
                 "Uses AFSLib by Sewer56 for AFS support\n" +
+                "Uses VGAudio by Alex Barney for ADX playback\n" + 
                 "Uses Ookii.Dialogs for dialogs\n\n" +
-                "https://github.com/ShadowTheHedgehogHacking\n\nto check for updates for this software.", "About ShadowTH Text Editor / FNT Editor v1.3");
+                "https://github.com/ShadowTheHedgehogHacking\n\nto check for updates for this software.", "About ShadowTH Text Editor / FNT Editor v1.4");
         }
 
         private void ComboBox_LocaleSwitcher_SelectionChanged(object sender, SelectionChangedEventArgs e) {
@@ -307,13 +312,17 @@ namespace ShadowTH_Text_Editor {
         }
 
         private void TextBox_AddEntryMessageID_TextChanged(object sender, TextChangedEventArgs e) {
-            if (TextBox_AddEntryMessageID.Text == "")
-                AddEntry_Button.IsEnabled = false;
-            else
-                AddEntry_Button.IsEnabled = true;
+            if (TextBox_AddEntryMessageID.Text == "") {
+                TextBlock_AddEntryHint.Visibility = Visibility.Visible;
+                Button_AddEntry.IsEnabled = false;
+            } else {
+                TextBlock_AddEntryHint.Visibility = Visibility.Hidden;
+                if (initialFntsOpenedState != null)
+                    Button_AddEntry.IsEnabled = true;
+            }
         }
 
-        private void AddEntry_Button_Click(object sender, RoutedEventArgs e) {
+        private void Button_AddEntry_Click(object sender, RoutedEventArgs e) {
             int result = currentFnt.InsertNewEntry(int.Parse(TextBox_AddEntryMessageID.Text));
             displayTableListView.Refresh();
             if (result == -1) {
@@ -323,8 +332,15 @@ namespace ShadowTH_Text_Editor {
             }
         }
 
-        private void AddEntry_Question_Button_Click(object sender, RoutedEventArgs e) {
+        private void Button_AddEntry_Question_Click(object sender, RoutedEventArgs e) {
             MessageBox.Show("Add a new entry to a fnt.\n\nSpecify the Message ID / Branch / Sequence int to automatically assign the proper position in the fnt.\nAllows for chaining subtitles/audio by adding +1 to an existing number.\n\nDo not add prior to the first or after the last entry in a fnt.\n\nFormat: XYZ\n    X=Message ID\n    Y=Branch\n    Z=Sequence\n\nExample: 25101\nMessage ID = 25\nBranch = 1 (Normal)\nSequence = 01 (second entry in a chain)\n\nExample branch:\n25000 = Dark\n25100 = Normal\n25200 = Hero\n\nExample sequence:\n25100 = first entry\n25101 = second entry");
+        }
+
+        private void Button_DeleteEntry_Click(object sender, RoutedEventArgs e) {
+            currentFnt.DeleteEntry(currentFnt.entryTable.IndexOf((TableEntry)ListBox_CurrentFNT.SelectedItem));
+            ListBox_CurrentFNT.SelectedIndex = -1;
+            UpdateDisplayTableListView();
+            Button_ExportChangedFNTs.IsEnabled = true;
         }
 
         private void Button_ExportChangedFNTsClick(object sender, RoutedEventArgs e) {
