@@ -15,11 +15,12 @@ namespace ShadowFNT.Structures {
         list of UTF-16 Strings (Note: for convenience and eq(), sticking Strings inside TableEntry, but will be written per original file)
     }
     */
+
     public struct FNT {
         public String fileName;
         public String filterString;
-        public int numberOfEntries;
         public List<TableEntry> entryTable;
+        private const int ENTRY_SIZE = 20;
 
         public FNT(String fileName, ref byte[] file) {
             this = ParseFNTFile(fileName, ref file);
@@ -39,7 +40,7 @@ namespace ShadowFNT.Structures {
             fnt.fileName = fileName;
             fnt.filterString = filterString;
 
-            fnt.numberOfEntries = BitConverter.ToInt32(file, 0);
+            int numberOfEntries = BitConverter.ToInt32(file, 0);
             int positionIndex = 4; // position of byte to read
 
             fnt.entryTable = new List<TableEntry>();
@@ -48,7 +49,7 @@ namespace ShadowFNT.Structures {
             int subtitleTableEntryStructSize = 0x14;
 
             // read table entries
-            for (int i = 0; i < fnt.numberOfEntries; i++) {
+            for (int i = 0; i < numberOfEntries; i++) {
                 TableEntry entry = new TableEntry {
                     subtitleAddress = BitConverter.ToInt32(file, positionIndex),
                     messageIdBranchSequence = BitConverter.ToInt32(file, positionIndex + 4),
@@ -62,10 +63,10 @@ namespace ShadowFNT.Structures {
             }
 
             // read UTF-16 strings
-            for (int i = 0; i < fnt.numberOfEntries; i++) {
+            for (int i = 0; i < numberOfEntries; i++) {
                 int subtitleLength;
                 String subtitle;
-                if (i == fnt.entryTable.Count - 1) {
+                if (i == numberOfEntries - 1) {
                     // if last subtitleTable entry, size is originalFilesize - entry index
                     // however the original .fnt files sometimes have junk strings at the end
                     // end at first "\0"
@@ -90,10 +91,11 @@ namespace ShadowFNT.Structures {
             List<byte> fntFile = new List<byte>();
 
             // write header
-            BitConverter.GetBytes(this.numberOfEntries).ToList().ForEach(b => { fntFile.Add(b); });
+            BitConverter.GetBytes(entryTable.Count).ToList().ForEach(b => { fntFile.Add(b); });
 
             // write table entries
-            for (int i = 0; i < numberOfEntries; i++) {
+            for (int i = 0; i < entryTable.Count; i++) {
+                
                 BitConverter.GetBytes(entryTable[i].subtitleAddress).ToList().ForEach(b => { fntFile.Add(b); });
                 BitConverter.GetBytes(entryTable[i].messageIdBranchSequence).ToList().ForEach(b => { fntFile.Add(b); });
                 BitConverter.GetBytes((int)entryTable[i].entryType).ToList().ForEach(b => { fntFile.Add(b); });
@@ -102,8 +104,14 @@ namespace ShadowFNT.Structures {
             }
 
             // write UTF-16 entries
-            for (int i = 0; i < numberOfEntries; i++)
+            for (int i = 0; i < entryTable.Count; i++)
                 Encoding.Unicode.GetBytes(entryTable[i].subtitle).ToList().ForEach(b => { fntFile.Add(b); });
+
+            // add 4 null bytes to satisfy in-game parser's constraint to close file of any size
+            fntFile.Add(0x00);
+            fntFile.Add(0x00);
+            fntFile.Add(0x00);
+            fntFile.Add(0x00);
 
             return fntFile;
         }
@@ -295,7 +303,32 @@ namespace ShadowFNT.Structures {
                 succeedingEntry.subtitleAddress = entryTable[i].subtitleAddress + 2;
                 entryTable[i] = succeedingEntry;
             }
+
+            //grow an entry size for all
+            for (int i = 0; i < entryTable.Count; i++) {
+                 TableEntry entry = entryTable[i];
+                 entry.subtitleAddress += ENTRY_SIZE;
+                 entryTable[i] = entry;
+             }
             return 0;
+        }
+
+        public void DeleteEntry(int index) {
+            int chardiff = entryTable[index].subtitle.Length * 2; //successor's address - original entry is difference
+            entryTable.RemoveAt(index);
+            //correct subtitleAddress for all succeeding entries (start at self since successor occupies old location)
+            for (int i = index; i < entryTable.Count; i++) {
+                TableEntry succeedingEntry = entryTable[i];
+                succeedingEntry.subtitleAddress -= chardiff;
+                entryTable[i] = succeedingEntry;
+            }
+
+           //shrink an entry size for all
+            for (int i = 0; i < entryTable.Count; i++) {
+                TableEntry entry = entryTable[i];
+                entry.subtitleAddress -= ENTRY_SIZE;
+                entryTable[i] = entry;
+            }
         }
     }
 }
