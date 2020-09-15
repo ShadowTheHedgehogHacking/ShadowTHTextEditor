@@ -76,6 +76,7 @@ namespace ShadowTH_Text_Editor {
             TextBox_AudioID.Clear();
             TextBox_SubtitleActiveTime.Clear();
             Button_DeleteEntry.IsEnabled = false;
+            Button_GotoSelected.IsEnabled = false;
         }
 
         private void ListBox_OpenedFNTS_SelectionChanged(object sender, SelectionChangedEventArgs e) {
@@ -104,6 +105,7 @@ namespace ShadowTH_Text_Editor {
                 return;
             }
             Button_DeleteEntry.IsEnabled = true;
+            Button_GotoSelected.IsEnabled = true;
             var audioID = currentFnt.GetEntryAudioID(currentSubtitleIndex);
 
             TextBlock_SubtitleAddress.Text = currentFnt.GetEntrySubtitleAddress(currentSubtitleIndex).ToString();
@@ -341,6 +343,14 @@ namespace ShadowTH_Text_Editor {
             ListBox_CurrentFNT.SelectedIndex = -1;
             UpdateDisplayTableListView();
             Button_ExportChangedFNTs.IsEnabled = true;
+        }
+
+        private void Button_GotoSelected_Click(object sender, RoutedEventArgs e) {
+            TableEntry entry = (TableEntry)ListBox_CurrentFNT.SelectedItem;
+            TextBox_SearchText.Text = "";
+            TextBox_SearchAudioFileName.Text = "";
+            UpdateDisplayTableListView();
+            ListBox_CurrentFNT.ScrollIntoView(entry);
         }
 
         private void Button_ExportChangedFNTsClick(object sender, RoutedEventArgs e) {

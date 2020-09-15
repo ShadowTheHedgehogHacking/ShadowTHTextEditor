@@ -107,6 +107,12 @@ namespace ShadowFNT.Structures {
             for (int i = 0; i < entryTable.Count; i++)
                 Encoding.Unicode.GetBytes(entryTable[i].subtitle).ToList().ForEach(b => { fntFile.Add(b); });
 
+            // add 4 null bytes to satisfy in-game parser's constraint to close file of any size
+            fntFile.Add(0x00);
+            fntFile.Add(0x00);
+            fntFile.Add(0x00);
+            fntFile.Add(0x00);
+
             return fntFile;
         }
 
@@ -317,12 +323,12 @@ namespace ShadowFNT.Structures {
                 entryTable[i] = succeedingEntry;
             }
 
-           /* //shrink an entry size for all
+           //shrink an entry size for all
             for (int i = 0; i < entryTable.Count; i++) {
                 TableEntry entry = entryTable[i];
                 entry.subtitleAddress -= ENTRY_SIZE;
                 entryTable[i] = entry;
-            }*/
+            }
         }
     }
 }

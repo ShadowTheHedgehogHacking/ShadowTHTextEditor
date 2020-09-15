@@ -79,14 +79,18 @@
         </GroupBox>
         <GroupBox Header="Search Filters" Margin="10,10,325,530" Padding="10" Grid.ColumnSpan="4">
             <StackPanel Orientation="Vertical" Margin="0,0,0,0"  Height="104" Width="515">
-                <StackPanel>
-                    <TextBlock><Run Text="Search for Subtitle Text"/></TextBlock>
-                    <TextBox x:Name="TextBox_SearchText" AcceptsReturn="True" HorizontalAlignment="Left" VerticalContentAlignment="Center" Text="" TextWrapping="Wrap" TextChanged="TextBox_SearchFilters_TextChanged" Margin="0,0,0,10" Height="25" Width="515"/>
+                    <StackPanel>
+                        <TextBlock><Run Text="Search for Subtitle Text"/></TextBlock>
+                        <TextBox x:Name="TextBox_SearchText" AcceptsReturn="True" HorizontalAlignment="Left" VerticalContentAlignment="Center" Text="" TextWrapping="Wrap" TextChanged="TextBox_SearchFilters_TextChanged" Margin="0,0,0,10" Height="25" Width="420"/>
+                    </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <StackPanel>
+                        <TextBlock><Run Text="Search for Audio Filename"/></TextBlock>
+                        <TextBox x:Name="TextBox_SearchAudioFileName" AcceptsReturn="True" HorizontalAlignment="Left" VerticalContentAlignment="Center" Text="" TextWrapping="Wrap" TextChanged="TextBox_SearchFilters_TextChanged" Height="25" Width="186"/>
+                    </StackPanel>
+                    <Button x:Name="Button_GotoSelected" Margin="240,20,0,0" IsEnabled="False" Width="85" Height="25" Content="Goto Selected" Click="Button_GotoSelected_Click"/>
                 </StackPanel>
-                <StackPanel>
-                    <TextBlock><Run Text="Search for Audio Filename"/></TextBlock>
-                    <TextBox x:Name="TextBox_SearchAudioFileName" AcceptsReturn="True" HorizontalAlignment="Left" VerticalContentAlignment="Center" Text="" TextWrapping="Wrap" TextChanged="TextBox_SearchFilters_TextChanged" Height="25" Width="515"/>
-                </StackPanel>
+
             </StackPanel>
         </GroupBox>
         <GroupBox Header="Program Controls" Margin="175,595,10,10" Grid.Column="3">
