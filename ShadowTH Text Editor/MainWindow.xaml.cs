@@ -353,7 +353,46 @@ namespace ShadowTH_Text_Editor {
             ListBox_CurrentFNT.ScrollIntoView(entry);
         }
 
-        private void Button_ExportChangedFNTsClick(object sender, RoutedEventArgs e) {
+        private void Button_Export15Data_Click(object sender, RoutedEventArgs e) {
+            //get entry text
+            //get audio adx
+            //save the audio adx as a .wav in /shadow/[com01_s05_sd.wav]
+            //save to the opened text file "/shadow/com01_s05_sd.wav|[entry_text]"
+
+            var dialog = new Ookii.Dialogs.Wpf.VistaFolderBrowserDialog();
+            if (dialog.ShowDialog() == false) {
+                MessageBox.Show("Cancelled");
+                return;
+            }
+
+            Directory.CreateDirectory(dialog.SelectedPath + "\\shadow");
+
+            var transcript = "";
+            for (int i = 0; i < initialFntsOpenedState.Count; i++) {
+                for (int j = 0; j < initialFntsOpenedState[i].entryTable.Count; j++) {
+                    var curEntry = initialFntsOpenedState[i].entryTable[j];
+                    if (curEntry.audioId == -1)
+                        continue;
+                    var curEntryAudioId = currentAfs.Files[curEntry.audioId];
+                    var wavified = curEntryAudioId.Name.Replace(".adx", ".wav");
+                    if (curEntryAudioId.Name.Contains("_sd.adx")) {
+                        // remove duplicates
+                        var decoder = new VGAudio.Containers.Adx.AdxReader();
+                        var audio = decoder.Read(curEntryAudioId.Data);
+                        var writer = new VGAudio.Containers.Wave.WaveWriter();
+                        FileStream stream = File.Create(dialog.SelectedPath + "\\shadow\\" + wavified);
+                        writer.WriteToStream(audio, stream);
+                        stream.Close();
+                        var haaalp = curEntry.subtitle.Replace("\n", " ").Replace("\0", "");
+                        transcript = transcript + "/shadow/" + curEntryAudioId.Name + "|" + haaalp + "\n";
+                    }
+                }
+            }
+            File.WriteAllText(dialog.SelectedPath + "\\transcript_shadow.txt", transcript);
+            MessageBox.Show("yay");
+        }
+
+            private void Button_ExportChangedFNTsClick(object sender, RoutedEventArgs e) {
             List<FNT> filesToWrite = new List<FNT>();
             String filesToWriteReportingString = "";
             for (int i = 0; i < initialFntsOpenedState.Count; i++) {

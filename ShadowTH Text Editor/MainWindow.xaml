@@ -88,8 +88,9 @@
                         <TextBlock><Run Text="Search for Audio Filename"/></TextBlock>
                         <TextBox x:Name="TextBox_SearchAudioFileName" AcceptsReturn="True" HorizontalAlignment="Left" VerticalContentAlignment="Center" Text="" TextWrapping="Wrap" TextChanged="TextBox_SearchFilters_TextChanged" Height="25" Width="186"/>
                     </StackPanel>
-                    <Button x:Name="Button_GotoSelected" Margin="240,20,0,0" IsEnabled="False" Width="85" Height="25" Content="Goto Selected" Click="Button_GotoSelected_Click"/>
-                </StackPanel>
+                    <Button x:Name="Button_GotoSelected" Margin="140,20,0,0" IsEnabled="False" Width="85" Height="25" Content="Goto Selected" Click="Button_GotoSelected_Click"/>
+					<Button x:Name="Button_Export15Data" Margin="10,20,0,0" IsEnabled="True" Width="85" Height="25" Content="Export 15.AI" Click="Button_Export15Data_Click"/>
+				</StackPanel>
 
             </StackPanel>
         </GroupBox>

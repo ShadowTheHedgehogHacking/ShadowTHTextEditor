@@ -6,8 +6,8 @@
     <UseWPF>true</UseWPF>
     <ApplicationIcon>ShadowFNT.ico</ApplicationIcon>
     <FileUpgradeFlags>40</FileUpgradeFlags>
-    <UpgradeBackupLocation>X:\CodingEnvironment\Other SourceCode\ShadowTH Text Editor\Backup\ShadowTH Text Editor\</UpgradeBackupLocation>
-    <OldToolsVersion>2.0</OldToolsVersion>
+    <UpgradeBackupLocation>C:\Users\user\Documents\code\ShadowTHTextEditor\Backup\ShadowTH Text Editor\</UpgradeBackupLocation>
+    <OldToolsVersion>Current</OldToolsVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="res\EN.txd" />
