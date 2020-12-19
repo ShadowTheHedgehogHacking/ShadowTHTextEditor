@@ -365,31 +365,114 @@ namespace ShadowTH_Text_Editor {
                 return;
             }
 
-            Directory.CreateDirectory(dialog.SelectedPath + "\\shadow");
+            String charSwitcher = ComboBox_Export15Switcher.SelectedItem.ToString().Replace("System.Windows.Controls.ComboBoxItem: ", "");
+            String charFilterString;
+            switch (charSwitcher) {
+                case "shadow":
+                    charFilterString = "_sd.adx";
+                    break;
+                case "sonic":
+                    charFilterString = "_sn.adx";
+                    break;
+                case "tails":
+                    charFilterString = "_tl.adx";
+                    break;
+                case "knuckles":
+                    charFilterString = "_kn.adx";
+                    break;
+                case "amy":
+                    charFilterString = "_am.adx";
+                    break;
+                case "rouge":
+                    charFilterString = "_rg.adx";
+                    break;
+                case "omega":
+                    charFilterString = "_om.adx";
+                    break;
+                case "vector":
+                    charFilterString = "_vc.adx";
+                    break;
+                case "espio":
+                    charFilterString = "_es.adx";
+                    break;
+                case "maria":
+                    charFilterString = "SPECIALCASE";
+                    break;
+                case "charmy":
+                    charFilterString = "_ch.adx";
+                    break;
+                case "eggman":
+                    charFilterString = "_eg.adx";
+                    break;
+                case "blackdoom":
+                    charFilterString = "_bd.adx";
+                    break;
+                case "commander":
+                    charFilterString = "_cm.adx";
+                    break;
+                case "soldier":
+                    charFilterString = "_sl.adx";
+                    break;
+                default:
+                    charFilterString = "error";
+                    break;
+            }
+            Directory.CreateDirectory(dialog.SelectedPath + "\\"+ charSwitcher);
 
-            var transcript = "";
-            for (int i = 0; i < initialFntsOpenedState.Count; i++) {
-                for (int j = 0; j < initialFntsOpenedState[i].entryTable.Count; j++) {
-                    var curEntry = initialFntsOpenedState[i].entryTable[j];
-                    if (curEntry.audioId == -1)
-                        continue;
-                    var curEntryAudioId = currentAfs.Files[curEntry.audioId];
-                    var wavified = curEntryAudioId.Name.Replace(".adx", ".wav");
-                    if (curEntryAudioId.Name.Contains("_sd.adx")) {
-                        // remove duplicates
-                        var decoder = new VGAudio.Containers.Adx.AdxReader();
-                        var audio = decoder.Read(curEntryAudioId.Data);
-                        var writer = new VGAudio.Containers.Wave.WaveWriter();
-                        FileStream stream = File.Create(dialog.SelectedPath + "\\shadow\\" + wavified);
-                        writer.WriteToStream(audio, stream);
-                        stream.Close();
-                        var haaalp = curEntry.subtitle.Replace("\n", " ").Replace("\0", "");
-                        transcript = transcript + "/shadow/" + curEntryAudioId.Name + "|" + haaalp + "\n";
+            List<String> textContent = new List<String>();
+            List<int> audioContent = new List<int>();
+
+            if (charFilterString != "SPECIALCASE") {
+                for (int i = 0; i < initialFntsOpenedState.Count; i++) {
+                    for (int j = 0; j < initialFntsOpenedState[i].entryTable.Count; j++) {
+                        var curEntry = initialFntsOpenedState[i].entryTable[j];
+                        if (curEntry.audioId == -1)
+                            continue;
+                        var curEntryAudioRef = currentAfs.Files[curEntry.audioId];
+                        if (curEntryAudioRef.Name.Contains(charFilterString)) {
+                            if (audioContent.Contains(curEntry.audioId))
+                                continue;
+                            if (textContent.Contains(curEntry.subtitle))
+                                continue;
+                            audioContent.Add(curEntry.audioId);
+                            textContent.Add(curEntry.subtitle.Replace("\n", " ").Replace("\0", ""));
+                        }
+                    }
+                }
+            } else {
+                for (int i = 0; i < initialFntsOpenedState.Count; i++) {
+                    for (int j = 0; j < initialFntsOpenedState[i].entryTable.Count; j++) {
+                        var curEntry = initialFntsOpenedState[i].entryTable[j];
+                        if (curEntry.audioId == -1)
+                            continue;
+                        var curEntryAudioRef = currentAfs.Files[curEntry.audioId];
+                        if (curEntryAudioRef.Name.Contains("_mr.adx") || curEntryAudioRef.Name.Contains("_mr2.adx")) {
+                            if (audioContent.Contains(curEntry.audioId))
+                                continue;
+                            if (textContent.Contains(curEntry.subtitle))
+                                continue;
+                            audioContent.Add(curEntry.audioId);
+                            textContent.Add(curEntry.subtitle.Replace("\n", " ").Replace("\0", ""));
+                        }
                     }
                 }
             }
-            File.WriteAllText(dialog.SelectedPath + "\\transcript_shadow.txt", transcript);
-            MessageBox.Show("yay");
+
+            var transcript = "";
+            var decoder = new VGAudio.Containers.Adx.AdxReader();
+            var writer = new VGAudio.Containers.Wave.WaveWriter();
+
+            for (int i = 0; i < audioContent.Count; i++) {
+                var curEntryAudioRef = currentAfs.Files[audioContent[i]];
+                var audio = decoder.Read(curEntryAudioRef.Data);
+                FileStream stream = File.Create(dialog.SelectedPath + "\\"+ charSwitcher+ "\\" + curEntryAudioRef.Name.Replace(".adx", ".wav"));
+                writer.WriteToStream(audio, stream);
+                stream.Close();
+                transcript = transcript + "/"+ charSwitcher + "/" + curEntryAudioRef.Name + "|" + textContent[i] + "\n";
+            }
+
+            File.WriteAllText(dialog.SelectedPath + "\\transcript_"+ charSwitcher + ".txt", transcript);
+            MessageBox.Show("Done");
         }
 
             private void Button_ExportChangedFNTsClick(object sender, RoutedEventArgs e) {
