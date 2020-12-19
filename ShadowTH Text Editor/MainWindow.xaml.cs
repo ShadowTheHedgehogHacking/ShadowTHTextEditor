@@ -468,7 +468,7 @@ namespace ShadowTH_Text_Editor {
                 FileStream stream = File.Create(dialog.SelectedPath + "\\"+ charSwitcher+ "\\" + curEntryAudioRef.Name.Replace(".adx", ".wav"));
                 writer.WriteToStream(audio, stream);
                 stream.Close();
-                transcript = transcript + "/"+ charSwitcher + "/" + curEntryAudioRef.Name + "|" + textContent[i] + "\n";
+                transcript = transcript + "/"+ charSwitcher + "/" + curEntryAudioRef.Name.Replace(".adx", ".wav") + "|" + textContent[i] + "\n";
             }
 
             File.WriteAllText(dialog.SelectedPath + "\\transcript_"+ charSwitcher + ".txt", transcript);
