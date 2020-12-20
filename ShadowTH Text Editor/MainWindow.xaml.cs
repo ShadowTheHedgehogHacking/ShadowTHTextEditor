@@ -465,10 +465,10 @@ namespace ShadowTH_Text_Editor {
             for (int i = 0; i < audioContent.Count; i++) {
                 var curEntryAudioRef = currentAfs.Files[audioContent[i]];
                 var audio = decoder.Read(curEntryAudioRef.Data);
-                FileStream stream = File.Create(dialog.SelectedPath + "\\"+ charSwitcher+ "\\" + curEntryAudioRef.Name.Replace(".adx", ".wav"));
+                FileStream stream = File.Create(dialog.SelectedPath + "\\"+ charSwitcher+ "\\" + i + "_" + curEntryAudioRef.Name.Replace(".adx", ".wav"));
                 writer.WriteToStream(audio, stream);
                 stream.Close();
-                transcript = transcript + "/"+ charSwitcher + "/" + curEntryAudioRef.Name.Replace(".adx", ".wav") + "|" + textContent[i] + "\n";
+                transcript = transcript + "/"+ charSwitcher + "/" + i + "_" + curEntryAudioRef.Name.Replace(".adx", ".wav") + "|" + textContent[i] + "\n";
             }
 
             File.WriteAllText(dialog.SelectedPath + "\\transcript_"+ charSwitcher + ".txt", transcript);
