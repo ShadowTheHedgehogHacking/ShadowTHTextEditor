@@ -417,7 +417,7 @@ namespace ShadowTH_Text_Editor {
                     charFilterString = "error";
                     break;
             }
-            Directory.CreateDirectory(dialog.SelectedPath + "\\"+ charSwitcher);
+            Directory.CreateDirectory(dialog.SelectedPath + "\\shadowthehedgehog2005_"+ charSwitcher);
 
             List<String> textContent = new List<String>();
             List<int> audioContent = new List<int>();
