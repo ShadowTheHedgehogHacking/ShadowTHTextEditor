@@ -354,125 +354,24 @@ namespace ShadowTH_Text_Editor {
         }
 
         private void Button_Export15Data_Click(object sender, RoutedEventArgs e) {
-            //get entry text
-            //get audio adx
-            //save the audio adx as a .wav in /shadow/[com01_s05_sd.wav]
-            //save to the opened text file "/shadow/com01_s05_sd.wav|[entry_text]"
-
-            var dialog = new Ookii.Dialogs.Wpf.VistaFolderBrowserDialog();
+            if (currentAfs == null)
+                return;
+            var dialog = new Ookii.Dialogs.Wpf.VistaOpenFileDialog();
             if (dialog.ShowDialog() == false) {
-                MessageBox.Show("Cancelled");
                 return;
             }
-
-            String charSwitcher = ComboBox_Export15Switcher.SelectedItem.ToString().Replace("System.Windows.Controls.ComboBoxItem: ", "");
-            String charFilterString;
-            switch (charSwitcher) {
-                case "shadow":
-                    charFilterString = "_sd.adx";
-                    break;
-                case "sonic":
-                    charFilterString = "_sn.adx";
-                    break;
-                case "tails":
-                    charFilterString = "_tl.adx";
-                    break;
-                case "knuckles":
-                    charFilterString = "_kn.adx";
-                    break;
-                case "amy":
-                    charFilterString = "_am.adx";
-                    break;
-                case "rouge":
-                    charFilterString = "_rg.adx";
-                    break;
-                case "omega":
-                    charFilterString = "_om.adx";
-                    break;
-                case "vector":
-                    charFilterString = "_vc.adx";
-                    break;
-                case "espio":
-                    charFilterString = "_es.adx";
-                    break;
-                case "maria":
-                    charFilterString = "SPECIALCASE";
-                    break;
-                case "charmy":
-                    charFilterString = "_ch.adx";
-                    break;
-                case "eggman":
-                    charFilterString = "_eg.adx";
-                    break;
-                case "blackdoom":
-                    charFilterString = "_bd.adx";
-                    break;
-                case "commander":
-                    charFilterString = "_cm.adx";
-                    break;
-                case "soldier":
-                    charFilterString = "_sl.adx";
-                    break;
-                default:
-                    charFilterString = "error";
-                    break;
+            byte[] newData = null;
+            if (dialog.FileName != "")
+                newData = File.ReadAllBytes(dialog.FileName);
+            if (newData == null)
+                return;
+            for (int i = 0; i < 500; i++) {
+                var og = currentAfs.Files[0];
+                og.Name = "bigtest_" + i;
+                og.Data = newData;
+                currentAfs.Files.Add(og);
             }
-            Directory.CreateDirectory(dialog.SelectedPath + "\\shadowthehedgehog2005_"+ charSwitcher);
-
-            List<String> textContent = new List<String>();
-            List<int> audioContent = new List<int>();
-
-            if (charFilterString != "SPECIALCASE") {
-                for (int i = 0; i < initialFntsOpenedState.Count; i++) {
-                    for (int j = 0; j < initialFntsOpenedState[i].entryTable.Count; j++) {
-                        var curEntry = initialFntsOpenedState[i].entryTable[j];
-                        if (curEntry.audioId == -1)
-                            continue;
-                        var curEntryAudioRef = currentAfs.Files[curEntry.audioId];
-                        if (curEntryAudioRef.Name.Contains(charFilterString)) {
-                            if (audioContent.Contains(curEntry.audioId))
-                                continue;
-                            if (textContent.Contains(curEntry.subtitle))
-                                continue;
-                            audioContent.Add(curEntry.audioId);
-                            textContent.Add(curEntry.subtitle.Replace("\n", " ").Replace("\0", ""));
-                        }
-                    }
-                }
-            } else {
-                for (int i = 0; i < initialFntsOpenedState.Count; i++) {
-                    for (int j = 0; j < initialFntsOpenedState[i].entryTable.Count; j++) {
-                        var curEntry = initialFntsOpenedState[i].entryTable[j];
-                        if (curEntry.audioId == -1)
-                            continue;
-                        var curEntryAudioRef = currentAfs.Files[curEntry.audioId];
-                        if (curEntryAudioRef.Name.Contains("_mr.adx") || curEntryAudioRef.Name.Contains("_mr2.adx")) {
-                            if (audioContent.Contains(curEntry.audioId))
-                                continue;
-                            if (textContent.Contains(curEntry.subtitle))
-                                continue;
-                            audioContent.Add(curEntry.audioId);
-                            textContent.Add(curEntry.subtitle.Replace("\n", " ").Replace("\0", ""));
-                        }
-                    }
-                }
-            }
-
-            var transcript = "";
-            var decoder = new VGAudio.Containers.Adx.AdxReader();
-            var writer = new VGAudio.Containers.Wave.WaveWriter();
-
-            for (int i = 0; i < audioContent.Count; i++) {
-                var curEntryAudioRef = currentAfs.Files[audioContent[i]];
-                var audio = decoder.Read(curEntryAudioRef.Data);
-                FileStream stream = File.Create(dialog.SelectedPath + "\\shadowthehedgehog2005_" + charSwitcher+ "\\" + i + "_" + curEntryAudioRef.Name.Replace(".adx", ".wav"));
-                writer.WriteToStream(audio, stream);
-                stream.Close();
-                transcript = transcript + "/shadowthehedgehog2005_"+ charSwitcher + "/" + i + "_" + curEntryAudioRef.Name.Replace(".adx", ".wav") + "|" + textContent[i] + "\n";
-            }
-
-            File.WriteAllText(dialog.SelectedPath + "\\transcript_shadowthehedgehog2005_" + charSwitcher + ".txt", transcript);
-            MessageBox.Show("Done");
+            MessageBox.Show("Cool");
         }
 
             private void Button_ExportChangedFNTsClick(object sender, RoutedEventArgs e) {
