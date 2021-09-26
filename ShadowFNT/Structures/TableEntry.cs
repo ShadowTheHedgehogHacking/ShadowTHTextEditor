@@ -8,7 +8,7 @@ namespace ShadowFNT.Structures {
         public EntryType entryType;
         public int subtitleActiveTime;
         public int audioId;
-        public String subtitle;
+        public string subtitle;
 
         public override string ToString() {
             if (subtitle.Equals("\0"))

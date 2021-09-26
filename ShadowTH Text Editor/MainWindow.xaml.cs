@@ -11,13 +11,13 @@ using MessageBox = System.Windows.MessageBox;
 
 namespace ShadowTH_Text_Editor {
     public partial class MainWindow : Window {
-        List<FNT> initialFntsOpenedState;
-        List<FNT> openedFnts;
-        String lastOpenDir;
-        bool localeWarningSeen = false;
-        FNT currentFnt;
-        AfsArchive currentAfs;
-        ICollectionView displayFntsView, displayTableListView;
+        private List<FNT> initialFntsOpenedState;
+        private List<FNT> openedFnts;
+        private string lastOpenDir;
+        private bool localeWarningSeen = false;
+        private FNT currentFnt;
+        private AfsArchive currentAfs;
+        private ICollectionView displayFntsView, displayTableListView;
 
         public MainWindow() {
             InitializeComponent();
@@ -39,7 +39,7 @@ namespace ShadowTH_Text_Editor {
         private void ProcessFNTS() {
             ClearData();
             if (lastOpenDir == null) return;
-            String localeSwitcher = ComboBox_LocaleSwitcher.SelectedItem.ToString();
+            string localeSwitcher = ComboBox_LocaleSwitcher.SelectedItem.ToString();
             string[] foundFnts = Directory.GetFiles(lastOpenDir, "*_" + localeSwitcher.Substring(localeSwitcher.Length - 2) + ".fnt", SearchOption.AllDirectories);
             for (int i = 0; i < foundFnts.Length; i++) {
                 byte[] readFile = File.ReadAllBytes(foundFnts[i]);
@@ -355,7 +355,7 @@ namespace ShadowTH_Text_Editor {
 
         private void Button_ExportChangedFNTsClick(object sender, RoutedEventArgs e) {
             List<FNT> filesToWrite = new List<FNT>();
-            String filesToWriteReportingString = "";
+            string filesToWriteReportingString = "";
             for (int i = 0; i < initialFntsOpenedState.Count; i++) {
                 if (initialFntsOpenedState[i].Equals(openedFnts[i]) == false) {
                     filesToWrite.Add(openedFnts[i]);
@@ -378,14 +378,14 @@ namespace ShadowTH_Text_Editor {
                     Directory.CreateDirectory(Directory.GetParent(newFntFilePath).FullName);
                     File.WriteAllBytes(newFntFilePath, fnt.BuildFNTFile().ToArray());
                     if (CheckBox_NoReplaceMetTxd.IsChecked == false) {
-                        String prec = newFntFilePath.Remove(newFntFilePath.Length - 4);
+                        string prec = newFntFilePath.Remove(newFntFilePath.Length - 4);
                         File.Copy("res/EN.txd", prec + ".txd", true);
                         File.Copy("res/EN00.met", prec + "00.met", true);
                     }
                 } else {
                     File.WriteAllBytes(fnt.fileName, fnt.BuildFNTFile().ToArray());
                     if (CheckBox_NoReplaceMetTxd.IsChecked == false) {
-                        String prec = fnt.fileName.Remove(fnt.fileName.Length - 4);
+                        string prec = fnt.fileName.Remove(fnt.fileName.Length - 4);
                         File.Copy("res/EN.txd", prec + ".txd", true);
                         File.Copy("res/EN00.met", prec + "00.met", true);
                     }

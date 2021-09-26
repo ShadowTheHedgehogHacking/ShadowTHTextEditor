@@ -17,12 +17,12 @@ namespace ShadowFNT.Structures {
     */
 
     public struct FNT {
-        public String fileName;
-        public String filterString;
+        public string fileName;
+        public string filterString;
         public List<TableEntry> entryTable;
         private const int ENTRY_SIZE = 20;
 
-        public FNT(String fileName, ref byte[] file) {
+        public FNT(string fileName, ref byte[] file) {
             this = ParseFNTFile(fileName, ref file);
             this.fileName = fileName;
         }
@@ -34,7 +34,7 @@ namespace ShadowFNT.Structures {
         /// <param name="file">Bytes of file to parse</param>
         /// <param name="filterString">String to remove when ToString() is called</param>
         /// <returns>FNT</returns>
-        public static FNT ParseFNTFile(String fileName, ref byte[] file, String filterString = "") {
+        public static FNT ParseFNTFile(string fileName, ref byte[] file, string filterString = "") {
             FNT fnt = new FNT();
 
             fnt.fileName = fileName;
@@ -65,7 +65,7 @@ namespace ShadowFNT.Structures {
             // read UTF-16 strings
             for (int i = 0; i < numberOfEntries; i++) {
                 int subtitleLength;
-                String subtitle;
+                string subtitle;
                 if (i == numberOfEntries - 1) {
                     // if last subtitleTable entry, size is originalFilesize - entry index
                     // however the original .fnt files sometimes have junk strings at the end
@@ -240,7 +240,7 @@ namespace ShadowFNT.Structures {
         /// </summary>
         /// <param name="tableEntryIndex"></param>
         /// <returns>String</returns>
-        public String GetEntrySubtitle(int tableEntryIndex) {
+        public string GetEntrySubtitle(int tableEntryIndex) {
             return entryTable[tableEntryIndex].subtitle;
         }
 
@@ -250,7 +250,7 @@ namespace ShadowFNT.Structures {
         /// </summary>
         /// <param name="tableEntryIndex">Index of entry to update</param>
         /// <param name="updatedText">Null terminated string</param>
-        public void UpdateEntrySubtitle(int tableEntryIndex, String updatedText) {
+        public void UpdateEntrySubtitle(int tableEntryIndex, string updatedText) {
             updatedText = updatedText.Replace("\r\n", "\n");
             if (!updatedText.EndsWith('\0')) {
                 updatedText += '\0';
