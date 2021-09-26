@@ -251,6 +251,10 @@ namespace ShadowFNT.Structures {
         /// <param name="tableEntryIndex">Index of entry to update</param>
         /// <param name="updatedText">Null terminated string</param>
         public void UpdateEntrySubtitle(int tableEntryIndex, String updatedText) {
+            updatedText = updatedText.Replace("\r\n", "\n");
+            if (!updatedText.EndsWith('\0')) {
+                updatedText += '\0';
+            }
             TableEntry entry = entryTable[tableEntryIndex];
             int characterSizeDifference = 0;
 
