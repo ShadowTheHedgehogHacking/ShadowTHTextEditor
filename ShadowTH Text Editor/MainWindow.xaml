@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ShadowTH_Text_Editor"
         mc:Ignorable="d"
-        Title="Shadow The Hedgehog Text Editor / FNT Editor v1.4" Height="720" Width="900" MinWidth="900" MinHeight="720" MaxHeight="720" MaxWidth="900" Icon="ShadowFNT.ico" ResizeMode="CanMinimize">
+        Title="Shadow The Hedgehog Text Editor / FNT Editor v1.4.1" Height="720" Width="900" MinWidth="900" MinHeight="720" MaxHeight="720" MaxWidth="900" Icon="ShadowFNT.ico" ResizeMode="CanMinimize">
     <Grid x:Name="mainGridPanel">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="16*"/>
