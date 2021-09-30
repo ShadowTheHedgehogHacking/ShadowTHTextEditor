@@ -249,12 +249,11 @@ namespace ShadowFNT.Structures {
         /// Performs a safe expand/shrink of all succeeding entries
         /// </summary>
         /// <param name="tableEntryIndex">Index of entry to update</param>
-        /// <param name="updatedText">Null terminated string</param>
+        /// <param name="updatedText">string of new text to display</param>
         public void UpdateEntrySubtitle(int tableEntryIndex, string updatedText) {
             updatedText = updatedText.Replace("\r\n", "\n");
-            if (!updatedText.EndsWith('\0')) {
-                updatedText += '\0';
-            }
+            updatedText = updatedText.Replace("\0", "");
+            updatedText += '\0';
             TableEntry entry = entryTable[tableEntryIndex];
             int characterSizeDifference = 0;
 
