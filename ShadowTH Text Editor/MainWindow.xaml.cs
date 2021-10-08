@@ -29,7 +29,7 @@ namespace ShadowTH_Text_Editor {
                 return;
             }
             if (!dialog.SelectedPath.EndsWith("fonts")) {
-                MessageBox.Show("Pick the 'fonts' folder extracted from Shadow The Hedgehog", "Try Again");
+                MessageBox.Show("Pick the 'fonts' folder extracted from Shadow The Hedgehog.", "Try Again");
                 return;
             }
             lastOpenDir = dialog.SelectedPath;
@@ -190,7 +190,7 @@ namespace ShadowTH_Text_Editor {
                 return;
             var currentEntryIndex = currentFnt.entryTable.IndexOf((TableEntry)ListBox_CurrentFNT.SelectedItem);
             if (currentEntryIndex == -1) { 
-                MessageBox.Show("Error, subtitle not found, report this bug");
+                MessageBox.Show("Error, subtitle not found, report this bug and what you did to cause it.", "Impossible Bug. If you see this screenshot it!");
                 return;
             }
             currentFnt.UpdateEntrySubtitle(currentEntryIndex, TextBox_EditSubtitle.Text);
@@ -202,6 +202,7 @@ namespace ShadowTH_Text_Editor {
             UpdateDisplayTableListView();
             Button_ExportChangedFNTs.IsEnabled = true;
             TextBox_EditSubtitle.Clear();
+            ListBox_CurrentFNT.SelectedIndex = -1; // trigger deselect-reselect event
             ListBox_CurrentFNT.SelectedIndex = ListBox_CurrentFNT.Items.IndexOf(currentFnt.entryTable[currentEntryIndex]);
          }
 
@@ -234,60 +235,97 @@ namespace ShadowTH_Text_Editor {
         private void Button_ExportAFSClick(object sender, RoutedEventArgs e) {
             if (currentAfs == null)
                 return;
-            var dialog = new Ookii.Dialogs.Wpf.VistaSaveFileDialog();
+            var dialog = new Ookii.Dialogs.Wpf.VistaSaveFileDialog {
+                Filter = "AFS files (*.afs)|*.afs|All files (*.*)|*.*"
+            };
             if (dialog.ShowDialog() == false) {
                 return;
             }
             if (dialog.FileName != "") {
-                File.WriteAllBytes(dialog.FileName, currentAfs.ToBytes());
+                try {
+                    File.WriteAllBytes(dialog.FileName, currentAfs.ToBytes());
+                    MessageBox.Show("AFS Successfully Written.", "Success");
+                } catch (Exception ex) {
+                    MessageBox.Show(ex.Message, "An Exception Occurred");
+                }
             }
         }
 
         private void Button_ReplaceADXClick(object sender, RoutedEventArgs e) {
             if (currentAfs == null)
                 return;
-            var dialog = new Ookii.Dialogs.Wpf.VistaOpenFileDialog();
+            Ookii.Dialogs.Wpf.VistaOpenFileDialog dialog = new Ookii.Dialogs.Wpf.VistaOpenFileDialog {
+                Filter = "ADX files (*.adx)|*.adx|All files (*.*)|*.*"
+            };
             if (dialog.ShowDialog() == false) {
                 return;
             }
             if (dialog.FileName != "") {
-                var newData = File.ReadAllBytes(dialog.FileName);
-                currentAfs.Files[int.Parse(TextBox_AudioID.Text)].Data = newData;
+                try {
+                    byte[] newData = File.ReadAllBytes(dialog.FileName);
+                    var decoder = new VGAudio.Containers.Adx.AdxReader();
+                    VGAudio.Formats.CriAdx.CriAdxFormat audioFormat = (VGAudio.Formats.CriAdx.CriAdxFormat)decoder.ReadFormat(newData);
+
+                    if (audioFormat.ChannelCount >= 2) {
+                        if (MessageBox.Show("Replacement ADX is Stereo, needs to be Mono.\nThe voice line will fail to play in-game if Stereo." +
+                            "\nCancel Replacement?", "Problem Identified with Replacement", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                            return;
+                    }
+                    if (audioFormat.Version != 4) {
+                        if (MessageBox.Show("Shadow ADX files are encoded in ADX Version 4.\nVersion 3 is also supported, but not recommended.\nYour replacement is ADX Version " + audioFormat.Version +
+                            "\nCancel Replacement?", "Potential Problem Identified with Replacement", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                            return;
+                    }
+                    currentAfs.Files[int.Parse(TextBox_AudioID.Text)].Data = newData;
+                }
+                catch (Exception ex) {
+                    MessageBox.Show(ex.Message, "Failed to Replace");
+                }
                 return;
             }
-            MessageBox.Show("Failed");
+            MessageBox.Show("File was not found", "Error");
         }
 
         private void Button_ExtractADXClick(object sender, RoutedEventArgs e) {
             if (currentAfs == null)
                 return;
-            var dialog = new Ookii.Dialogs.Wpf.VistaSaveFileDialog();
-            dialog.FileName = TextBlock_AfsAudioIDName.Text;
+            Ookii.Dialogs.Wpf.VistaSaveFileDialog dialog = new Ookii.Dialogs.Wpf.VistaSaveFileDialog {
+                FileName = TextBlock_AfsAudioIDName.Text,
+                Filter = "ADX files (*.adx)|*.adx|All files (*.*)|*.*"
+            };
             if (dialog.ShowDialog() == false) {
                 return;
             }
             if (dialog.FileName != "") {
-                File.WriteAllBytes(dialog.FileName, currentAfs.Files[int.Parse(TextBox_AudioID.Text)].Data);
+                try {
+                    File.WriteAllBytes(dialog.FileName, currentAfs.Files[int.Parse(TextBox_AudioID.Text)].Data);
+                } catch (Exception ex) {
+                    MessageBox.Show(ex.Message, "An Exception Occurred");
+                }
             }
         }
 
         private void Button_PreviewADXClick(object sender, RoutedEventArgs e) {
             if (currentAfs == null)
                 return;
-            var audioId = currentFnt.GetEntryAudioID(currentFnt.entryTable.IndexOf((TableEntry)ListBox_CurrentFNT.SelectedItem));
+            int audioId = currentFnt.GetEntryAudioID(currentFnt.entryTable.IndexOf((TableEntry)ListBox_CurrentFNT.SelectedItem));
             if (audioId == -1)
                 return;
 
-            var decoder = new VGAudio.Containers.Adx.AdxReader();
-            var audio = decoder.Read(currentAfs.Files[audioId].Data);
-            var writer = new VGAudio.Containers.Wave.WaveWriter();
-            MemoryStream stream = new MemoryStream();
-            writer.WriteToStream(audio, stream);
+            try {
+                var decoder = new VGAudio.Containers.Adx.AdxReader();
+                var audio = decoder.Read(currentAfs.Files[audioId].Data);
+                var writer = new VGAudio.Containers.Wave.WaveWriter();
+                MemoryStream stream = new MemoryStream();
+                writer.WriteToStream(audio, stream);
 
-            var player = new System.Media.SoundPlayer();
-            stream.Position = 0;
-            player.Stream = stream;
-            player.Play();
+                var player = new System.Media.SoundPlayer();
+                stream.Position = 0;
+                player.Stream = stream;
+                player.Play();
+            } catch (Exception ex) {
+                MessageBox.Show(ex.Message, "An Exception Occurred");
+            }
         }
 
         private void Button_About_Click(object sender, RoutedEventArgs e) {
@@ -297,7 +335,7 @@ namespace ShadowTH_Text_Editor {
                 "Uses AFSLib by Sewer56 for AFS support\n" +
                 "Uses VGAudio by Alex Barney for ADX playback\n" + 
                 "Uses Ookii.Dialogs for dialogs\n\n" +
-                "https://github.com/ShadowTheHedgehogHacking\n\nto check for updates for this software.", "About ShadowTH Text Editor / FNT Editor v1.4.2");
+                "https://github.com/ShadowTheHedgehogHacking\n\nto check for updates for this software.", "About ShadowTH Text Editor / FNT Editor v1.4.3");
         }
 
         private void ComboBox_LocaleSwitcher_SelectionChanged(object sender, SelectionChangedEventArgs e) {
@@ -308,7 +346,7 @@ namespace ShadowTH_Text_Editor {
         private void ComboBox_LocaleSwitcher_DropDownClosed(object sender, EventArgs e) {
             if (!localeWarningSeen) {
                 MessageBox.Show("Saving in languages other than English is currently unsupported.\n" +
-                    "Attempting this will cause issues, as the \'global\' .met used does not contain full non-English characters.");
+                    "Attempting this will cause issues, as the \'global\' .met used does not contain full non-English characters.", "Info");
                 localeWarningSeen = true;
             }
         }
@@ -328,14 +366,14 @@ namespace ShadowTH_Text_Editor {
             int result = currentFnt.InsertNewEntry(int.Parse(TextBox_AddEntryMessageID.Text));
             displayTableListView.Refresh();
             if (result == -1) {
-                MessageBox.Show("Failed to add, make sure BranchId you picked is not in use\n and is not the first/last entry");
+                MessageBox.Show("Failed to add, make sure BranchId you picked is not in use\n and is not the first/last entry.", "Error");
             } else {
-                MessageBox.Show("Added successfully");
+                MessageBox.Show("Added successfully", "Success");
             }
         }
 
         private void Button_AddEntry_Question_Click(object sender, RoutedEventArgs e) {
-            MessageBox.Show("Add a new entry to a fnt.\n\nSpecify the Message ID / Branch / Sequence int to automatically assign the proper position in the fnt.\nAllows for chaining subtitles/audio by adding +1 to an existing number.\n\nDo not add prior to the first or after the last entry in a fnt.\n\nFormat: XYZ\n    X=Message ID\n    Y=Branch\n    Z=Sequence\n\nExample: 25101\nMessage ID = 25\nBranch = 1 (Normal)\nSequence = 01 (second entry in a chain)\n\nExample branch:\n25000 = Dark\n25100 = Normal\n25200 = Hero\n\nExample sequence:\n25100 = first entry\n25101 = second entry");
+            MessageBox.Show("Add a new entry to a fnt.\n\nSpecify the Message ID / Branch / Sequence int to automatically assign the proper position in the fnt.\nAllows for chaining subtitles/audio by adding +1 to an existing number.\n\nDo not add prior to the first or after the last entry in a fnt.\n\nFormat: XYZ\n    X=Message ID\n    Y=Branch\n    Z=Sequence\n\nExample: 25101\nMessage ID = 25\nBranch = 1 (Normal)\nSequence = 01 (second entry in a chain)\n\nExample branch:\n25000 = Dark\n25100 = Normal\n25200 = Hero\n\nExample sequence:\n25100 = first entry\n25101 = second entry", "Info");
         }
 
         private void Button_DeleteEntry_Click(object sender, RoutedEventArgs e) {
@@ -362,33 +400,48 @@ namespace ShadowTH_Text_Editor {
                     filesToWriteReportingString = filesToWriteReportingString + "\n" + openedFnts[i];
                 }
             }
-            MessageBox.Show("Files to be written:" + filesToWriteReportingString);
+            if (filesToWriteReportingString == "")
+            {
+                MessageBox.Show("No changes detected. Nothing will be written.", "Report");
+                return;
+            }
+            MessageBox.Show("Files to be written:" + filesToWriteReportingString, "Report");
             var customSavePath = "";
             if (CheckBox_ChooseWhereToSave.IsChecked == true) {
                 var dialog = new Ookii.Dialogs.Wpf.VistaFolderBrowserDialog();
                 if (dialog.ShowDialog() == false) {
-                    MessageBox.Show("Save cancelled");
+                    MessageBox.Show("Save cancelled.", "Cancelled");
                     return;
                 }
                 customSavePath = dialog.SelectedPath;
             }
             foreach (FNT fnt in filesToWrite) {
-                if (CheckBox_ChooseWhereToSave.IsChecked == true) {
-                    var newFntFilePath = customSavePath + '\\' + fnt.fileName.Split(fnt.filterString + '\\')[1];
-                    Directory.CreateDirectory(Directory.GetParent(newFntFilePath).FullName);
-                    File.WriteAllBytes(newFntFilePath, fnt.BuildFNTFile().ToArray());
-                    if (CheckBox_NoReplaceMetTxd.IsChecked == false) {
-                        string prec = newFntFilePath.Remove(newFntFilePath.Length - 4);
-                        File.Copy("res/EN.txd", prec + ".txd", true);
-                        File.Copy("res/EN00.met", prec + "00.met", true);
+                try {
+                    if (CheckBox_ChooseWhereToSave.IsChecked == true)
+                    {
+                        var newFntFilePath = customSavePath + '\\' + fnt.fileName.Split(fnt.filterString + '\\')[1];
+                        Directory.CreateDirectory(Directory.GetParent(newFntFilePath).FullName);
+                        File.WriteAllBytes(newFntFilePath, fnt.BuildFNTFile().ToArray());
+                        if (CheckBox_NoReplaceMetTxd.IsChecked == false)
+                        {
+                            string prec = newFntFilePath.Remove(newFntFilePath.Length - 4);
+                            File.Copy("res/EN.txd", prec + ".txd", true);
+                            File.Copy("res/EN00.met", prec + "00.met", true);
+                        }
                     }
-                } else {
-                    File.WriteAllBytes(fnt.fileName, fnt.BuildFNTFile().ToArray());
-                    if (CheckBox_NoReplaceMetTxd.IsChecked == false) {
-                        string prec = fnt.fileName.Remove(fnt.fileName.Length - 4);
-                        File.Copy("res/EN.txd", prec + ".txd", true);
-                        File.Copy("res/EN00.met", prec + "00.met", true);
+                    else
+                    {
+                        File.WriteAllBytes(fnt.fileName, fnt.BuildFNTFile().ToArray());
+                        if (CheckBox_NoReplaceMetTxd.IsChecked == false)
+                        {
+                            string prec = fnt.fileName.Remove(fnt.fileName.Length - 4);
+                            File.Copy("res/EN.txd", prec + ".txd", true);
+                            File.Copy("res/EN00.met", prec + "00.met", true);
+                        }
                     }
+                } catch (Exception ex) {
+                    MessageBox.Show("Failed on " + fnt.ToString(), "An Exception Occurred");
+                    MessageBox.Show(ex.Message, "An Exception Occurred");
                 }
             }
             ClearData();
