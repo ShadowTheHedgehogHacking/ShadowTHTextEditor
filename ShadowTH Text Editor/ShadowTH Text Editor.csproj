@@ -1,14 +1,11 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop" ToolsVersion="Current">
+﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="Current">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0-windows</TargetFramework>
     <RootNamespace>ShadowTH_Text_Editor</RootNamespace>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>ShadowFNT.ico</ApplicationIcon>
-    <FileUpgradeFlags>40</FileUpgradeFlags>
-    <UpgradeBackupLocation>X:\CodingEnvironment\Other SourceCode\ShadowTH Text Editor\Backup\ShadowTH Text Editor\</UpgradeBackupLocation>
-    <OldToolsVersion>2.0</OldToolsVersion>
-    <Version>1.4.2</Version>
+    <Version>1.4.4</Version>
     <Authors>dreamsyntax</Authors>
     <Company>ShadowTheHedgehogHacking</Company>
   </PropertyGroup>
@@ -19,7 +16,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AFSLib" Version="1.0.0" />
-    <PackageReference Include="Ookii.Dialogs.Wpf" Version="4.0.0" />
+    <PackageReference Include="Ookii.Dialogs.Wpf" Version="5.0.0" />
     <PackageReference Include="VGAudio" Version="2.2.1" />
   </ItemGroup>
   <ItemGroup>
