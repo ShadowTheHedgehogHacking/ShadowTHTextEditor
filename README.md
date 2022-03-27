@@ -9,7 +9,7 @@
 FNT editor for Shadow The Hedgehog.
 
 ## Dependencies:
-* Requires .NET Core 3.1 (or higher).
+* Requires .NET 6 (or higher).
 
 ## Features:
 * Handles the entire /font folder (with locale support).
