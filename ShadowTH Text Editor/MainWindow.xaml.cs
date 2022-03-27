@@ -391,6 +391,11 @@ namespace ShadowTH_Text_Editor {
             ListBox_CurrentFNT.ScrollIntoView(entry);
         }
 
+        private void Button_DebugMenu_Click(object sender, RoutedEventArgs e)
+        {
+            new DebugMenu().Show();
+        }
+
         private void Button_ExportChangedFNTsClick(object sender, RoutedEventArgs e) {
             List<FNT> filesToWrite = new List<FNT>();
             string filesToWriteReportingString = "";
