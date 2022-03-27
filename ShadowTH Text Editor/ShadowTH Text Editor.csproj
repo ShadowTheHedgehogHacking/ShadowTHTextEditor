@@ -16,7 +16,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AFSLib" Version="1.0.0" />
-    <PackageReference Include="Ookii.Dialogs.Wpf" Version="5.0.0" />
+    <PackageReference Include="Ookii.Dialogs.Wpf" Version="5.0.1" />
     <PackageReference Include="VGAudio" Version="2.2.1" />
   </ItemGroup>
   <ItemGroup>
