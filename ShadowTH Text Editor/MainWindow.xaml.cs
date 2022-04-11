@@ -335,7 +335,7 @@ namespace ShadowTH_Text_Editor {
                 "Uses AFSLib by Sewer56 for AFS support\n" +
                 "Uses VGAudio by Alex Barney for ADX playback\n" + 
                 "Uses Ookii.Dialogs for dialogs\n\n" +
-                "https://github.com/ShadowTheHedgehogHacking\n\nto check for updates for this software.", "About ShadowTH Text Editor / FNT Editor v1.4.4");
+                "https://github.com/ShadowTheHedgehogHacking\n\nto check for updates for this software.", "About ShadowTH Text Editor / FNT Editor v1.4.5b");
         }
 
         private void ComboBox_LocaleSwitcher_SelectionChanged(object sender, SelectionChangedEventArgs e) {
@@ -381,6 +381,25 @@ namespace ShadowTH_Text_Editor {
             ListBox_CurrentFNT.SelectedIndex = -1;
             UpdateDisplayTableListView();
             Button_ExportChangedFNTs.IsEnabled = true;
+        }
+
+        private void Button_GotoEntryNumber_Click(object sender, RoutedEventArgs e) {
+            var response = Microsoft.VisualBasic.Interaction.InputBox("Enter Index Number", "Jump to Entry Number...", "0");
+            try
+            {
+                var element = int.Parse(response);
+                TableEntry entry = currentFnt.entryTable[element];
+                TextBox_SearchText.Text = "";
+                TextBox_SearchAudioFileName.Text = "";
+                UpdateDisplayTableListView();
+                ListBox_CurrentFNT.ScrollIntoView(entry);
+                ListBox_CurrentFNT.SelectedIndex = element;
+            } catch (Exception ex)
+            {
+                // catch all
+                MessageBox.Show("Invalid Input");
+                return;
+            }
         }
 
         private void Button_GotoSelected_Click(object sender, RoutedEventArgs e) {

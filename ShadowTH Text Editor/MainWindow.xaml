@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ShadowTH_Text_Editor"
         mc:Ignorable="d"
-        Title="Shadow The Hedgehog Text Editor / FNT Editor v1.4.4" Height="720" Width="900" MinWidth="900" MinHeight="720" MaxHeight="720" MaxWidth="900" Icon="ShadowFNT.ico" ResizeMode="CanMinimize">
+        Title="Shadow The Hedgehog Text Editor / FNT Editor v1.4.5b" Height="720" Width="900" MinWidth="900" MinHeight="720" MaxHeight="720" MaxWidth="900" Icon="ShadowFNT.ico" ResizeMode="CanMinimize">
     <Grid x:Name="mainGridPanel">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="16*"/>
@@ -88,7 +88,8 @@
                         <TextBlock><Run Text="Search for Audio Filename"/></TextBlock>
                         <TextBox x:Name="TextBox_SearchAudioFileName" AcceptsReturn="True" HorizontalAlignment="Left" VerticalContentAlignment="Center" Text="" TextWrapping="Wrap" TextChanged="TextBox_SearchFilters_TextChanged" Height="25" Width="186"/>
                     </StackPanel>
-                    <Button x:Name="Button_DebugMenu" Margin="150,20,0,0" Width="85" Height="25" Content="Debug Menu" Click="Button_DebugMenu_Click"/>
+                    <Button x:Name="Button_DebugMenu" Margin="50,20,0,0" Width="85" Height="25" Content="Debug Menu" Click="Button_DebugMenu_Click"/>
+                    <Button x:Name="Button_GotoEntryNumber" Margin="5,20,0,0" Width="85" Height="25" Content="Goto Number..." Click="Button_GotoEntryNumber_Click"/>
                     <Button x:Name="Button_GotoSelected" Margin="5,20,0,0" IsEnabled="False" Width="85" Height="25" Content="Goto Selected" Click="Button_GotoSelected_Click"/>
                 </StackPanel>
 
