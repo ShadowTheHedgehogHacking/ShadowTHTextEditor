@@ -5,113 +5,123 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ShadowTH_Text_Editor"
         mc:Ignorable="d"
-        Title="Shadow The Hedgehog Text Editor / FNT Editor v1.5" Height="720" Width="900" MinWidth="900" MinHeight="720" MaxHeight="720" MaxWidth="900" Icon="ShadowFNT.ico" ResizeMode="CanMinimize">
-    <Grid x:Name="mainGridPanel">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="16*"/>
-            <ColumnDefinition Width="7*"/>
-            <ColumnDefinition Width="114*"/>
-            <ColumnDefinition Width="169*"/>
-        </Grid.ColumnDefinitions>
-        <GroupBox Header="File Controls" Margin="175,10,10,530" Grid.Column="3">
-            <StackPanel Margin="10,0,-6,0">
-                <StackPanel Orientation="Horizontal" Margin="-4,20,0,10">
-                    <Button x:Name="Button_SelectFNTS" Margin="5,0,20,0" VerticalAlignment="Top" Width="125" Height="30" Click="Button_SelectFNTSClick" Grid.Column="1">Open /fonts/ Folder</Button>
-                    <Button x:Name="Button_ExportChangedFNTs" IsEnabled="False" VerticalAlignment="Top" Width="125" Height="30" Click="Button_ExportChangedFNTsClick" Content="Save All Changed FNTs" Grid.Column="1" />
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" Margin="-4,2.5,0,10">
-                    <Button x:Name="Button_OpenAFS" IsEnabled="False" Margin="5,10,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Width="125" Height="30" Click="Button_SelectAFSClick" Content="Open AFS File" Grid.Column="1"/>
-                    <Button x:Name="Button_ExportAFS" IsEnabled="False" Margin="20,10,20,0" HorizontalAlignment="Left" VerticalAlignment="Top" Width="125" Height="30" Click="Button_ExportAFSClick" Content="Save AFS File" Grid.Column="1"/>
-                </StackPanel>
-            </StackPanel>
-        </GroupBox>
-        <GroupBox Header="FNT Files" Margin="10,155,180,10" Padding="10" Grid.ColumnSpan="3">
-            <StackPanel>
-                <ComboBox x:Name="ComboBox_LocaleSwitcher" SelectionChanged="ComboBox_LocaleSwitcher_SelectionChanged" DropDownClosed="ComboBox_LocaleSwitcher_DropDownClosed">
-                    <ComboBoxItem IsSelected="True">EN</ComboBoxItem>
-                    <ComboBoxItem>FR</ComboBoxItem>
-                    <ComboBoxItem>GE</ComboBoxItem>
-                    <ComboBoxItem>IT</ComboBoxItem>
-                    <ComboBoxItem>JP</ComboBoxItem>
-                    <ComboBoxItem>SP</ComboBoxItem>
-                </ComboBox>
-                <ListBox x:Name="ListBox_AllFNTS" Margin="0,10,0,0" Height="440" SelectionChanged="ListBox_OpenedFNTS_SelectionChanged"/>
-            </StackPanel>
-        </GroupBox>
-        <GroupBox Header="Entries" Margin="165,155,326,85" Padding="10" Grid.ColumnSpan="2" Grid.Column="2">
-            <ListBox x:Name="ListBox_CurrentFNT" SelectionChanged="ListBox_CurrentFNT_SelectionChanged"/>
-        </GroupBox>
-        <GroupBox Header="Current Entry Attributes" Margin="175,155,10,85" Padding="10" Grid.Column="3">
-            <StackPanel>
-                <TextBlock>Text Address</TextBlock>
-                <TextBlock x:Name="TextBlock_SubtitleAddress"/>
-                <TextBlock>Message ID / Branch / Sequence</TextBlock>
-                <TextBox x:Name="TextBox_MessageIdBranchSequence"/>
-                <TextBlock>Text Type</TextBlock>
-                <ComboBox x:Name="ComboBox_EntryType">
-                    <ComboBoxItem>MENU</ComboBoxItem>
-                    <ComboBoxItem>IDLE</ComboBoxItem>
-                    <ComboBoxItem>BACKGROUND_VOICE</ComboBoxItem>
-                    <ComboBoxItem>PARTNER_ENEMY_DEFEATED</ComboBoxItem>
-                    <ComboBoxItem>AUTOMATIC</ComboBoxItem>
-                    <ComboBoxItem>PARTNER_SWAP</ComboBoxItem>
-                    <ComboBoxItem>PARTNER_OBJECTIVE</ComboBoxItem>
-                    <ComboBoxItem>TRIGGER_OBJECT</ComboBoxItem>
-                    <ComboBoxItem>PARTNER_MEET</ComboBoxItem>
-                    <ComboBoxItem>CUTSCENE</ComboBoxItem>
-                    <ComboBoxItem>FINAL_ENTRY</ComboBoxItem>
-                </ComboBox>
-                <TextBlock>Active Time</TextBlock>
-                <TextBox x:Name="TextBox_SubtitleActiveTime"/>
-                <TextBlock>Audio ID</TextBlock>
-                <TextBox x:Name="TextBox_AudioID"/>
-                <TextBlock>Audio Filename</TextBlock>
-                <TextBlock x:Name="TextBlock_AfsAudioIDName" Margin="0,5,0,10"/>
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                    <Button x:Name="Button_ReplaceADX" IsEnabled="False" Margin="0,0,10,0" Width="100" Height="30" HorizontalAlignment="Left" VerticalAlignment="Top" Click="Button_ReplaceADXClick" Content="Replace ADX"/>
-                    <Button x:Name="Button_ExtractADX" IsEnabled="False" Margin="10,0,0,0" Width="100" Height="30" HorizontalAlignment="Left" VerticalAlignment="Top" Click="Button_ExtractADXClick" Content="Extract ADX"/>
-                    <Button x:Name="Button_PreviewADX" FontSize="20" IsEnabled="False" Margin="20,0,0,0" Width="30" Height="30" HorizontalAlignment="Left" VerticalAlignment="Top" Click="Button_PreviewADXClick" Content="►"/>
-                </StackPanel>
-                <TextBlock>Text</TextBlock>
-                <TextBox x:Name="TextBox_EditSubtitle" TextWrapping="Wrap" AcceptsReturn="True" Height="70"/>
-                <Button x:Name="Button_SaveCurrentEntry" Height="30" Margin="50,10,50,0" Content="Save Entry Changes" Click="Button_SaveCurrentEntry_Click"/>
-            </StackPanel>
-        </GroupBox>
-        <GroupBox Header="Search Filters" Margin="10,10,325,530" Padding="10" Grid.ColumnSpan="4">
-            <StackPanel Orientation="Vertical" Margin="0,0,0,0"  Height="104" Width="515">
-                    <StackPanel>
-                        <TextBlock><Run Text="Search for Subtitle Text"/></TextBlock>
-                        <TextBox x:Name="TextBox_SearchText" AcceptsReturn="True" HorizontalAlignment="Left" VerticalContentAlignment="Center" Text="" TextWrapping="Wrap" TextChanged="TextBox_SearchFilters_TextChanged" Margin="0,0,0,10" Height="25" Width="420"/>
+        Title="Shadow The Hedgehog Text Editor / FNT Editor v1.5" Height="715" Width="800" MinWidth="240" MinHeight ="715" MaxWidth="800" MaxHeight="715" ResizeMode="CanResizeWithGrip" Icon="ShadowFNT.ico">
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Top">
+            <StackPanel Orientation="Horizontal">
+                <GroupBox Header="Search Filters" Padding="5" Width="502" Height="145">
+                    <StackPanel Orientation="Vertical">
+                        <StackPanel>
+                            <TextBlock><Run Text="Search for Subtitle Text"/></TextBlock>
+                            <TextBox x:Name="TextBox_SearchText" AcceptsReturn="True" HorizontalAlignment="Left" VerticalContentAlignment="Center" Text="" TextWrapping="Wrap" TextChanged="TextBox_SearchFilters_TextChanged" Margin="0,0,0,5" MinHeight="25" MaxHeight="50" MinWidth="200" MaxWidth="480"/>
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock><Run Text="Search for Audio Filename"/></TextBlock>
+                            <TextBox x:Name="TextBox_SearchAudioFileName" HorizontalAlignment="Left" VerticalContentAlignment="Center" Text="" TextWrapping="Wrap" TextChanged="TextBox_SearchFilters_TextChanged" Height="25" MinWidth="140" MaxWidth="480"/>
+                        </StackPanel>
                     </StackPanel>
-                <StackPanel Orientation="Horizontal">
+                </GroupBox>
+                <GroupBox Header="File Controls" Padding="5">
                     <StackPanel>
-                        <TextBlock><Run Text="Search for Audio Filename"/></TextBlock>
-                        <TextBox x:Name="TextBox_SearchAudioFileName" AcceptsReturn="True" HorizontalAlignment="Left" VerticalContentAlignment="Center" Text="" TextWrapping="Wrap" TextChanged="TextBox_SearchFilters_TextChanged" Height="25" Width="186"/>
-                    </StackPanel>
-                    <Button x:Name="Button_DebugMenu" Margin="50,20,0,0" Width="85" Height="25" Content="Debug Menu" Click="Button_DebugMenu_Click"/>
-                    <Button x:Name="Button_GotoEntryNumber" Margin="5,20,0,0" Width="85" Height="25" Content="Goto Number..." Click="Button_GotoEntryNumber_Click"/>
-                    <Button x:Name="Button_GotoSelected" Margin="5,20,0,0" IsEnabled="False" Width="85" Height="25" Content="Goto Selected" Click="Button_GotoSelected_Click"/>
-                </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Button x:Name="Button_SelectFNTS" Margin="0,0,5,0" VerticalAlignment="Top" Width="125" Height="30" Click="Button_SelectFNTSClick" Content="Open /fonts/ Folder"/>
+                            <Button x:Name="Button_ExportChangedFNTs" IsEnabled="False" VerticalAlignment="Top" Width="125" Height="30" Click="Button_ExportChangedFNTsClick" Content="Save All Changed FNTs"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                            <Button x:Name="Button_OpenAFS" Margin="0,0,5,0" IsEnabled="False" HorizontalAlignment="Left" VerticalAlignment="Top" Width="125" Height="30" Click="Button_SelectAFSClick" Content="Open AFS File"/>
+                            <Button x:Name="Button_ExportAFS" IsEnabled="False" HorizontalAlignment="Left" VerticalAlignment="Top" Width="125" Height="30" Click="Button_ExportAFSClick" Content="Save AFS File"/>
+                        </StackPanel>
 
+                        <CheckBox x:Name="CheckBox_ChooseWhereToSave" Margin="0,5" Content="Pick folder on Save"/>
+                        <CheckBox x:Name="CheckBox_NoReplaceMetTxd" Content="Do not replace .met and .txd"/>
+                    </StackPanel>
+                </GroupBox>
             </StackPanel>
-        </GroupBox>
-        <GroupBox Header="Program Controls" Margin="175,595,10,10" Grid.Column="3">
-            <StackPanel>
-                <CheckBox x:Name="CheckBox_ChooseWhereToSave" Margin="0,10" Content="Pick folder on Save"/>
-                <CheckBox x:Name="CheckBox_NoReplaceMetTxd" Content="Do not replace .met and .txd"/>
-                <Button x:Name="Button_About" Margin="220,-30,0,0" Height="30" Click="Button_About_Click" Width="65">About</Button>
-            </StackPanel>
-        </GroupBox>
-        <GroupBox Header="Entry Controls" Margin="166,595,327,10" Grid.Column="2" Grid.ColumnSpan="2">
-            <StackPanel>
-                <Grid Margin="0,5,0,-3">
-                    <TextBlock x:Name ="TextBlock_AddEntryHint" Margin="6,2,0,0"  Foreground="Gray" Text="Message ID / Branch / Sequence" />
-                    <TextBox x:Name="TextBox_AddEntryMessageID" Background="Transparent" VerticalContentAlignment="Center" Margin="0,0,130,0"  Width="175" Height="20" TextChanged="TextBox_AddEntryMessageID_TextChanged"/>
-                </Grid>
-                <Button x:Name="Button_AddEntry" Margin="120,-22,0,0" IsEnabled="False" Width="65" Height="30" Content="Add Entry" Click="Button_AddEntry_Click"/>
-                <Button x:Name="Button_AddEntry_Question" Margin="220,-30,0,0" Width="25" Height="30" Content="?" Click="Button_AddEntry_Question_Click"/>
-                <Button x:Name="Button_DeleteEntry" Margin="-185,0,0,0" IsEnabled="False" Width="120" Height="20" Content="Delete Selected Entry" Click="Button_DeleteEntry_Click"/>
-            </StackPanel>
-        </GroupBox>
-    </Grid>
+        </StackPanel>
+        <StackPanel DockPanel.Dock="Right">
+            <GroupBox Header="Current Entry Attributes" Padding="5">
+                <StackPanel>
+                    <TextBlock>Text Address</TextBlock>
+                    <TextBlock x:Name="TextBlock_SubtitleAddress"/>
+                    <TextBlock>Message ID / Branch / Sequence</TextBlock>
+                    <TextBox x:Name="TextBox_MessageIdBranchSequence" Height="25" VerticalContentAlignment="Center"/>
+                    <TextBlock>Text Type</TextBlock>
+                    <ComboBox x:Name="ComboBox_EntryType" Height="25" VerticalContentAlignment="Center">
+                        <ComboBoxItem>MENU</ComboBoxItem>
+                        <ComboBoxItem>IDLE</ComboBoxItem>
+                        <ComboBoxItem>BACKGROUND_VOICE</ComboBoxItem>
+                        <ComboBoxItem>PARTNER_ENEMY_DEFEATED</ComboBoxItem>
+                        <ComboBoxItem>AUTOMATIC</ComboBoxItem>
+                        <ComboBoxItem>PARTNER_SWAP</ComboBoxItem>
+                        <ComboBoxItem>PARTNER_OBJECTIVE</ComboBoxItem>
+                        <ComboBoxItem>TRIGGER_OBJECT</ComboBoxItem>
+                        <ComboBoxItem>PARTNER_MEET</ComboBoxItem>
+                        <ComboBoxItem>CUTSCENE</ComboBoxItem>
+                        <ComboBoxItem>FINAL_ENTRY</ComboBoxItem>
+                    </ComboBox>
+                    <TextBlock>Active Time</TextBlock>
+                    <TextBox x:Name="TextBox_SubtitleActiveTime" Height="25" VerticalContentAlignment="Center"/>
+                    <TextBlock>Audio ID</TextBlock>
+                    <TextBox x:Name="TextBox_AudioID" Height="25" VerticalContentAlignment="Center"/>
+                    <TextBlock>Audio Filename</TextBlock>
+                    <TextBlock x:Name="TextBlock_AfsAudioIDName"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5,0,5">
+                        <Button x:Name="Button_ReplaceADX" IsEnabled="False" Margin="0,0,0,0" Width="80" Height="30" VerticalAlignment="Top" Click="Button_ReplaceADXClick" Content="Replace ADX"/>
+                        <Button x:Name="Button_ExtractADX" IsEnabled="False" Margin="5,0,0,0" Width="80" Height="30" VerticalAlignment="Top" Click="Button_ExtractADXClick" Content="Extract ADX"/>
+                        <Button x:Name="Button_PreviewADX" FontSize="20" IsEnabled="False" Margin="5,0,0,0" Width="30" Height="30" VerticalAlignment="Top" Click="Button_PreviewADXClick" Content="►"/>
+                    </StackPanel>
+                    <TextBlock>Text</TextBlock>
+                    <TextBox x:Name="TextBox_EditSubtitle" TextWrapping="NoWrap" AcceptsReturn="True" MinHeight="90" MinWidth="260" MaxWidth="260" MaxHeight="90"/>
+                    <Button x:Name="Button_SaveCurrentEntry" Height="30" Margin="0,5,0,0" Content="Save Entry Changes" Click="Button_SaveCurrentEntry_Click"/>
+                </StackPanel>
+            </GroupBox>
+            <GroupBox Header="Misc">
+                <StackPanel>
+                    <Button x:Name="Button_About" Height="25" Click="Button_About_Click" Width="85">About</Button>
+                    <Button x:Name="Button_DebugMenu" Margin="5"  Width="85" Height="25" Content="Debug Menu" Click="Button_DebugMenu_Click"/>
+                </StackPanel>
+            </GroupBox>
+        </StackPanel>
+
+        <StackPanel DockPanel.Dock="Right">
+            <GroupBox Header="Entry Controls">
+                <StackPanel HorizontalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" Margin="5">
+                        <Grid>
+                            <TextBlock x:Name="TextBlock_AddEntryHint" Margin="2,5,0,0"  Foreground="Gray" Text="Message ID / Branch / Sequence" />
+                            <TextBox x:Name="TextBox_AddEntryMessageID" Background="Transparent" VerticalContentAlignment="Center" Width="176" Height="25" TextChanged="TextBox_AddEntryMessageID_TextChanged"/>
+                        </Grid>
+                        <Button x:Name="Button_EntryControls_Question" Margin="5,0,0,0" Width="25" Height="25" Content="?" Click="Button_EntryControls_Question_Click"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="5,0,5,0">
+                        <Button x:Name="Button_AddEntry" IsEnabled="False" Width="90" Height="25" Content="Add Entry" Click="Button_AddEntry_Click"/>
+                        <Button x:Name="Button_DeleteEntry" IsEnabled="False" Margin="26,0,0,0" Width="90" Height="25" Content="Delete Selected" Click="Button_DeleteEntry_Click"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="5">
+                        <Button x:Name="Button_GotoEntryNumber" Width="90" Height="25" Content="Goto Number..." Click="Button_GotoEntryNumber_Click"/>
+                        <Button x:Name="Button_GotoSelected" IsEnabled="False" Margin="26,0,0,0" Width="90" Height="25" Content="Goto Selected" Click="Button_GotoSelected_Click"/>
+                    </StackPanel>
+                </StackPanel>
+            </GroupBox>
+            <GroupBox Header="Entries" Padding="5">
+                <ListBox x:Name="ListBox_CurrentFNT" MinHeight="375" MaxHeight="375" MinWidth="280" MaxWidth="280" SelectionChanged="ListBox_CurrentFNT_SelectionChanged"/>
+            </GroupBox>
+        </StackPanel>
+
+        <StackPanel DockPanel.Dock="Left" MaxWidth="280">
+            <GroupBox Header="FNT Files" Padding="5">
+                <StackPanel>
+                    <ComboBox x:Name="ComboBox_LocaleSwitcher" MaxWidth="280" SelectionChanged="ComboBox_LocaleSwitcher_SelectionChanged" DropDownClosed="ComboBox_LocaleSwitcher_DropDownClosed">
+                        <ComboBoxItem IsSelected="True">EN</ComboBoxItem>
+                        <ComboBoxItem>FR</ComboBoxItem>
+                        <ComboBoxItem>GE</ComboBoxItem>
+                        <ComboBoxItem>IT</ComboBoxItem>
+                        <ComboBoxItem>JP</ComboBoxItem>
+                        <ComboBoxItem>SP</ComboBoxItem>
+                    </ComboBox>
+                    <ListBox x:Name="ListBox_AllFNTS" Margin="0,5,0,0" MaxWidth="280" MaxHeight="467" MinHeight="467" SelectionChanged="ListBox_OpenedFNTS_SelectionChanged"/>
+                </StackPanel>
+            </GroupBox>
+        </StackPanel>
+    </DockPanel>
 </Window>
