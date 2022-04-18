@@ -372,7 +372,7 @@ namespace ShadowTH_Text_Editor {
             }
         }
 
-        private void Button_AddEntry_Question_Click(object sender, RoutedEventArgs e) {
+        private void Button_EntryControls_Question_Click(object sender, RoutedEventArgs e) {
             MessageBox.Show("Add a new entry to a fnt.\n\nSpecify the Message ID / Branch / Sequence int to automatically assign the proper position in the fnt.\nAllows for chaining subtitles/audio by adding +1 to an existing number.\n\nDo not add prior to the first or after the last entry in a fnt.\n\nFormat: XYZ\n    X=Message ID\n    Y=Branch\n    Z=Sequence\n\nExample: 25101\nMessage ID = 25\nBranch = 1 (Normal)\nSequence = 01 (second entry in a chain)\n\nExample branch:\n25000 = Dark\n25100 = Normal\n25200 = Hero\n\nExample sequence:\n25100 = first entry\n25101 = second entry", "Info");
         }
 
@@ -397,7 +397,7 @@ namespace ShadowTH_Text_Editor {
             } catch (Exception ex)
             {
                 // catch all
-                MessageBox.Show("Invalid Input");
+                MessageBox.Show("Invalid Input\n" + ex.Message);
                 return;
             }
         }
