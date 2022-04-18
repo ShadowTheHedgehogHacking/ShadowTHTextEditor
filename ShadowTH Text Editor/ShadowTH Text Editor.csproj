@@ -5,7 +5,7 @@
     <RootNamespace>ShadowTH_Text_Editor</RootNamespace>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>ShadowFNT.ico</ApplicationIcon>
-    <Version>1.4.5</Version>
+    <Version>1.5.0</Version>
     <Authors>dreamsyntax</Authors>
     <Company>ShadowTheHedgehogHacking</Company>
   </PropertyGroup>
@@ -20,7 +20,7 @@
     <PackageReference Include="VGAudio" Version="2.2.1" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ShadowFNT\ShadowFNT.csproj" />
+    <ProjectReference Include="..\ShadowFNT\ShadowFNT\ShadowFNT.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="res\EN.txd">

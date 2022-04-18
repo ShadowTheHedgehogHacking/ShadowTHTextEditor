@@ -335,7 +335,7 @@ namespace ShadowTH_Text_Editor {
                 "Uses AFSLib by Sewer56 for AFS support\n" +
                 "Uses VGAudio by Alex Barney for ADX playback\n" + 
                 "Uses Ookii.Dialogs for dialogs\n\n" +
-                "https://github.com/ShadowTheHedgehogHacking\n\nto check for updates for this software.", "About ShadowTH Text Editor / FNT Editor v1.4.5b");
+                "https://github.com/ShadowTheHedgehogHacking\n\nto check for updates for this software.", "About ShadowTH Text Editor / FNT Editor v1.5");
         }
 
         private void ComboBox_LocaleSwitcher_SelectionChanged(object sender, SelectionChangedEventArgs e) {
