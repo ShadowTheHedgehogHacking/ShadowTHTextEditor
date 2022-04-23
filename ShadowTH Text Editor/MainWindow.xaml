@@ -40,9 +40,11 @@
                             <Button x:Name="Button_OpenAFS" Margin="0,0,5,0" IsEnabled="False" HorizontalAlignment="Left" VerticalAlignment="Top" Width="125" Height="30" Click="Button_SelectAFSClick" Content="Open AFS File"/>
                             <Button x:Name="Button_ExportAFS" IsEnabled="False" HorizontalAlignment="Left" VerticalAlignment="Top" Width="125" Height="30" Click="Button_ExportAFSClick" Content="Save AFS File"/>
                         </StackPanel>
-
-                        <CheckBox x:Name="CheckBox_ChooseWhereToSave" Margin="0,5" Content="Pick folder on Save"/>
-                        <CheckBox x:Name="CheckBox_NoReplaceMetTxd" Content="Do not replace .met and .txd"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,5">
+                            <CheckBox x:Name="CheckBox_ChooseWhereToSave" Content="Pick folder on Save" ToolTip="Lets you choose the export folder on saving FNT/AFS instead of overwritting."/>
+                            <CheckBox x:Name="CheckBox_RecalculateAddresses" Margin="8,0" IsChecked="True" Content="Recalc Addresses" ToolTip="Recalculate all entry Text Addresses automatically with no assumptions about the original FNT. Recommended ON."/>
+                        </StackPanel>
+                        <CheckBox x:Name="CheckBox_NoReplaceMetTxd" Content="Do not replace .met and .txd" ToolTip="Enabling disables replacing the .met and .txd with the EN universal provided version. Recommended OFF unless you know what you are doing."/>
                     </StackPanel>
                 </GroupBox>
             </StackPanel>
