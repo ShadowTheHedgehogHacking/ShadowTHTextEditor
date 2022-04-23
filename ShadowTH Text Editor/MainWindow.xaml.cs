@@ -415,6 +415,14 @@ namespace ShadowTH_Text_Editor {
             new DebugMenu().Show();
         }
 
+        private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (CoreWindow.Width > 675)
+                FileControlsGroupBoxTranslateTransform.X = 200;
+            else
+                FileControlsGroupBoxTranslateTransform.X = 0;
+        }
+
         private void Button_ExportChangedFNTsClick(object sender, RoutedEventArgs e) {
             List<FNT> filesToWrite = new List<FNT>();
             string filesToWriteReportingString = "";

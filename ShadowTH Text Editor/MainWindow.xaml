@@ -5,11 +5,12 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ShadowTH_Text_Editor"
         mc:Ignorable="d"
-        Title="Shadow The Hedgehog Text Editor / FNT Editor v1.5" Height="715" Width="800" MinWidth="240" MinHeight ="715" MaxWidth="800" MaxHeight="715" ResizeMode="CanResizeWithGrip" Icon="ShadowFNT.ico">
+        x:Name="CoreWindow"
+        Title="Shadow The Hedgehog Text Editor / FNT Editor v1.5" Height="715" Width="800" MinWidth="600" MinHeight="715" MaxWidth="800" MaxHeight="715" ResizeMode="CanResizeWithGrip" Icon="ShadowFNT.ico" SizeChanged="Window_SizeChanged">
     <DockPanel>
         <StackPanel DockPanel.Dock="Top">
             <StackPanel Orientation="Horizontal">
-                <GroupBox Header="Search Filters" Padding="5" Width="502" Height="145">
+                <GroupBox Header="Search Filters" Padding="5" MinWidth="302" MaxWidth="502" Height="145">
                     <StackPanel Orientation="Vertical">
                         <StackPanel>
                             <TextBlock><Run Text="Search for Subtitle Text"/></TextBlock>
@@ -21,7 +22,15 @@
                         </StackPanel>
                     </StackPanel>
                 </GroupBox>
-                <GroupBox Header="File Controls" Padding="5">
+                <GroupBox Header="File Controls" Padding="5" RenderTransformOrigin="0.5,0.5">
+                    <GroupBox.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform/>
+                            <SkewTransform/>
+                            <RotateTransform/>
+                            <TranslateTransform x:Name="FileControlsGroupBoxTranslateTransform" X="200"/>
+                        </TransformGroup>
+                    </GroupBox.RenderTransform>
                     <StackPanel>
                         <StackPanel Orientation="Horizontal">
                             <Button x:Name="Button_SelectFNTS" Margin="0,0,5,0" VerticalAlignment="Top" Width="125" Height="30" Click="Button_SelectFNTSClick" Content="Open /fonts/ Folder"/>
