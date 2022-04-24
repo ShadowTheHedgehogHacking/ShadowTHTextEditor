@@ -10,7 +10,7 @@
     <DockPanel>
         <StackPanel DockPanel.Dock="Top">
             <StackPanel Orientation="Horizontal">
-                <GroupBox Header="Search Filters" Padding="5" MinWidth="302" MaxWidth="502" Height="145">
+                <GroupBox x:Name="GroupBoxSearchFilters" Header="Search Filters" Padding="5" MinWidth="302" MaxWidth="502" Height="145">
                     <StackPanel Orientation="Vertical">
                         <StackPanel>
                             <TextBlock><Run Text="Search for Subtitle Text"/></TextBlock>
@@ -22,7 +22,7 @@
                         </StackPanel>
                     </StackPanel>
                 </GroupBox>
-                <GroupBox Header="File Controls" Padding="5" RenderTransformOrigin="0.5,0.5">
+                <GroupBox x:Name="GroupBoxFileControls" Header="File Controls" Padding="5" RenderTransformOrigin="0.5,0.5">
                     <GroupBox.RenderTransform>
                         <TransformGroup>
                             <ScaleTransform/>
@@ -50,7 +50,7 @@
             </StackPanel>
         </StackPanel>
         <StackPanel DockPanel.Dock="Right">
-            <GroupBox Header="Current Entry Attributes" Padding="5">
+            <GroupBox x:Name="GroupBoxCurrentEntryAttributes" Header="Current Entry Attributes" Padding="5">
                 <StackPanel>
                     <TextBlock>Text Address</TextBlock>
                     <TextBlock x:Name="TextBlock_SubtitleAddress"/>
@@ -86,7 +86,7 @@
                     <Button x:Name="Button_SaveCurrentEntry" Height="30" Margin="0,5,0,0" Content="Save Entry Changes" Click="Button_SaveCurrentEntry_Click"/>
                 </StackPanel>
             </GroupBox>
-            <GroupBox Header="Misc" Height="85">
+            <GroupBox x:Name="GroupBoxMisc" Header="Misc" Height="85">
                 <StackPanel>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                         <Button x:Name="Button_About" Height="25" Click="Button_About_Click" Width="85">About</Button>
@@ -98,7 +98,7 @@
         </StackPanel>
 
         <StackPanel DockPanel.Dock="Right">
-            <GroupBox Header="Entry Controls">
+            <GroupBox x:Name="GroupBoxEntryControls" Header="Entry Controls">
                 <StackPanel HorizontalAlignment="Center">
                     <StackPanel Orientation="Horizontal" Margin="5">
                         <Grid>
@@ -117,13 +117,13 @@
                     </StackPanel>
                 </StackPanel>
             </GroupBox>
-            <GroupBox Header="Entries" Padding="5">
+            <GroupBox x:Name="GroupBoxEntries" Header="Entries" Padding="5">
                 <ListBox x:Name="ListBox_CurrentFNT" MinHeight="375" MaxHeight="375" MinWidth="280" MaxWidth="280" SelectionChanged="ListBox_CurrentFNT_SelectionChanged"/>
             </GroupBox>
         </StackPanel>
 
         <StackPanel DockPanel.Dock="Left" MaxWidth="280">
-            <GroupBox Header="FNT Files" Padding="5">
+            <GroupBox x:Name="GroupBoxFNTFiles" Header="FNT Files" Padding="5">
                 <StackPanel>
                     <ComboBox x:Name="ComboBox_LocaleSwitcher" MaxWidth="280" SelectionChanged="ComboBox_LocaleSwitcher_SelectionChanged" DropDownClosed="ComboBox_LocaleSwitcher_DropDownClosed">
                         <ComboBoxItem IsSelected="True">EN</ComboBoxItem>

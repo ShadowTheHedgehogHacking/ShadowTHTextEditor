@@ -428,11 +428,27 @@ namespace ShadowTH_Text_Editor {
         private void CheckBox_DarkMode_Checked(object sender, RoutedEventArgs e)
         {
             ThemeHelper.ApplySkin(Skin.Dark);
+            SetGroupBoxBorder(0.1d);
+
         }
 
         private void CheckBox_DarkMode_Unchecked(object sender, RoutedEventArgs e)
         {
             ThemeHelper.ApplySkin(Skin.Light);
+            SetGroupBoxBorder(1);
+        }
+
+        private void SetGroupBoxBorder(double multiplier)
+        {
+            double thickness = 1.0d * multiplier;
+            var value = new Thickness(thickness, thickness, thickness, thickness);
+            GroupBoxEntries.BorderThickness = value;
+            GroupBoxEntryControls.BorderThickness = value;
+            GroupBoxFileControls.BorderThickness = value; ;
+            GroupBoxFNTFiles.BorderThickness = value;
+            GroupBoxMisc.BorderThickness = value;
+            GroupBoxSearchFilters.BorderThickness = value;
+            GroupBoxCurrentEntryAttributes.BorderThickness = value;
         }
 
         private void Button_ExportChangedFNTsClick(object sender, RoutedEventArgs e) {
