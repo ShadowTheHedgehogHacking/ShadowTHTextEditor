@@ -13,6 +13,7 @@
     <None Remove="res\EN.txd" />
     <None Remove="res\EN00.met" />
     <None Remove="ShadowFNT.ico" />
+    <None Remove="Themes\DarkTheme.xaml~RF4b27ed.TMP" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AFSLib" Version="1.0.0" />
@@ -34,5 +35,18 @@
     <Resource Include="ShadowFNT.ico">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>

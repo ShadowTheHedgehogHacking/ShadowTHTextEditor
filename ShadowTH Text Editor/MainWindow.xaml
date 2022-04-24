@@ -86,10 +86,13 @@
                     <Button x:Name="Button_SaveCurrentEntry" Height="30" Margin="0,5,0,0" Content="Save Entry Changes" Click="Button_SaveCurrentEntry_Click"/>
                 </StackPanel>
             </GroupBox>
-            <GroupBox Header="Misc">
+            <GroupBox Header="Misc" Height="85">
                 <StackPanel>
-                    <Button x:Name="Button_About" Height="25" Click="Button_About_Click" Width="85">About</Button>
-                    <Button x:Name="Button_DebugMenu" Margin="5"  Width="85" Height="25" Content="Debug Menu" Click="Button_DebugMenu_Click"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Button x:Name="Button_About" Height="25" Click="Button_About_Click" Width="85">About</Button>
+                        <Button x:Name="Button_DebugMenu" Margin="5"  Width="85" Height="25" Content="Debug Menu" Click="Button_DebugMenu_Click"/>
+                    </StackPanel>
+                    <CheckBox x:Name="CheckBox_DarkMode" HorizontalAlignment="Center" Content="Dark Mode Theme" ToolTip="Enable for Dark Mode Theme" Unchecked="CheckBox_DarkMode_Unchecked" Checked="CheckBox_DarkMode_Checked"/>
                 </StackPanel>
             </GroupBox>
         </StackPanel>

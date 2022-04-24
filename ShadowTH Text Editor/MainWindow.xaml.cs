@@ -1,5 +1,6 @@
 ﻿using AFSLib;
 using ShadowFNT.Structures;
+using ShadowTH_Text_Editor.Helpers;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -333,7 +334,8 @@ namespace ShadowTH_Text_Editor {
                 ".fnt struct reversal done by LimblessVector & dreamsyntax\n" +
                 ".met/.txd universal map and design work by TheHatedGravity\n" +
                 "Uses AFSLib by Sewer56 for AFS support\n" +
-                "Uses VGAudio by Alex Barney for ADX playback\n" + 
+                "Uses VGAudio by Alex Barney for ADX playback\n" +
+                "Uses modified version of DarkTheme by Otiel (BandcampDownloader Dev)\n" +
                 "Uses Ookii.Dialogs for dialogs\n\n" +
                 "https://github.com/ShadowTheHedgehogHacking\n\nto check for updates for this software.", "About ShadowTH Text Editor / FNT Editor v1.5");
         }
@@ -421,6 +423,16 @@ namespace ShadowTH_Text_Editor {
                 FileControlsGroupBoxTranslateTransform.X = 200;
             else
                 FileControlsGroupBoxTranslateTransform.X = 0;
+        }
+
+        private void CheckBox_DarkMode_Checked(object sender, RoutedEventArgs e)
+        {
+            ThemeHelper.ApplySkin(Skin.Dark);
+        }
+
+        private void CheckBox_DarkMode_Unchecked(object sender, RoutedEventArgs e)
+        {
+            ThemeHelper.ApplySkin(Skin.Light);
         }
 
         private void Button_ExportChangedFNTsClick(object sender, RoutedEventArgs e) {
