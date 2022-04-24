@@ -13,7 +13,6 @@
     <None Remove="res\EN.txd" />
     <None Remove="res\EN00.met" />
     <None Remove="ShadowFNT.ico" />
-    <None Remove="Themes\DarkTheme.xaml~RF4b27ed.TMP" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AFSLib" Version="1.0.0" />
