@@ -9,7 +9,7 @@
 FNT editor for GameCube/Xbox versions of Shadow The Hedgehog.
 
 ## Dependencies:
-* Requires .NET 6 (or higher).
+* Requires [.NET 6 Desktop Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/6.0/runtime) (or higher).
 
 ## Features:
 * Handles the entire /font folder (with locale support).
