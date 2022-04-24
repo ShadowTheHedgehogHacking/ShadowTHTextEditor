@@ -333,9 +333,9 @@ namespace ShadowTH_Text_Editor {
             MessageBox.Show("Created by dreamsyntax\n" +
                 ".fnt struct reversal done by LimblessVector & dreamsyntax\n" +
                 ".met/.txd universal map and design work by TheHatedGravity\n" +
-                "Uses AFSLib by Sewer56 for AFS support\n" +
+                "Uses AfsLib by Sewer56 for AFS support\n" +
                 "Uses VGAudio by Alex Barney for ADX playback\n" +
-                "Uses modified version of DarkTheme by Otiel (BandcampDownloader Dev)\n" +
+                "Uses modified version of DarkTheme by Otiel\n" +
                 "Uses Ookii.Dialogs for dialogs\n\n" +
                 "https://github.com/ShadowTheHedgehogHacking\n\nto check for updates for this software.", "About ShadowTH Text Editor / FNT Editor v1.5");
         }
