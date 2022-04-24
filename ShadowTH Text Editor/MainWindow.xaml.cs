@@ -461,6 +461,10 @@ namespace ShadowTH_Text_Editor {
             }
             foreach (FNT fnt in filesToWrite) {
                 try {
+                    if (CheckBox_RecalculateAddresses.IsChecked == true)
+                    {
+                        fnt.RecomputeAllSubtitleAddresses();
+                    }
                     if (CheckBox_ChooseWhereToSave.IsChecked == true)
                     {
                         var newFntFilePath = customSavePath + '\\' + fnt.fileName.Split(fnt.filterString + '\\')[1];
