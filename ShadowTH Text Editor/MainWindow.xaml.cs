@@ -78,6 +78,9 @@ namespace ShadowTH_Text_Editor {
             TextBox_SubtitleActiveTime.Clear();
             Button_DeleteEntry.IsEnabled = false;
             Button_GotoSelected.IsEnabled = false;
+            Button_ExtractADX.IsEnabled = false;
+            Button_ReplaceADX.IsEnabled = false;
+            Button_PreviewADX.IsEnabled = false;
         }
 
         private void ListBox_OpenedFNTS_SelectionChanged(object sender, SelectionChangedEventArgs e) {
@@ -155,8 +158,14 @@ namespace ShadowTH_Text_Editor {
                         if (audioId == -1)
                             continue;
 
-                        if (currentAfs.Files[audioId].Name.Contains(TextBox_SearchAudioFileName.Text.ToLower()))
-                            return true;
+                        try
+                        {
+                            if (currentAfs.Files[audioId].Name.Contains(TextBox_SearchAudioFileName.Text.ToLower()))
+                                return true;
+                        } catch (ArgumentOutOfRangeException)
+                        {
+                            continue;
+                        }
                     }
                 }
                 return false;
@@ -178,8 +187,14 @@ namespace ShadowTH_Text_Editor {
                     if (audioId == -1)
                         return false;
 
-                    if (currentAfs.Files[audioId].Name.Contains(TextBox_SearchAudioFileName.Text.ToLower()))
-                        return true;
+                    try
+                    {
+                        if (currentAfs.Files[audioId].Name.Contains(TextBox_SearchAudioFileName.Text.ToLower()))
+                            return true;
+                    } catch (ArgumentOutOfRangeException)
+                    {
+                        return false;
+                    }
                 }
                 return false;
             };
@@ -309,7 +324,14 @@ namespace ShadowTH_Text_Editor {
         private void Button_PreviewADXClick(object sender, RoutedEventArgs e) {
             if (currentAfs == null)
                 return;
-            int audioId = currentFnt.GetEntryAudioID(currentFnt.entryTable.IndexOf((TableEntry)ListBox_CurrentFNT.SelectedItem));
+            int audioId;
+            try
+            {
+                audioId = currentFnt.GetEntryAudioID(currentFnt.entryTable.IndexOf((TableEntry)ListBox_CurrentFNT.SelectedItem));
+            } catch (NullReferenceException)
+            {
+                return;
+            }
             if (audioId == -1)
                 return;
 
