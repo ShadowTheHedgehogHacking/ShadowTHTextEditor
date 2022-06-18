@@ -22,6 +22,7 @@ namespace ShadowTH_Text_Editor {
 
         public MainWindow() {
             InitializeComponent();
+            PreferredThemeCheck();
         }
 
         private void Button_SelectFNTSClick(object sender, RoutedEventArgs e) {
@@ -359,7 +360,7 @@ namespace ShadowTH_Text_Editor {
                 "Uses VGAudio by Alex Barney for ADX playback\n" +
                 "Uses modified version of DarkTheme by Otiel\n" +
                 "Uses Ookii.Dialogs for dialogs\n\n" +
-                "https://github.com/ShadowTheHedgehogHacking\n\nto check for updates for this software.", "About ShadowTH Text Editor / FNT Editor v1.5");
+                "https://github.com/ShadowTheHedgehogHacking\n\nto check for updates for this software.", "About ShadowTH Text Editor / FNT Editor v1.5.2");
         }
 
         private void ComboBox_LocaleSwitcher_SelectionChanged(object sender, SelectionChangedEventArgs e) {
@@ -451,13 +452,14 @@ namespace ShadowTH_Text_Editor {
         {
             ThemeHelper.ApplySkin(Skin.Dark);
             SetGroupBoxBorder(0.1d);
-
+            PreferredThemeSave("Dark");
         }
 
         private void CheckBox_DarkMode_Unchecked(object sender, RoutedEventArgs e)
         {
             ThemeHelper.ApplySkin(Skin.Light);
             SetGroupBoxBorder(1);
+            PreferredThemeSave("Light");
         }
 
         private void SetGroupBoxBorder(double multiplier)
@@ -531,6 +533,25 @@ namespace ShadowTH_Text_Editor {
                 }
             }
             ClearData();
+        }
+
+        private void PreferredThemeCheck()
+        {
+            string themeConfig = AppDomain.CurrentDomain.BaseDirectory + "/theme.ini";
+            if (File.Exists(themeConfig))
+            {
+                foreach (string i in File.ReadAllLines(themeConfig))
+                {
+                    if (i.StartsWith("Dark"))
+                        CheckBox_DarkMode.IsChecked = true;
+                }
+            }
+        }
+
+        private void PreferredThemeSave(string themeName)
+        {
+            string themeConfig = AppDomain.CurrentDomain.BaseDirectory + "/theme.ini";
+            File.WriteAllText(themeConfig, themeName);
         }
     }
 }
