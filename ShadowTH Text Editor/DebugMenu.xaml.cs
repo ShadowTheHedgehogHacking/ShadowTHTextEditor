@@ -1,18 +1,7 @@
 ﻿using ShadowFNT.Structures;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace ShadowTH_Text_Editor
 {
@@ -136,6 +125,11 @@ namespace ShadowTH_Text_Editor
                     MessageBox.Show(ex.Message, "An Exception Occurred");
                 }
             }
+        }
+
+        private void Button_HintController_Click(object sender, RoutedEventArgs e)
+        {
+            new HintEditor().Show();
         }
     }
 }

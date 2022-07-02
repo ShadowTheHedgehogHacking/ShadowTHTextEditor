@@ -6,7 +6,8 @@
         xmlns:local="clr-namespace:ShadowTH_Text_Editor"
         mc:Ignorable="d"
         Title="DebugMenu" Height="100" Width="100" MinWidth="100" MinHeight="100" MaxWidth="200" MaxHeight="200">
-    <Grid>
+    <StackPanel Margin="0,5,0,0">
         <Button x:Name="Button_CompareFNT" Margin="0,0,0,1" Width="85" Height="25" Content="Compare FNTs" Click="Button_CompareFNT_Click"/>
-    </Grid>
+        <Button x:Name="Button_HintController" Width="85" Height="25" Content="HintController" Click="Button_HintController_Click"/>
+    </StackPanel>
 </Window>
