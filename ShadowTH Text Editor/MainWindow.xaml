@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:ShadowTH_Text_Editor"
         mc:Ignorable="d"
         x:Name="CoreWindow"
-        Title="Shadow The Hedgehog Text Editor / FNT Editor v1.5.2" Height="715" Width="800" MinWidth="600" MinHeight="715" MaxWidth="800" MaxHeight="715" ResizeMode="CanResizeWithGrip" Icon="ShadowFNT.ico" SizeChanged="Window_SizeChanged">
+        Title="Shadow The Hedgehog Text Editor / FNT Editor v1.6.0a" Height="715" Width="800" MinWidth="600" MinHeight="715" MaxWidth="800" MaxHeight="715" ResizeMode="CanResizeWithGrip" Icon="ShadowFNT.ico" SizeChanged="Window_SizeChanged">
     <DockPanel>
         <StackPanel DockPanel.Dock="Top">
             <StackPanel Orientation="Horizontal">
@@ -71,7 +71,10 @@
                         <ComboBoxItem>FINAL_ENTRY</ComboBoxItem>
                     </ComboBox>
                     <TextBlock>Active Time</TextBlock>
-                    <TextBox x:Name="TextBox_SubtitleActiveTime" Height="25" VerticalContentAlignment="Center"/>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBox x:Name="TextBox_SubtitleActiveTime" Height="25" VerticalContentAlignment="Center" Width="172" Margin="0,0,5,0"/>
+                        <Button x:Name="Button_AutoActiveTime_CurrentEntry" Height="25" VerticalContentAlignment="Center" Width="84" HorizontalAlignment="Left" Content="Auto (BETA)" IsEnabled="False" Click="Button_AutoActiveTime_CurrentEntry_Click"/>
+                    </StackPanel>
                     <TextBlock>Audio ID</TextBlock>
                     <TextBox x:Name="TextBox_AudioID" Height="25" VerticalContentAlignment="Center"/>
                     <TextBlock>Audio Filename</TextBlock>

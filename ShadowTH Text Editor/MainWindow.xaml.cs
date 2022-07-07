@@ -1,4 +1,5 @@
 ﻿using AFSLib;
+using NAudio.Wave;
 using ShadowFNT.Structures;
 using ShadowTH_Text_Editor.Helpers;
 using System;
@@ -82,6 +83,7 @@ namespace ShadowTH_Text_Editor {
             Button_ExtractADX.IsEnabled = false;
             Button_ReplaceADX.IsEnabled = false;
             Button_PreviewADX.IsEnabled = false;
+            Button_AutoActiveTime_CurrentEntry.IsEnabled = false;
         }
 
         private void ListBox_OpenedFNTS_SelectionChanged(object sender, SelectionChangedEventArgs e) {
@@ -99,13 +101,16 @@ namespace ShadowTH_Text_Editor {
 
         }
 
-        private void ListBox_CurrentFNT_SelectionChanged(object sender, SelectionChangedEventArgs e) {
-            if (ListBox_CurrentFNT.SelectedItem == null) {
+        private void ListBox_CurrentFNT_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (ListBox_CurrentFNT.SelectedItem == null)
+            {
                 ClearUIData();
                 return;
             }
             var currentSubtitleIndex = currentFnt.entryTable.IndexOf((TableEntry)ListBox_CurrentFNT.SelectedItem);
-            if (currentSubtitleIndex == -1) {
+            if (currentSubtitleIndex == -1)
+            {
                 ClearUIData();
                 return;
             }
@@ -121,23 +126,30 @@ namespace ShadowTH_Text_Editor {
             TextBox_SubtitleActiveTime.Text = currentFnt.GetEntryActiveTime(currentSubtitleIndex).ToString();
             TextBox_AudioID.Text = audioID.ToString();
 
-            if (currentAfs == null) {
+            if (currentAfs == null)
+            {
                 TextBlock_AfsAudioIDName.Text = "AFS not loaded";
-                Button_ExtractADX.IsEnabled = false;
-                Button_ReplaceADX.IsEnabled = false;
-                Button_PreviewADX.IsEnabled = false;
-            } else if (audioID != -1 && audioID < currentAfs.Files.Count) {
-                TextBlock_AfsAudioIDName.Text = currentAfs.Files[audioID].Name;
-                Button_ExtractADX.IsEnabled = true;
-                Button_ReplaceADX.IsEnabled = true;
-                Button_PreviewADX.IsEnabled = true;
-            } else {
-                TextBlock_AfsAudioIDName.Text = "None";
-                Button_ExtractADX.IsEnabled = false;
-                Button_ReplaceADX.IsEnabled = false;
-                Button_PreviewADX.IsEnabled = false;
+                SetAFSRelatedButtonEnabledState(false);
             }
-        }          
+            else if (audioID != -1 && audioID < currentAfs.Files.Count)
+            {
+                TextBlock_AfsAudioIDName.Text = currentAfs.Files[audioID].Name;
+                SetAFSRelatedButtonEnabledState(true);
+            }
+            else
+            {
+                TextBlock_AfsAudioIDName.Text = "None";
+                SetAFSRelatedButtonEnabledState(false);
+            }
+        }
+
+        private void SetAFSRelatedButtonEnabledState(bool isEnabled)
+        {
+            Button_ExtractADX.IsEnabled = isEnabled;
+            Button_ReplaceADX.IsEnabled = isEnabled;
+            Button_PreviewADX.IsEnabled = isEnabled;
+            Button_AutoActiveTime_CurrentEntry.IsEnabled = isEnabled;
+        }
 
         private void TextBox_SearchFilters_TextChanged(object sender, TextChangedEventArgs e) {
             UpdateDisplayFntsView();
@@ -360,7 +372,7 @@ namespace ShadowTH_Text_Editor {
                 "Uses VGAudio by Alex Barney for ADX playback\n" +
                 "Uses modified version of DarkTheme by Otiel\n" +
                 "Uses Ookii.Dialogs for dialogs\n\n" +
-                "https://github.com/ShadowTheHedgehogHacking\n\nto check for updates for this software.", "About ShadowTH Text Editor / FNT Editor v1.5.2");
+                "https://github.com/ShadowTheHedgehogHacking\n\nto check for updates for this software.", "About ShadowTH Text Editor / FNT Editor v1.6.0a");
         }
 
         private void ComboBox_LocaleSwitcher_SelectionChanged(object sender, SelectionChangedEventArgs e) {
@@ -546,6 +558,18 @@ namespace ShadowTH_Text_Editor {
                         CheckBox_DarkMode.IsChecked = true;
                 }
             }
+        }
+
+        private void Button_AutoActiveTime_CurrentEntry_Click(object sender, RoutedEventArgs e)
+        {
+            var decoder = new VGAudio.Containers.Adx.AdxReader();
+            var audio = decoder.Read(currentAfs.Files[int.Parse(TextBox_AudioID.Text)].Data);
+            var writer = new VGAudio.Containers.Wave.WaveWriter();
+            MemoryStream stream = new MemoryStream();
+            writer.WriteToStream(audio, stream);
+            stream.Position = 0;
+            WaveFileReader wf = new WaveFileReader(stream);
+            TextBox_SubtitleActiveTime.Text = ((int)(wf.TotalTime.TotalMilliseconds / (double)17.1)).ToString();
         }
 
         private void PreferredThemeSave(string themeName)
