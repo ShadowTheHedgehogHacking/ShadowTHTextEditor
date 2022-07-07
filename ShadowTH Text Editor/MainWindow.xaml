@@ -81,7 +81,7 @@
                     <TextBlock x:Name="TextBlock_AfsAudioIDName"/>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5,0,5">
                         <Button x:Name="Button_ReplaceADX" IsEnabled="False" Margin="0,0,0,0" Width="80" Height="30" VerticalAlignment="Top" Click="Button_ReplaceADXClick" Content="Replace ADX"/>
-                        <Button x:Name="Button_ExtractADX" IsEnabled="False" Margin="5,0,0,0" Width="80" Height="30" VerticalAlignment="Top" Click="Button_ExtractADXClick" Content="Extract ADX"/>
+                        <Button x:Name="Button_ExtractADX" IsEnabled="False" Margin="5,0,0,0" Width="80" Height="30" VerticalAlignment="Top" Click="Button_ExtractADXClick" Content="Extract Audio"/>
                         <Button x:Name="Button_PreviewADX" FontSize="20" IsEnabled="False" Margin="5,0,0,0" Width="30" Height="30" VerticalAlignment="Top" Click="Button_PreviewADXClick" Content="►"/>
                     </StackPanel>
                     <TextBlock>Text</TextBlock>

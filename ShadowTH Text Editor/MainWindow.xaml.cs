@@ -250,6 +250,7 @@ namespace ShadowTH_Text_Editor {
             if (AfsArchive.TryFromFile(data, out var afsArchive)) {
                 currentAfs = afsArchive;
                 Button_ExportAFS.IsEnabled = true;
+                data = null; // for GC purpose
                 if (ListBox_CurrentFNT.SelectedItem == null)
                     return;
                 var currentSubtitleIndex = currentFnt.entryTable.IndexOf((TableEntry)ListBox_CurrentFNT.SelectedItem);
@@ -265,7 +266,8 @@ namespace ShadowTH_Text_Editor {
             if (currentAfs == null)
                 return;
             var dialog = new Ookii.Dialogs.Wpf.VistaSaveFileDialog {
-                Filter = "AFS files (*.afs)|*.afs|All files (*.*)|*.*"
+                Filter = "AFS files (*.afs)|*.afs|All files (*.*)|*.*",
+                DefaultExt = ".afs",
             };
             if (dialog.ShowDialog() == false) {
                 return;
@@ -320,14 +322,27 @@ namespace ShadowTH_Text_Editor {
                 return;
             Ookii.Dialogs.Wpf.VistaSaveFileDialog dialog = new Ookii.Dialogs.Wpf.VistaSaveFileDialog {
                 FileName = TextBlock_AfsAudioIDName.Text,
-                Filter = "ADX files (*.adx)|*.adx|All files (*.*)|*.*"
+                DefaultExt = ".adx",
+                Filter = "ADX files (*.adx)|*.adx|WAV files (*.wav)|*.wav|All files (*.*)|*.*"
             };
             if (dialog.ShowDialog() == false) {
                 return;
             }
             if (dialog.FileName != "") {
                 try {
-                    File.WriteAllBytes(dialog.FileName, currentAfs.Files[int.Parse(TextBox_AudioID.Text)].Data);
+                    if (dialog.FileName.EndsWith(".wav")) // wav
+                    {
+                        var decoder = new VGAudio.Containers.Adx.AdxReader();
+                        var audio = decoder.Read(currentAfs.Files[int.Parse(TextBox_AudioID.Text)].Data);
+                        var writer = new VGAudio.Containers.Wave.WaveWriter();
+                        FileStream stream = new FileStream(dialog.FileName, FileMode.OpenOrCreate);
+                        writer.WriteToStream(audio, stream);
+                        stream.Close();
+                    }
+                    else // default to adx
+                    {
+                        File.WriteAllBytes(dialog.FileName, currentAfs.Files[int.Parse(TextBox_AudioID.Text)].Data);
+                    }
                 } catch (Exception ex) {
                     MessageBox.Show(ex.Message, "An Exception Occurred");
                 }
@@ -570,6 +585,8 @@ namespace ShadowTH_Text_Editor {
             stream.Position = 0;
             WaveFileReader wf = new WaveFileReader(stream);
             TextBox_SubtitleActiveTime.Text = ((int)(wf.TotalTime.TotalMilliseconds / (double)17.1)).ToString();
+            wf.Close();
+            stream.Close();
         }
 
         private void PreferredThemeSave(string themeName)
