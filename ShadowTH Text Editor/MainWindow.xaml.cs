@@ -513,8 +513,8 @@ namespace ShadowTH_Text_Editor {
                         if (CheckBox_NoReplaceMetTxd.IsChecked == false)
                         {
                             string prec = newFntFilePath.Remove(newFntFilePath.Length - 4);
-                            File.Copy("res/EN.txd", prec + ".txd", true);
-                            File.Copy("res/EN00.met", prec + "00.met", true);
+                            File.Copy(AppDomain.CurrentDomain.BaseDirectory + "res/EN.txd", prec + ".txd", true);
+                            File.Copy(AppDomain.CurrentDomain.BaseDirectory + "res/EN00.met", prec + "00.met", true);
                         }
                     }
                     else
@@ -523,8 +523,8 @@ namespace ShadowTH_Text_Editor {
                         if (CheckBox_NoReplaceMetTxd.IsChecked == false)
                         {
                             string prec = fnt.fileName.Remove(fnt.fileName.Length - 4);
-                            File.Copy("res/EN.txd", prec + ".txd", true);
-                            File.Copy("res/EN00.met", prec + "00.met", true);
+                            File.Copy(AppDomain.CurrentDomain.BaseDirectory + "res/EN.txd", prec + ".txd", true);
+                            File.Copy(AppDomain.CurrentDomain.BaseDirectory + "res/EN00.met", prec + "00.met", true);
                         }
                     }
                 } catch (Exception ex) {
