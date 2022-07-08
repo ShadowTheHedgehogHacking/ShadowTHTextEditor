@@ -330,7 +330,7 @@ namespace ShadowTH_Text_Editor {
             }
             if (dialog.FileName != "") {
                 try {
-                    if (dialog.FileName.EndsWith(".wav")) // wav
+                    if (dialog.FileName.EndsWith(".wav"))
                     {
                         var decoder = new VGAudio.Containers.Adx.AdxReader();
                         var audio = decoder.Read(currentAfs.Files[int.Parse(TextBox_AudioID.Text)].Data);
@@ -387,7 +387,7 @@ namespace ShadowTH_Text_Editor {
                 "Uses VGAudio by Alex Barney for ADX playback\n" +
                 "Uses modified version of DarkTheme by Otiel\n" +
                 "Uses Ookii.Dialogs for dialogs\n\n" +
-                "https://github.com/ShadowTheHedgehogHacking\n\nto check for updates for this software.", "About ShadowTH Text Editor / FNT Editor v1.6.0a");
+                "https://github.com/ShadowTheHedgehogHacking\n\nto check for updates for this software.", "About ShadowTH Text Editor / FNT Editor v1.6.0");
         }
 
         private void ComboBox_LocaleSwitcher_SelectionChanged(object sender, SelectionChangedEventArgs e) {
@@ -584,9 +584,25 @@ namespace ShadowTH_Text_Editor {
             writer.WriteToStream(audio, stream);
             stream.Position = 0;
             WaveFileReader wf = new WaveFileReader(stream);
-            TextBox_SubtitleActiveTime.Text = ((int)(wf.TotalTime.TotalMilliseconds / (double)17.1)).ToString();
+            TextBox_SubtitleActiveTime.Text = ((int)(wf.TotalTime.TotalMilliseconds / ((double)1000/(double)60))).ToString();
             wf.Close();
             stream.Close();
+        }
+
+        private void Button_MillisecondsToActiveTime_Click(object sender, RoutedEventArgs e)
+        {
+            var response = Microsoft.VisualBasic.Interaction.InputBox("Enter Milliseconds", "Milliseconds to Active Time Utility", "0");
+            try
+            {
+                var result = int.Parse(response);
+                MessageBox.Show(response + "\nconverted to Active Time format is:\n" + ((int)(result / ((double)1000 / (double)60))).ToString(), "Milliseconds to Active Time Utility");
+            }
+            catch (Exception ex)
+            {
+                // catch all
+                MessageBox.Show("Invalid Input\n" + ex.Message);
+                return;
+            }
         }
 
         private void PreferredThemeSave(string themeName)

@@ -1,18 +1,11 @@
-﻿using ShadowFNT.Structures;
+﻿using AFSLib;
+using NAudio.Wave;
+using ShadowFNT.Structures;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+
 
 namespace ShadowTH_Text_Editor
 {
@@ -21,6 +14,10 @@ namespace ShadowTH_Text_Editor
     /// </summary>
     public partial class DebugMenu : Window
     {
+        private List<FNT> initialFntsOpenedState;
+        private List<FNT> openedFnts;
+        private AfsArchive currentAfs;
+        private string lastOpenDir;
         public DebugMenu()
         {
             InitializeComponent();
@@ -118,7 +115,8 @@ namespace ShadowTH_Text_Editor
             }
             var dialog = new Ookii.Dialogs.Wpf.VistaSaveFileDialog
             {
-                Filter = "Text files (*.txt)|*.txt|All files (*.*)|*.*"
+                Filter = "Text files (*.txt)|*.txt|All files (*.*)|*.*",
+                DefaultExt = ".txt"
             };
             if (dialog.ShowDialog() == false)
             {
@@ -137,5 +135,153 @@ namespace ShadowTH_Text_Editor
                 }
             }
         }
+
+        private void Button_AutoActiveTimeAll_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("NOTE: Currently chained entries are skipped. Intended for EN fnt and EN AFS currently.", "Warning");
+            initialFntsOpenedState = new List<FNT>();
+            openedFnts = new List<FNT>();
+            // Load all target EN FNTs
+            MessageBox.Show("Pick the 'fonts' folder extracted from Shadow The Hedgehog.", "Step 1");
+            var dialog = new Ookii.Dialogs.Wpf.VistaFolderBrowserDialog();
+            if (dialog.ShowDialog() == false)
+            {
+                return;
+            }
+            if (!dialog.SelectedPath.EndsWith("fonts"))
+            {
+                MessageBox.Show("Pick the 'fonts' folder extracted from Shadow The Hedgehog.", "Try Again");
+                return;
+            }
+            lastOpenDir = dialog.SelectedPath;
+
+            if (lastOpenDir == null) return;
+            string[] foundFnts = Directory.GetFiles(lastOpenDir, "*_EN.fnt", SearchOption.AllDirectories);
+            for (int i = 0; i < foundFnts.Length; i++)
+            {
+                byte[] readFile = File.ReadAllBytes(foundFnts[i]);
+                FNT newFnt = FNT.ParseFNTFile(foundFnts[i], ref readFile, lastOpenDir);
+                FNT originalFnt = FNT.ParseFNTFile(foundFnts[i], ref readFile, lastOpenDir);
+
+                openedFnts.Add(newFnt);
+                initialFntsOpenedState.Add(originalFnt);
+            }
+
+            MessageBox.Show("Pick the 'PRS_VOICE_E.afs' file extracted from Shadow The Hedgehog.", "Step 2");
+            var dialog2 = new Ookii.Dialogs.Wpf.VistaOpenFileDialog
+            {
+                Filter = "AFS files (*.afs)|*.afs|All files (*.*)|*.*"
+            };
+            if (dialog2.ShowDialog() == false)
+            {
+                return;
+            }
+            if (!dialog2.FileName.ToLower().EndsWith(".afs"))
+            {
+                MessageBox.Show("Pick an 'AFS' file", "Try Again");
+                return;
+            }
+            var data = File.ReadAllBytes(dialog2.FileName);
+            if (AfsArchive.TryFromFile(data, out var afsArchive))
+            {
+                currentAfs = afsArchive;
+                data = null; // for GC purpose
+            };
+
+            // Do actual processing
+            for (int i = 0; i < openedFnts.Count; i++)
+            {
+                // manually skip Advertise\Advertise_EN.fnt
+                if (openedFnts[i].ToString() == "Advertise\\Advertise_EN.fnt")
+                    continue;
+                // perform checks
+                for (int j = 0; j < openedFnts[i].entryTable.Count; j++)
+                {
+                    var entry = openedFnts[i].entryTable[j];
+                    // if audioId = -1 skip
+                    if (entry.audioId == -1)
+                        continue;
+
+                    // calculate for entries that have succeeding chained entries IFF type is BACKGROUND VOICE (GUN Soldiers)
+                    if (entry.entryType == EntryType.BACKGROUND_VOICE)
+                    {
+                        AutoActiveTime(i, j);
+                        // AutoActiveTime()
+                    }
+                    else
+                    {
+                        // everything else (non GUN soldier type)
+
+                        // do NOT calculate for entries with succeeding chained entries and other type where 00 has an AudioID and successive entry has -1 for audioID
+                        // ex: 652000 -> check succeeding entry for self+1 -> if exist, check next for (self+1)+1 (recursive)
+                        // when done skip all entries for every self+1 IFF the successors were -1 for AudioID
+                        var successorEntry = openedFnts[i].entryTable[j + 1];
+                        if ((entry.messageIdBranchSequence + 1) == successorEntry.messageIdBranchSequence)
+                        {
+                            // successive entry found, check for audioId
+                            if (successorEntry.audioId == -1)
+                            {
+                                // implies current entry's audio is shared for this successor, abort without changing
+                                continue;
+                            }
+                            //successor has its own AudioID, we can AutoActiveTime() the current entry
+                        }
+                        // has no successor, we can AutoActiveTime() the current entry
+                        // AutoActiveTime();
+                        AutoActiveTime(i, j);
+                    }
+                }
+            }
+
+            // processing complete, export FNTs
+
+            List<FNT> filesToWrite = new List<FNT>();
+            string filesToWriteReportingString = "";
+            for (int i = 0; i < initialFntsOpenedState.Count; i++)
+            {
+                if (initialFntsOpenedState[i].Equals(openedFnts[i]) == false)
+                {
+                    filesToWrite.Add(openedFnts[i]);
+                    filesToWriteReportingString = filesToWriteReportingString + "\n" + openedFnts[i];
+                }
+            }
+            if (filesToWriteReportingString == "")
+            {
+                MessageBox.Show("No changes detected. Nothing will be written.", "Report");
+                return;
+            }
+            MessageBox.Show("Files to be written:" + filesToWriteReportingString, "Report");
+            foreach (FNT fnt in filesToWrite)
+            {
+                try
+                {
+                    fnt.RecomputeAllSubtitleAddresses();
+                    File.WriteAllBytes(fnt.fileName, fnt.BuildFNTFile().ToArray());
+                    string prec = fnt.fileName.Remove(fnt.fileName.Length - 4);
+                    File.Copy(AppDomain.CurrentDomain.BaseDirectory + "res/EN.txd", prec + ".txd", true);
+                    File.Copy(AppDomain.CurrentDomain.BaseDirectory + "res/EN00.met", prec + "00.met", true);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Failed on " + fnt.ToString(), "An Exception Occurred");
+                    MessageBox.Show(ex.Message, "An Exception Occurred");
+                }
+            }
+
+        }
+
+        private void AutoActiveTime(int fntIndex, int entryIndex)
+        {
+            var decoder = new VGAudio.Containers.Adx.AdxReader();
+            var audio = decoder.Read(currentAfs.Files[openedFnts[fntIndex].GetEntryAudioID(entryIndex)].Data);
+            var writer = new VGAudio.Containers.Wave.WaveWriter();
+            MemoryStream stream = new MemoryStream();
+            writer.WriteToStream(audio, stream);
+            stream.Position = 0;
+            WaveFileReader wf = new WaveFileReader(stream);
+            openedFnts[fntIndex].UpdateEntryActiveTime(entryIndex, (int)(wf.TotalTime.TotalMilliseconds / ((double)1000 / (double)60)));
+            wf.Close();
+            stream.Close();
+        } 
     }
 }
