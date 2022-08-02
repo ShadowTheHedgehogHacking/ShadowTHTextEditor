@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:ShadowTH_Text_Editor"
         mc:Ignorable="d"
         x:Name="CoreWindow"
-        Title="Shadow The Hedgehog Text Editor / FNT Editor v1.6.0" Height="715" Width="800" MinWidth="600" MinHeight="715" MaxWidth="800" MaxHeight="715" ResizeMode="CanResizeWithGrip" Icon="ShadowFNT.ico" SizeChanged="Window_SizeChanged">
+        Title="Shadow The Hedgehog Text Editor / FNT Editor v1.7.0" Height="715" Width="800" MinWidth="600" MinHeight="715" MaxWidth="800" MaxHeight="715" ResizeMode="CanResizeWithGrip" Icon="ShadowFNT.ico" SizeChanged="Window_SizeChanged">
     <DockPanel>
         <StackPanel DockPanel.Dock="Top">
             <StackPanel Orientation="Horizontal">

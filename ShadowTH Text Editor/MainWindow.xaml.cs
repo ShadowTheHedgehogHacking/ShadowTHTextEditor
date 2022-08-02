@@ -286,7 +286,7 @@ namespace ShadowTH_Text_Editor {
             if (currentAfs == null)
                 return;
             Ookii.Dialogs.Wpf.VistaOpenFileDialog dialog = new Ookii.Dialogs.Wpf.VistaOpenFileDialog {
-                Filter = "ADX files (*.adx)|*.adx|All files (*.*)|*.*"
+                Filter = "All Supported Files (*.wav;*.adx)|*.wav;*.adx|ADX files (*.adx)|*.adx|WAV files (*.wav)|*.wav|All files (*.*)|*.*"
             };
             if (dialog.ShowDialog() == false) {
                 return;
@@ -294,20 +294,34 @@ namespace ShadowTH_Text_Editor {
             if (dialog.FileName != "") {
                 try {
                     byte[] newData = File.ReadAllBytes(dialog.FileName);
-                    var decoder = new VGAudio.Containers.Adx.AdxReader();
-                    VGAudio.Formats.CriAdx.CriAdxFormat audioFormat = (VGAudio.Formats.CriAdx.CriAdxFormat)decoder.ReadFormat(newData);
+                    if (dialog.FileName.EndsWith(".wav"))
+                    {
+                        var decoder = new VGAudio.Containers.Wave.WaveReader();
+                        var audio = decoder.Read(newData);
+                        var writer = new VGAudio.Containers.Adx.AdxWriter();
+                        MemoryStream stream = new MemoryStream();
+                        writer.WriteToStream(audio, stream);
+                        currentAfs.Files[int.Parse(TextBox_AudioID.Text)].Data = stream.ToArray();
+                    }
+                    else // adx scenario
+                    {
+                        var decoder = new VGAudio.Containers.Adx.AdxReader();
+                        VGAudio.Formats.CriAdx.CriAdxFormat audioFormat = (VGAudio.Formats.CriAdx.CriAdxFormat)decoder.ReadFormat(newData);
 
-                    if (audioFormat.ChannelCount >= 2) {
-                        if (MessageBox.Show("Replacement ADX is Stereo, needs to be Mono.\nThe voice line will fail to play in-game if Stereo." +
-                            "\nCancel Replacement?", "Problem Identified with Replacement", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
-                            return;
+                        if (audioFormat.ChannelCount >= 2)
+                        {
+                            if (MessageBox.Show("Replacement ADX is Stereo, needs to be Mono.\nThe voice line will fail to play in-game if Stereo." +
+                                "\nCancel Replacement?", "Problem Identified with Replacement", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                                return;
+                        }
+                        if (audioFormat.Version != 4)
+                        {
+                            if (MessageBox.Show("Shadow ADX files are encoded in ADX Version 4.\nVersion 3 is also supported, but not recommended.\nYour replacement is ADX Version " + audioFormat.Version +
+                                "\nCancel Replacement?", "Potential Problem Identified with Replacement", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                                return;
+                        }
+                        currentAfs.Files[int.Parse(TextBox_AudioID.Text)].Data = newData;
                     }
-                    if (audioFormat.Version != 4) {
-                        if (MessageBox.Show("Shadow ADX files are encoded in ADX Version 4.\nVersion 3 is also supported, but not recommended.\nYour replacement is ADX Version " + audioFormat.Version +
-                            "\nCancel Replacement?", "Potential Problem Identified with Replacement", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
-                            return;
-                    }
-                    currentAfs.Files[int.Parse(TextBox_AudioID.Text)].Data = newData;
                 }
                 catch (Exception ex) {
                     MessageBox.Show(ex.Message, "Failed to Replace");
@@ -387,7 +401,7 @@ namespace ShadowTH_Text_Editor {
                 "Uses VGAudio by Alex Barney for ADX playback\n" +
                 "Uses modified version of DarkTheme by Otiel\n" +
                 "Uses Ookii.Dialogs for dialogs\n\n" +
-                "https://github.com/ShadowTheHedgehogHacking\n\nto check for updates for this software.", "About ShadowTH Text Editor / FNT Editor v1.6.0");
+                "https://github.com/ShadowTheHedgehogHacking\n\nto check for updates for this software.", "About ShadowTH Text Editor / FNT Editor v1.7.0");
         }
 
         private void ComboBox_LocaleSwitcher_SelectionChanged(object sender, SelectionChangedEventArgs e) {
