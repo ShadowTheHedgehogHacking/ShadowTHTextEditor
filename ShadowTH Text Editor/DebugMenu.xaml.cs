@@ -282,6 +282,130 @@ namespace ShadowTH_Text_Editor
             openedFnts[fntIndex].UpdateEntryActiveTime(entryIndex, (int)(wf.TotalTime.TotalMilliseconds / ((double)1000 / (double)60)));
             wf.Close();
             stream.Close();
-        } 
+        }
+
+        private void Button_DumpChainedEntries_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Dumps chained entries. Intended for EN fnt and EN AFS currently.", "Warning");
+            initialFntsOpenedState = new List<FNT>();
+            openedFnts = new List<FNT>();
+            // Load all target EN FNTs
+            MessageBox.Show("Pick the 'fonts' folder extracted from Shadow The Hedgehog.", "Step 1");
+            var dialog = new Ookii.Dialogs.Wpf.VistaFolderBrowserDialog();
+            if (dialog.ShowDialog() == false)
+            {
+                return;
+            }
+            if (!dialog.SelectedPath.EndsWith("fonts"))
+            {
+                MessageBox.Show("Pick the 'fonts' folder extracted from Shadow The Hedgehog.", "Try Again");
+                return;
+            }
+            lastOpenDir = dialog.SelectedPath;
+
+            if (lastOpenDir == null) return;
+            string[] foundFnts = Directory.GetFiles(lastOpenDir, "*_EN.fnt", SearchOption.AllDirectories);
+            for (int i = 0; i < foundFnts.Length; i++)
+            {
+                byte[] readFile = File.ReadAllBytes(foundFnts[i]);
+                FNT newFnt = FNT.ParseFNTFile(foundFnts[i], ref readFile, lastOpenDir);
+                FNT originalFnt = FNT.ParseFNTFile(foundFnts[i], ref readFile, lastOpenDir);
+
+                openedFnts.Add(newFnt);
+                initialFntsOpenedState.Add(originalFnt);
+            }
+
+            MessageBox.Show("Pick the 'PRS_VOICE_E.afs' file extracted from Shadow The Hedgehog.", "Step 2");
+            var dialog2 = new Ookii.Dialogs.Wpf.VistaOpenFileDialog
+            {
+                Filter = "AFS files (*.afs)|*.afs|All files (*.*)|*.*"
+            };
+            if (dialog2.ShowDialog() == false)
+            {
+                return;
+            }
+            if (!dialog2.FileName.ToLower().EndsWith(".afs"))
+            {
+                MessageBox.Show("Pick an 'AFS' file", "Try Again");
+                return;
+            }
+            var data = File.ReadAllBytes(dialog2.FileName);
+            if (AfsArchive.TryFromFile(data, out var afsArchive))
+            {
+                currentAfs = afsArchive;
+                data = null; // for GC purpose
+            };
+
+
+            string dumpLog = "";
+            // Do actual processing
+            for (int i = 0; i < openedFnts.Count; i++)
+            {
+                // manually skip Advertise\Advertise_EN.fnt
+                if (openedFnts[i].ToString() == "Advertise\\Advertise_EN.fnt")
+                    continue;
+
+                dumpLog += "\n\n" + openedFnts[i].ToString() + "\n\n";
+                // perform checks
+                for (int j = 0; j < openedFnts[i].entryTable.Count; j++)
+                {
+                    var entry = openedFnts[i].entryTable[j];
+                    // if audioId = -1 skip
+                    if (entry.audioId == -1)
+                        continue;
+
+                    // manually skip IFF type is BACKGROUND VOICE (GUN Soldiers)
+                    if (entry.entryType == EntryType.BACKGROUND_VOICE)
+                        continue;
+
+
+                    // dump for entries with succeeding chained entries and other type where 00 has an AudioID and successive entry has -1 for audioID
+                    // ex: 652000 -> check succeeding entry for self+1 -> if exist, check next for (self+1)+1 (recursive)
+                    // need to be careful for scenario of entry1 [has audio id] -> successor [no audio id] -> successor's successor [has audio id]
+                    do
+                    {
+                        var currentEntry = openedFnts[i].entryTable[j];
+                        var successorEntry = openedFnts[i].entryTable[j + 1];
+                        if ((currentEntry.messageIdBranchSequence + 1) == successorEntry.messageIdBranchSequence)
+                        {
+                            dumpLog += currentEntry.messageIdBranchSequence + " AFS: " + currentEntry.audioId + " chained " + successorEntry.messageIdBranchSequence + " AFS: " + successorEntry.audioId + "\n";
+                            // successive entry found, check for audioId (optional)
+/*                            if (successorEntry.audioId == -1)
+                            {
+                                // implies current entry's audio is shared for this successor. Dump this
+                                
+                            }*/
+                        } else
+                        {
+                            // no more successor, end the iteration
+                            break;
+                        }
+                        j++; //increment next entry
+                    } while (true);
+                    // has no successor, we can skip the current entry
+                }
+            }
+            var dialogSave = new Ookii.Dialogs.Wpf.VistaSaveFileDialog
+            {
+                Filter = "Text files (*.txt)|*.txt|All files (*.*)|*.*",
+                DefaultExt = ".txt"
+            };
+            if (dialogSave.ShowDialog() == false)
+            {
+                return;
+            }
+            if (dialogSave.FileName != "")
+            {
+                try
+                {
+                    File.WriteAllText(dialogSave.FileName, dumpLog);
+                    MessageBox.Show("Log Successfully Written.", "Success");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "An Exception Occurred");
+                }
+            }
+        }
     }
 }
