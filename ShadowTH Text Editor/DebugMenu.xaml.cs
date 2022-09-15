@@ -4,7 +4,9 @@ using ShadowFNT.Structures;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Windows;
+using static System.Net.Mime.MediaTypeNames;
 
 
 namespace ShadowTH_Text_Editor
@@ -552,11 +554,136 @@ namespace ShadowTH_Text_Editor
             // Read and parse TextGrids (do libraries exist?)
 
             // How to get perfect timings:
+
+            // MK 1 version
             // Get 'xmin' from TextGrid for successor word '1'. Convert to millis -> Convert to ActiveTime -> Set to "current"
             // Repeat for any successor, up until the final successor
             // If final successor, time AutoActiveTime (length of adx) and subtract the values assigned to ALL predecessors chained. This result becomes the new ActiveTime for the final successor.
 
+            // MK 2 version
+            // Get 'xmax' from every NUL "\0\" in the textgrid. This solves the issue of multi word use in same subtitles ex "jump"
+            //
+
             // TODO: Implement the above
+
+            for (int i = 0; i < openedFnts.Count; i++)
+            {
+                // TEMPORARY FOR DEBUGGING, ONLY TARGET stg0404_EN
+                if (openedFnts[i].ToString() != "stg0404\\stg0404_EN.fnt")
+                    continue;
+
+                // manually skip Advertise\Advertise_EN.fnt
+                if (openedFnts[i].ToString() == "Advertise\\Advertise_EN.fnt")
+                    continue;
+
+                // perform checks
+                for (int j = 0; j < openedFnts[i].entryTable.Count; j++)
+                {
+                    var chained = false;
+                    var entry = openedFnts[i].entryTable[j];
+
+                    if (entry.audioId == -1)
+                        continue;
+
+                    // manually skip IFF type is BACKGROUND VOICE (GUN Soldiers)
+                    if (entry.entryType == EntryType.BACKGROUND_VOICE)
+                        continue;
+
+
+                    var initialEntry = openedFnts[i].entryTable[j];
+                    do
+                    {
+                        var currentEntry = openedFnts[i].entryTable[j];
+                        var successorEntry = openedFnts[i].entryTable[j + 1];
+                        if ((currentEntry.messageIdBranchSequence + 1) == successorEntry.messageIdBranchSequence && successorEntry.subtitleActiveTime != 0)
+                        {
+
+                            chained = true;
+                            // successive entry found, check for audioId to ensure successor is chained
+                            if (successorEntry.audioId == -1)
+                            {
+                                // check self text, and successor's text
+                                var directory = "X:\\corpusout\\" + openedFnts[i].ToString() + "\\"; // temp hardcoded
+
+                                var textgrid = File.ReadAllLines(directory + initialEntry.messageIdBranchSequence + ".TextGrid");
+                                List<int> candidates = new List<int>();
+
+
+                                // TODO: SCRAP the below and write it for MK 2 with NULL comparison rather than prior text/first text comparison
+
+                                for (int stringIndex = 0; stringIndex < textgrid.Length; stringIndex++)
+                                {
+                                    if (textgrid[stringIndex].Contains(successorEntry.subtitle.ToLower().Split(" ")[0]))
+                                    {
+                                        var priorEntrySplit = currentEntry.subtitle.ToLower().Split(" ");
+                                        var sanitize = priorEntrySplit[priorEntrySplit.Length-1];
+                                        sanitize = sanitize.Replace(".", "");
+                                        sanitize = sanitize.Replace("!", "");
+                                        sanitize = sanitize.Replace("?", "");
+                                        sanitize = sanitize.Replace("\n", "");
+                                        sanitize = sanitize.Replace("\r\n", "");
+                                        var sanitizedTarget = sanitize.Replace("\0", "");
+
+                                        if (textgrid[stringIndex - 4].Contains(sanitizedTarget))
+                                            candidates.Add(stringIndex);
+                                    }
+                                }
+                                if (candidates.Count == 1)
+                                {
+                                    // -2 for two lines before text entry
+                                    // ex:
+                                    // xmin = 0.19
+                                    // xmax = 0.86
+                                    // text = "sample"
+                                    var xminLine = textgrid[candidates[0] - 2];
+                                    var seconds = xminLine.Split("xmin = ")[1];
+                                    var span = TimeSpan.FromSeconds(double.Parse(seconds));
+                                    currentEntry.subtitleActiveTime = (int)(span.TotalMilliseconds / ((double)1000 / (double)60));
+                                }
+                                else
+                                {
+                                    //compare matches or if 0 log it!
+                                    MessageBox.Show("Oh no");
+                                    MessageBox.Show("Oh no 2");
+                                }
+
+                            }
+                        }
+                        else
+                        {
+                            // no more successor, end the iteration
+                            if (chained)
+                            {
+                                //var textgrid = File.Open(dire);
+                                // last entry, check iteration
+                            }
+                            break;
+                        }
+                        j++; //increment next entry
+                    } while (true);
+
+                    if (chained)
+                    {
+                        // has data
+                        if (initialEntry.audioId != -1)
+                        {
+/*                            var directory = "X:\\corpus\\" + openedFnts[i].ToString() + "\\"; // temp hardcoded
+                            Directory.CreateDirectory(directory);
+                            //File.WriteAllText(directory + initialEntry.messageIdBranchSequence + ".lab", labTranscript);
+                            var decoder = new VGAudio.Containers.Adx.AdxReader();
+                            var audio = decoder.Read(currentAfs.Files[initialEntry.audioId].Data);
+                            var writer = new VGAudio.Containers.Wave.WaveWriter();
+                            FileStream stream = new FileStream(directory + initialEntry.messageIdBranchSequence + ".wav", FileMode.OpenOrCreate);
+                            writer.WriteToStream(audio, stream);
+                            stream.Close();*/
+                            }
+
+                        }
+
+                    // has no successor, we can skip the current entry
+                }
+            }
+
         }
 
     }
