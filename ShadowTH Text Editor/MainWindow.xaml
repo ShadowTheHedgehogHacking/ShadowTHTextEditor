@@ -116,14 +116,14 @@
                         <Button x:Name="Button_DeleteEntry" IsEnabled="False" Margin="26,0,0,0" Width="90" Height="25" Content="Delete Selected" Click="Button_DeleteEntry_Click"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="5">
-                        <Button x:Name="Button_GotoEntryNumber" Width="90" Height="25" Content="Goto Number..." Click="Button_GotoEntryNumber_Click"/>
+                        <Button x:Name="Button_GotoEntryNumber" Width="90" Height="25" Content="Goto Index..." Click="Button_GotoEntryNumber_Click"/>
                         <Button x:Name="Button_GotoSelected" IsEnabled="False" Margin="26,0,0,0" Width="90" Height="25" Content="Goto Selected" Click="Button_GotoSelected_Click"/>
                     </StackPanel>
                 </StackPanel>
             </GroupBox>
             <GroupBox x:Name="GroupBoxEntries" Header="Entries" Padding="5">
                 <StackPanel>
-                    <TextBlock x:Name="TextBlock_CurrentFNT_Index" Text="Index"/>
+                    <TextBlock x:Name="TextBlock_CurrentFNT_Index" Text="Index: None"/>
                     <ListBox x:Name="ListBox_CurrentFNT" MinHeight="375" MaxHeight="375" MinWidth="280" MaxWidth="280" SelectionChanged="ListBox_CurrentFNT_SelectionChanged"/>
                 </StackPanel>
             </GroupBox>

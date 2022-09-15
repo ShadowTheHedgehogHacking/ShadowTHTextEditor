@@ -103,6 +103,7 @@ namespace ShadowTH_Text_Editor {
 
         private void ListBox_CurrentFNT_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            TextBlock_CurrentFNT_Index.Text = "Index: None";
             if (ListBox_CurrentFNT.SelectedItem == null)
             {
                 ClearUIData();
@@ -116,6 +117,7 @@ namespace ShadowTH_Text_Editor {
             }
             Button_DeleteEntry.IsEnabled = true;
             Button_GotoSelected.IsEnabled = true;
+            TextBlock_CurrentFNT_Index.Text = "Index: " + currentSubtitleIndex.ToString();
             var audioID = currentFnt.GetEntryAudioID(currentSubtitleIndex);
 
             TextBlock_SubtitleAddress.Text = currentFnt.GetEntrySubtitleAddress(currentSubtitleIndex).ToString();
