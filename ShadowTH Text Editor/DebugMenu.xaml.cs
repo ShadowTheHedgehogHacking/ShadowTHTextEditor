@@ -479,6 +479,11 @@ namespace ShadowTH_Text_Editor
                 // perform checks
                 for (int j = 0; j < openedFnts[i].entryTable.Count; j++)
                 {
+
+                    // DEBUG FOR BLACKDOOM ONLY
+/*                    if (openedFnts[i].entryTable[j].audioId != -1 && !currentAfs.Files[openedFnts[i].entryTable[j].audioId].Name.Contains("_bd.adx"))
+                        continue;*/
+
                     var labTranscript = "";
 
                     var entry = openedFnts[i].entryTable[j];
@@ -579,6 +584,11 @@ namespace ShadowTH_Text_Editor
                 // perform checks
                 for (int j = 0; j < openedFnts[i].entryTable.Count; j++)
                 {
+
+                    // DEBUG FOR BLACKDOOM ONLY
+/*                    if (openedFnts[i].entryTable[j].audioId != -1 && !currentAfs.Files[openedFnts[i].entryTable[j].audioId].Name.Contains("_bd.adx"))
+                        continue;
+*/
                     var chained = false;
                     var entry = openedFnts[i].entryTable[j];
 
@@ -631,10 +641,18 @@ namespace ShadowTH_Text_Editor
                                 }
                                 if (candidates.Count > 0)
                                 {
-                                    var xmaxLine = textgrid[candidates[chainPosition - 1] - 1];
-                                    var seconds = xmaxLine.Split("xmax = ")[1];
+                                    var xLine = textgrid[candidates[chainPosition - 1] - 1];
+                                    var seconds = xLine.Split("xmax = ")[1];
                                     var span = TimeSpan.FromSeconds(double.Parse(seconds));
-                                    currentEntry.subtitleActiveTime = (int)(span.TotalMilliseconds / ((double)1000 / (double)60));
+                                    var activeTime = (int)(span.TotalMilliseconds / ((double)1000 / (double)60));
+                                    
+                                    // subtract prior entries from time
+                                    for (int pos = 0; pos < chainPosition - 1; pos++)
+                                    {
+                                        activeTime -= openedFnts[i].entryTable[initialEntryIndex + pos].subtitleActiveTime;
+                                    }
+
+                                    currentEntry.subtitleActiveTime = activeTime;
                                     openedFnts[i].UpdateEntryActiveTime(currentEntryIndex, currentEntry.subtitleActiveTime);
                                 } else
                                 {
