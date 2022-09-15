@@ -468,8 +468,8 @@ namespace ShadowTH_Text_Editor
             for (int i = 0; i < openedFnts.Count; i++)
             {
                 // TEMPORARY FOR DEBUGGING, ONLY TARGET stg0404_EN
-                if (openedFnts[i].ToString() != "stg0404\\stg0404_EN.fnt")
-                    continue;
+/*                if (openedFnts[i].ToString() != "stg0100\\stg0100_EN.fnt")
+                    continue;*/
 
                 // manually skip Advertise\Advertise_EN.fnt
                 if (openedFnts[i].ToString() == "Advertise\\Advertise_EN.fnt")
@@ -499,7 +499,7 @@ namespace ShadowTH_Text_Editor
                     {
                         var currentEntry = openedFnts[i].entryTable[j];
                         var successorEntry = openedFnts[i].entryTable[j + 1];
-                        if ((currentEntry.messageIdBranchSequence + 1) == successorEntry.messageIdBranchSequence && successorEntry.subtitleActiveTime != 0)
+                        if ((currentEntry.messageIdBranchSequence + 1) == successorEntry.messageIdBranchSequence && successorEntry.subtitleActiveTime != 0 && successorEntry.audioId == -1)
                         {
 
 
@@ -569,8 +569,8 @@ namespace ShadowTH_Text_Editor
             for (int i = 0; i < openedFnts.Count; i++)
             {
                 // TEMPORARY FOR DEBUGGING, ONLY TARGET stg0404_EN
-                if (openedFnts[i].ToString() != "stg0404\\stg0404_EN.fnt")
-                    continue;
+/*                if (openedFnts[i].ToString() != "stg0404\\stg0404_EN.fnt")
+                    continue;*/
 
                 // manually skip Advertise\Advertise_EN.fnt
                 if (openedFnts[i].ToString() == "Advertise\\Advertise_EN.fnt")
@@ -591,11 +591,15 @@ namespace ShadowTH_Text_Editor
 
 
                     var initialEntry = openedFnts[i].entryTable[j];
+                    var initialEntryIndex = j;
+                    var chainPosition = 0;
                     do
                     {
+                        chainPosition++; //increment sequence position
                         var currentEntry = openedFnts[i].entryTable[j];
+                        var currentEntryIndex = j;
                         var successorEntry = openedFnts[i].entryTable[j + 1];
-                        if ((currentEntry.messageIdBranchSequence + 1) == successorEntry.messageIdBranchSequence && successorEntry.subtitleActiveTime != 0)
+                        if ((currentEntry.messageIdBranchSequence + 1) == successorEntry.messageIdBranchSequence && successorEntry.subtitleActiveTime != 0 && successorEntry.audioId == -1)
                         {
 
                             chained = true;
@@ -605,85 +609,107 @@ namespace ShadowTH_Text_Editor
                                 // check self text, and successor's text
                                 var directory = "X:\\corpusout\\" + openedFnts[i].ToString() + "\\"; // temp hardcoded
 
-                                var textgrid = File.ReadAllLines(directory + initialEntry.messageIdBranchSequence + ".TextGrid");
+                                string[] textgrid = null;
+                                try
+                                {
+                                    textgrid = File.ReadAllLines(directory + initialEntry.messageIdBranchSequence + ".TextGrid");
+                                } catch (Exception ex){
+                                    MessageBox.Show(ex.Message);
+                                    break;
+                                }
                                 List<int> candidates = new List<int>();
 
 
-                                // TODO: SCRAP the below and write it for MK 2 with NULL comparison rather than prior text/first text comparison
+                                // MK 2 with NULL comparison and "number of chained" rather than prior text/first text comparison
 
                                 for (int stringIndex = 0; stringIndex < textgrid.Length; stringIndex++)
                                 {
-                                    if (textgrid[stringIndex].Contains(successorEntry.subtitle.ToLower().Split(" ")[0]))
+                                    if (textgrid[stringIndex].Contains("\0"))
                                     {
-                                        var priorEntrySplit = currentEntry.subtitle.ToLower().Split(" ");
-                                        var sanitize = priorEntrySplit[priorEntrySplit.Length-1];
-                                        sanitize = sanitize.Replace(".", "");
-                                        sanitize = sanitize.Replace("!", "");
-                                        sanitize = sanitize.Replace("?", "");
-                                        sanitize = sanitize.Replace("\n", "");
-                                        sanitize = sanitize.Replace("\r\n", "");
-                                        var sanitizedTarget = sanitize.Replace("\0", "");
-
-                                        if (textgrid[stringIndex - 4].Contains(sanitizedTarget))
-                                            candidates.Add(stringIndex);
+                                        candidates.Add(stringIndex);
                                     }
                                 }
-                                if (candidates.Count == 1)
+                                if (candidates.Count > 0)
                                 {
-                                    // -2 for two lines before text entry
-                                    // ex:
-                                    // xmin = 0.19
-                                    // xmax = 0.86
-                                    // text = "sample"
-                                    var xminLine = textgrid[candidates[0] - 2];
-                                    var seconds = xminLine.Split("xmin = ")[1];
+                                    var xmaxLine = textgrid[candidates[chainPosition - 1] - 1];
+                                    var seconds = xmaxLine.Split("xmax = ")[1];
                                     var span = TimeSpan.FromSeconds(double.Parse(seconds));
                                     currentEntry.subtitleActiveTime = (int)(span.TotalMilliseconds / ((double)1000 / (double)60));
-                                }
-                                else
+                                    openedFnts[i].UpdateEntryActiveTime(currentEntryIndex, currentEntry.subtitleActiveTime);
+                                } else
                                 {
-                                    //compare matches or if 0 log it!
-                                    MessageBox.Show("Oh no");
-                                    MessageBox.Show("Oh no 2");
+                                    MessageBox.Show("NO CANDIDATES FOR " + currentEntry.messageIdBranchSequence);
                                 }
-
                             }
                         }
                         else
                         {
                             // no more successor, end the iteration
-                            if (chained)
+                            if (chained && currentEntry.audioId == -1)
                             {
-                                //var textgrid = File.Open(dire);
-                                // last entry, check iteration
+                                // last entry, calc remaining time
+                                var decoder = new VGAudio.Containers.Adx.AdxReader();
+                                var audio = decoder.Read(currentAfs.Files[initialEntry.audioId].Data);
+                                var writer = new VGAudio.Containers.Wave.WaveWriter();
+                                MemoryStream stream = new MemoryStream();
+                                writer.WriteToStream(audio, stream);
+                                stream.Position = 0;
+                                WaveFileReader wf = new WaveFileReader(stream);
+                                wf.Close();
+                                stream.Close();
+
+                                var lastEntryTime = (int)(wf.TotalTime.TotalMilliseconds / ((double)1000 / (double)60)); //total audio length first
+
+                                for (int pos = 0; pos < chainPosition - 1; pos++) {
+                                    lastEntryTime -= openedFnts[i].entryTable[initialEntryIndex + pos].subtitleActiveTime;
+                                }
+                                currentEntry.subtitleActiveTime = lastEntryTime;
+                                openedFnts[i].UpdateEntryActiveTime(currentEntryIndex, currentEntry.subtitleActiveTime);
                             }
                             break;
                         }
                         j++; //increment next entry
                     } while (true);
 
-                    if (chained)
-                    {
-                        // has data
-                        if (initialEntry.audioId != -1)
-                        {
-/*                            var directory = "X:\\corpus\\" + openedFnts[i].ToString() + "\\"; // temp hardcoded
-                            Directory.CreateDirectory(directory);
-                            //File.WriteAllText(directory + initialEntry.messageIdBranchSequence + ".lab", labTranscript);
-                            var decoder = new VGAudio.Containers.Adx.AdxReader();
-                            var audio = decoder.Read(currentAfs.Files[initialEntry.audioId].Data);
-                            var writer = new VGAudio.Containers.Wave.WaveWriter();
-                            FileStream stream = new FileStream(directory + initialEntry.messageIdBranchSequence + ".wav", FileMode.OpenOrCreate);
-                            writer.WriteToStream(audio, stream);
-                            stream.Close();*/
-                            }
-
-                        }
-
                     // has no successor, we can skip the current entry
                 }
             }
 
+            // processing complete, export FNTs
+
+            List<FNT> filesToWrite = new List<FNT>();
+            string filesToWriteReportingString = "";
+            for (int i = 0; i < initialFntsOpenedState.Count; i++)
+            {
+                if (initialFntsOpenedState[i].Equals(openedFnts[i]) == false)
+                {
+                    filesToWrite.Add(openedFnts[i]);
+                    filesToWriteReportingString = filesToWriteReportingString + "\n" + openedFnts[i];
+                }
+            }
+            if (filesToWriteReportingString == "")
+            {
+                MessageBox.Show("No changes detected. Nothing will be written.", "Report");
+                return;
+            }
+            MessageBox.Show("Files to be written:" + filesToWriteReportingString, "Report");
+            foreach (FNT fnt in filesToWrite)
+            {
+                try
+                {
+                    fnt.RecomputeAllSubtitleAddresses();
+                    File.WriteAllBytes(fnt.fileName, fnt.BuildFNTFile().ToArray());
+                    string prec = fnt.fileName.Remove(fnt.fileName.Length - 4);
+                    File.Copy(AppDomain.CurrentDomain.BaseDirectory + "res/EN.txd", prec + ".txd", true);
+                    File.Copy(AppDomain.CurrentDomain.BaseDirectory + "res/EN00.met", prec + "00.met", true);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Failed on " + fnt.ToString(), "An Exception Occurred");
+                    MessageBox.Show(ex.Message, "An Exception Occurred");
+                }
+            }
+            MessageBox.Show("ALL DONE");
         }
 
     }
