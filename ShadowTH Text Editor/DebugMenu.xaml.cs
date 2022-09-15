@@ -407,5 +407,157 @@ namespace ShadowTH_Text_Editor
                 }
             }
         }
+
+        private void Button_MFA_ChainedEntries_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("EXPERIMENTAL PROCESS THAT REQUIRES Montreal Forced Aligner. Intended for EN fnt and EN AFS currently.", "Warning");
+            initialFntsOpenedState = new List<FNT>();
+            openedFnts = new List<FNT>();
+            // Load all target EN FNTs
+            MessageBox.Show("Pick the 'fonts' folder extracted from Shadow The Hedgehog.", "Step 1");
+            var dialog = new Ookii.Dialogs.Wpf.VistaFolderBrowserDialog();
+            if (dialog.ShowDialog() == false)
+            {
+                return;
+            }
+            if (!dialog.SelectedPath.EndsWith("fonts"))
+            {
+                MessageBox.Show("Pick the 'fonts' folder extracted from Shadow The Hedgehog.", "Try Again");
+                return;
+            }
+            lastOpenDir = dialog.SelectedPath;
+
+            if (lastOpenDir == null) return;
+            string[] foundFnts = Directory.GetFiles(lastOpenDir, "*_EN.fnt", SearchOption.AllDirectories);
+            for (int i = 0; i < foundFnts.Length; i++)
+            {
+                byte[] readFile = File.ReadAllBytes(foundFnts[i]);
+                FNT newFnt = FNT.ParseFNTFile(foundFnts[i], ref readFile, lastOpenDir);
+                FNT originalFnt = FNT.ParseFNTFile(foundFnts[i], ref readFile, lastOpenDir);
+
+                openedFnts.Add(newFnt);
+                initialFntsOpenedState.Add(originalFnt);
+            }
+
+            MessageBox.Show("Pick the 'PRS_VOICE_E.afs' file extracted from Shadow The Hedgehog.", "Step 2");
+            var dialog2 = new Ookii.Dialogs.Wpf.VistaOpenFileDialog
+            {
+                Filter = "AFS files (*.afs)|*.afs|All files (*.*)|*.*"
+            };
+            if (dialog2.ShowDialog() == false)
+            {
+                return;
+            }
+            if (!dialog2.FileName.ToLower().EndsWith(".afs"))
+            {
+                MessageBox.Show("Pick an 'AFS' file", "Try Again");
+                return;
+            }
+            var data = File.ReadAllBytes(dialog2.FileName);
+            if (AfsArchive.TryFromFile(data, out var afsArchive))
+            {
+                currentAfs = afsArchive;
+                data = null; // for GC purpose
+            };
+
+
+            string dumpLog = "";
+            // Do actual processing
+            for (int i = 0; i < openedFnts.Count; i++)
+            {
+                // TEMPORARY FOR DEBUGGING, ONLY TARGET stg0404_EN
+                if (openedFnts[i].ToString() != "stg0404\\stg0404_EN.fnt")
+                    continue;
+
+                // manually skip Advertise\Advertise_EN.fnt
+                if (openedFnts[i].ToString() == "Advertise\\Advertise_EN.fnt")
+                    continue;
+
+                dumpLog += "\n\n" + openedFnts[i].ToString() + "\n\n";
+                // perform checks
+                for (int j = 0; j < openedFnts[i].entryTable.Count; j++)
+                {
+                    var labTranscript = "";
+
+                    var entry = openedFnts[i].entryTable[j];
+                    // if audioId = -1 skip
+                    if (entry.audioId == -1)
+                        continue;
+
+                    // manually skip IFF type is BACKGROUND VOICE (GUN Soldiers)
+                    if (entry.entryType == EntryType.BACKGROUND_VOICE)
+                        continue;
+
+
+                    // dump for entries with succeeding chained entries and other type where 00 has an AudioID and successive entry has -1 for audioID
+                    // ex: 652000 -> check succeeding entry for self+1 -> if exist, check next for (self+1)+1 (recursive)
+                    // need to be careful for scenario of entry1 [has audio id] -> successor [no audio id] -> successor's successor [has audio id]
+                    var initialEntry = openedFnts[i].entryTable[j];
+                    do
+                    {
+                        var currentEntry = openedFnts[i].entryTable[j];
+                        var successorEntry = openedFnts[i].entryTable[j + 1];
+                        if ((currentEntry.messageIdBranchSequence + 1) == successorEntry.messageIdBranchSequence && successorEntry.subtitleActiveTime != 0)
+                        {
+
+
+                            dumpLog += currentEntry.messageIdBranchSequence + " AFS: " + currentEntry.audioId + " chained " + successorEntry.messageIdBranchSequence + " AFS: " + successorEntry.audioId + "\n";
+                            
+                            // successive entry found, check for audioId to ensure successor is chained
+                            if (successorEntry.audioId == -1) {
+                                labTranscript += currentEntry.subtitle.ToLower();
+                                labTranscript += "\n\n";
+                            }
+                        }
+                        else
+                        {
+                            // no more successor, end the iteration
+                            if (labTranscript != "")
+                            {
+
+                                labTranscript += currentEntry.subtitle.ToLower();
+                                labTranscript += "\n\n";
+                            }
+                            break;
+                        }
+                        j++; //increment next entry
+                    } while (true);
+
+                    if (labTranscript != "")
+                    {
+                        // has data
+                        if (initialEntry.audioId != -1)
+                        {
+                            var directory = "X:\\corpus\\" + openedFnts[i].ToString() + "\\"; // temp hardcoded
+                            Directory.CreateDirectory(directory);
+                            File.WriteAllText(directory + initialEntry.messageIdBranchSequence + ".lab", labTranscript);
+                            var decoder = new VGAudio.Containers.Adx.AdxReader();
+                            var audio = decoder.Read(currentAfs.Files[initialEntry.audioId].Data);
+                            var writer = new VGAudio.Containers.Wave.WaveWriter();
+                            FileStream stream = new FileStream(directory + initialEntry.messageIdBranchSequence + ".wav", FileMode.OpenOrCreate);
+                            writer.WriteToStream(audio, stream);
+                            stream.Close();
+                        }
+
+                    }
+
+                    // has no successor, we can skip the current entry
+                }
+            }
+
+            // now we need to wait until MFA finishes (user manual)
+            MessageBox.Show("Your corpus has been generated. Do NOT press okay until you have ran MFA align and completed the process!");
+            MessageBox.Show("Next you will pick the folder the processed corpus output, containing TextGrids either in the root or subdirectories");
+
+            // Read and parse TextGrids (do libraries exist?)
+
+            // How to get perfect timings:
+            // Get 'xmin' from TextGrid for successor word '1'. Convert to millis -> Convert to ActiveTime -> Set to "current"
+            // Repeat for any successor, up until the final successor
+            // If final successor, time AutoActiveTime (length of adx) and subtract the values assigned to ALL predecessors chained. This result becomes the new ActiveTime for the final successor.
+
+            // TODO: Implement the above
+        }
+
     }
 }
