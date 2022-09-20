@@ -12,6 +12,7 @@
             <Button x:Name="Button_AutoActiveTimeAll" Margin="0,2,0,1" Width="85" Height="25" Content="Auto Time All" Click="Button_AutoActiveTimeAll_Click"/>
             <Button x:Name="Button_DumpChainedEntries" Margin="0,2,0,1" Width="85" Height="25" Content="Dump Chained" Click="Button_DumpChainedEntries_Click"/>
             <Button x:Name="Button_MFA_ChainedEntries" Margin="0,2,0,1" Width="85" Height="25" Content="MFA Chained" Click="Button_MFA_ChainedEntries_Click"/>
+            <Button x:Name="Button_AFS_Remove_Unused" Margin="0,2,0,1" Width="95" Height="25" Content="Del Unused AFS" Click="Button_AFS_Remove_Unused_Click"/>
         </StackPanel>
     </Grid>
 </Window>

@@ -372,11 +372,11 @@ namespace ShadowTH_Text_Editor
                         {
                             dumpLog += currentEntry.messageIdBranchSequence + " AFS: " + currentEntry.audioId + " chained " + successorEntry.messageIdBranchSequence + " AFS: " + successorEntry.audioId + "\n";
                             // successive entry found, check for audioId (optional)
-/*                            if (successorEntry.audioId == -1)
-                            {
-                                // implies current entry's audio is shared for this successor. Dump this
-                                
-                            }*/
+                            /*                            if (successorEntry.audioId == -1)
+                                                        {
+                                                            // implies current entry's audio is shared for this successor. Dump this
+
+                                                        }*/
                         } else
                         {
                             // no more successor, end the iteration
@@ -468,8 +468,8 @@ namespace ShadowTH_Text_Editor
             for (int i = 0; i < openedFnts.Count; i++)
             {
                 // TEMPORARY FOR DEBUGGING, ONLY TARGET stg0404_EN
-/*                if (openedFnts[i].ToString() != "stg0100\\stg0100_EN.fnt")
-                    continue;*/
+                /*                if (openedFnts[i].ToString() != "stg0100\\stg0100_EN.fnt")
+                                    continue;*/
 
                 // manually skip Advertise\Advertise_EN.fnt
                 if (openedFnts[i].ToString() == "Advertise\\Advertise_EN.fnt")
@@ -481,8 +481,8 @@ namespace ShadowTH_Text_Editor
                 {
 
                     // DEBUG FOR BLACKDOOM ONLY
-/*                    if (openedFnts[i].entryTable[j].audioId != -1 && !currentAfs.Files[openedFnts[i].entryTable[j].audioId].Name.Contains("_bd.adx"))
-                        continue;*/
+                    /*                    if (openedFnts[i].entryTable[j].audioId != -1 && !currentAfs.Files[openedFnts[i].entryTable[j].audioId].Name.Contains("_bd.adx"))
+                                            continue;*/
 
                     var labTranscript = "";
 
@@ -509,7 +509,7 @@ namespace ShadowTH_Text_Editor
 
 
                             dumpLog += currentEntry.messageIdBranchSequence + " AFS: " + currentEntry.audioId + " chained " + successorEntry.messageIdBranchSequence + " AFS: " + successorEntry.audioId + "\n";
-                            
+
                             // successive entry found, check for audioId to ensure successor is chained
                             if (successorEntry.audioId == -1) {
                                 labTranscript += currentEntry.subtitle.ToLower();
@@ -574,8 +574,8 @@ namespace ShadowTH_Text_Editor
             for (int i = 0; i < openedFnts.Count; i++)
             {
                 // TEMPORARY FOR DEBUGGING, ONLY TARGET stg0404_EN
-/*                if (openedFnts[i].ToString() != "stg0404\\stg0404_EN.fnt")
-                    continue;*/
+                /*                if (openedFnts[i].ToString() != "stg0404\\stg0404_EN.fnt")
+                                    continue;*/
 
                 // manually skip Advertise\Advertise_EN.fnt
                 if (openedFnts[i].ToString() == "Advertise\\Advertise_EN.fnt")
@@ -586,9 +586,9 @@ namespace ShadowTH_Text_Editor
                 {
 
                     // DEBUG FOR BLACKDOOM ONLY
-/*                    if (openedFnts[i].entryTable[j].audioId != -1 && !currentAfs.Files[openedFnts[i].entryTable[j].audioId].Name.Contains("_bd.adx"))
-                        continue;
-*/
+                    /*                    if (openedFnts[i].entryTable[j].audioId != -1 && !currentAfs.Files[openedFnts[i].entryTable[j].audioId].Name.Contains("_bd.adx"))
+                                            continue;
+                    */
                     var chained = false;
                     var entry = openedFnts[i].entryTable[j];
 
@@ -623,7 +623,7 @@ namespace ShadowTH_Text_Editor
                                 try
                                 {
                                     textgrid = File.ReadAllLines(directory + initialEntry.messageIdBranchSequence + ".TextGrid");
-                                } catch (Exception ex){
+                                } catch (Exception ex) {
                                     MessageBox.Show(ex.Message);
                                     break;
                                 }
@@ -645,7 +645,7 @@ namespace ShadowTH_Text_Editor
                                     var seconds = xLine.Split("xmax = ")[1];
                                     var span = TimeSpan.FromSeconds(double.Parse(seconds));
                                     var activeTime = (int)(span.TotalMilliseconds / ((double)1000 / (double)60));
-                                    
+
                                     // subtract prior entries from time
                                     for (int pos = 0; pos < chainPosition - 1; pos++)
                                     {
@@ -730,5 +730,135 @@ namespace ShadowTH_Text_Editor
             MessageBox.Show("ALL DONE");
         }
 
+        private void Button_AFS_Remove_Unused_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("This will delete all unused AFS entries (not referenced by FNT) \nand some hardcoded entries (2P voice lines, game over, death line etc)", "Warning");
+            initialFntsOpenedState = new List<FNT>();
+            openedFnts = new List<FNT>();
+            // Load all target EN FNTs
+            MessageBox.Show("Pick the 'fonts' folder extracted from Shadow The Hedgehog.", "Step 1");
+            var dialog = new Ookii.Dialogs.Wpf.VistaFolderBrowserDialog();
+            if (dialog.ShowDialog() == false)
+            {
+                return;
+            }
+            if (!dialog.SelectedPath.EndsWith("fonts"))
+            {
+                MessageBox.Show("Pick the 'fonts' folder extracted from Shadow The Hedgehog.", "Try Again");
+                return;
+            }
+            lastOpenDir = dialog.SelectedPath;
+
+            if (lastOpenDir == null) return;
+            string[] foundFnts = Directory.GetFiles(lastOpenDir, "*_EN.fnt", SearchOption.AllDirectories);
+            for (int i = 0; i < foundFnts.Length; i++)
+            {
+                byte[] readFile = File.ReadAllBytes(foundFnts[i]);
+                FNT newFnt = FNT.ParseFNTFile(foundFnts[i], ref readFile, lastOpenDir);
+                FNT originalFnt = FNT.ParseFNTFile(foundFnts[i], ref readFile, lastOpenDir);
+
+                openedFnts.Add(newFnt);
+                initialFntsOpenedState.Add(originalFnt);
+            }
+
+            MessageBox.Show("Pick the 'PRS_VOICE_E.afs' file extracted from Shadow The Hedgehog.", "Step 2");
+            var dialog2 = new Ookii.Dialogs.Wpf.VistaOpenFileDialog
+            {
+                Filter = "AFS files (*.afs)|*.afs|All files (*.*)|*.*"
+            };
+            if (dialog2.ShowDialog() == false)
+            {
+                return;
+            }
+            if (!dialog2.FileName.ToLower().EndsWith(".afs"))
+            {
+                MessageBox.Show("Pick an 'AFS' file", "Try Again");
+                return;
+            }
+            var data = File.ReadAllBytes(dialog2.FileName);
+            if (AfsArchive.TryFromFile(data, out var afsArchive))
+            {
+                currentAfs = afsArchive;
+                data = null; // for GC purpose
+            };
+
+            HashSet<int> afsIndexes = new()
+            {
+                // add hardcoded entries
+                1,
+                2,
+                3,
+                7,
+                8,
+                9,
+                10,
+                11,
+                13,
+                15,
+                16,
+                17,
+                42,
+                24,
+                26,
+                27,
+                29,
+                30,
+                32,
+                34,
+                36,
+                38,
+                40
+            };
+
+            // Do actual processing
+            for (int i = 0; i < openedFnts.Count; i++)
+            {
+                // perform checks
+                for (int j = 0; j < openedFnts[i].entryTable.Count; j++)
+                {
+                    var entry = openedFnts[i].entryTable[j];
+                    // if audioId = -1 skip
+                    if (entry.audioId == -1)
+                        continue;
+
+                    afsIndexes.Add(entry.audioId);
+                }
+            }
+
+            // null entries
+            for (int afsIndex = 0; afsIndex < currentAfs.Files.Count; afsIndex++) { 
+                if (!afsIndexes.Contains(afsIndex))
+                {
+                    currentAfs.Files[afsIndex].Name = "";
+                    currentAfs.Files[afsIndex].Data = new byte[0];
+                }
+            }
+
+
+            // processing complete, export AFS
+            if (currentAfs == null)
+                return;
+            var dialogSave = new Ookii.Dialogs.Wpf.VistaSaveFileDialog
+            {
+                Filter = "AFS files (*.afs)|*.afs|All files (*.*)|*.*",
+                DefaultExt = ".afs",
+            };
+            if (dialogSave.ShowDialog() == false)
+            {
+                return;
+            }
+            if (dialogSave.FileName != "")
+            {
+                try
+                {
+                    File.WriteAllBytes(dialogSave.FileName, currentAfs.ToBytes());
+                    MessageBox.Show("AFS Successfully Written.", "Success");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "An Exception Occurred");
+                }
+            }
+        }
     }
 }
