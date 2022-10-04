@@ -829,7 +829,7 @@ namespace ShadowTH_Text_Editor
             for (int afsIndex = 0; afsIndex < currentAfs.Files.Count; afsIndex++) { 
                 if (!afsIndexes.Contains(afsIndex))
                 {
-                    currentAfs.Files[afsIndex].Name = "";
+                    //currentAfs.Files[afsIndex].Name = ""; // DO NOT NULL Name (check if causing cutout / fail to play)
                     currentAfs.Files[afsIndex].Data = new byte[0];
                 }
             }
@@ -852,7 +852,7 @@ namespace ShadowTH_Text_Editor
 
                     if (entry.subtitle.Contains("orange") || entry.subtitle.Contains("key"))
                     {
-                        currentAfs.Files[entry.audioId].Name = "";
+                        //currentAfs.Files[entry.audioId].Name = ""; // DO NOT NULL Name (check if causing cutout / fail to play)
                         currentAfs.Files[entry.audioId].Data = new byte[0];
                     }
                 }
