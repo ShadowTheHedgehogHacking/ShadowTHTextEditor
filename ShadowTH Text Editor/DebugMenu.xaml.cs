@@ -860,5 +860,97 @@ namespace ShadowTH_Text_Editor
                 }
             }
         }
+
+        private void Button_AFS_Dump_Unused_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("This will delete all unused AFS entries (not referenced by FNT) \nand some hardcoded entries (2P voice lines, game over, death line etc)", "Warning");
+            initialFntsOpenedState = new List<FNT>();
+            openedFnts = new List<FNT>();
+            // Load all target EN FNTs
+            MessageBox.Show("Pick the 'fonts' folder extracted from Shadow The Hedgehog.", "Step 1");
+            var dialog = new Ookii.Dialogs.Wpf.VistaFolderBrowserDialog();
+            if (dialog.ShowDialog() == false)
+            {
+                return;
+            }
+            if (!dialog.SelectedPath.EndsWith("fonts"))
+            {
+                MessageBox.Show("Pick the 'fonts' folder extracted from Shadow The Hedgehog.", "Try Again");
+                return;
+            }
+            lastOpenDir = dialog.SelectedPath;
+
+            if (lastOpenDir == null) return;
+            string[] foundFnts = Directory.GetFiles(lastOpenDir, "*_EN.fnt", SearchOption.AllDirectories);
+            for (int i = 0; i < foundFnts.Length; i++)
+            {
+                byte[] readFile = File.ReadAllBytes(foundFnts[i]);
+                FNT newFnt = FNT.ParseFNTFile(foundFnts[i], ref readFile, lastOpenDir);
+                FNT originalFnt = FNT.ParseFNTFile(foundFnts[i], ref readFile, lastOpenDir);
+
+                openedFnts.Add(newFnt);
+                initialFntsOpenedState.Add(originalFnt);
+            }
+
+            MessageBox.Show("Pick the 'PRS_VOICE_E.afs' file extracted from Shadow The Hedgehog.", "Step 2");
+            var dialog2 = new Ookii.Dialogs.Wpf.VistaOpenFileDialog
+            {
+                Filter = "AFS files (*.afs)|*.afs|All files (*.*)|*.*"
+            };
+            if (dialog2.ShowDialog() == false)
+            {
+                return;
+            }
+            if (!dialog2.FileName.ToLower().EndsWith(".afs"))
+            {
+                MessageBox.Show("Pick an 'AFS' file", "Try Again");
+                return;
+            }
+            var data = File.ReadAllBytes(dialog2.FileName);
+            if (AfsArchive.TryFromFile(data, out var afsArchive))
+            {
+                currentAfs = afsArchive;
+                data = null; // for GC purpose
+            };
+
+            HashSet<int> afsIndexes = new();
+
+            // Do actual processing
+            for (int i = 0; i < openedFnts.Count; i++)
+            {
+                // perform checks
+                for (int j = 0; j < openedFnts[i].entryTable.Count; j++)
+                {
+                    var entry = openedFnts[i].entryTable[j];
+                    // if audioId = -1 skip
+                    if (entry.audioId == -1)
+                        continue;
+
+                    afsIndexes.Add(entry.audioId);
+                }
+            }
+            MessageBox.Show("Pick a folder to save the unused audio as .wav");
+
+            Ookii.Dialogs.Wpf.VistaFolderBrowserDialog outFolder = new Ookii.Dialogs.Wpf.VistaFolderBrowserDialog();
+            if (outFolder.ShowDialog() == false)
+            {
+                return;
+            }
+
+            // null entries
+            for (int afsIndex = 0; afsIndex < currentAfs.Files.Count; afsIndex++)
+            {
+                if (!afsIndexes.Contains(afsIndex))
+                {
+                    var decoder = new VGAudio.Containers.Adx.AdxReader();
+                    var audio = decoder.Read(currentAfs.Files[afsIndex].Data);
+                    var writer = new VGAudio.Containers.Wave.WaveWriter();
+                    FileStream stream = new FileStream(outFolder.SelectedPath + "\\" + afsIndex + "_" + currentAfs.Files[afsIndex].Name, FileMode.CreateNew);
+                    writer.WriteToStream(audio, stream);
+                    stream.Close();
+                }
+            }
+            MessageBox.Show("Done");
+        }
     }
 }

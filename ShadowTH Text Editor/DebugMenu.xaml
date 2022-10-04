@@ -5,14 +5,15 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ShadowTH_Text_Editor"
         mc:Ignorable="d"
-        Title="DebugMenu" Height="300" Width="100" MinWidth="100" MinHeight="300" MaxWidth="200" MaxHeight="300">
+        Title="DebugMenu" Height="300" Width="120" MinWidth="120" MinHeight="300" MaxWidth="200" MaxHeight="300">
     <Grid>
         <StackPanel Margin="0,5,0,0">
             <Button x:Name="Button_CompareFNT" Margin="0,0,0,1" Width="85" Height="25" Content="Compare FNTs" Click="Button_CompareFNT_Click"/>
             <Button x:Name="Button_AutoActiveTimeAll" Margin="0,2,0,1" Width="85" Height="25" Content="Auto Time All" Click="Button_AutoActiveTimeAll_Click"/>
             <Button x:Name="Button_DumpChainedEntries" Margin="0,2,0,1" Width="85" Height="25" Content="Dump Chained" Click="Button_DumpChainedEntries_Click"/>
             <Button x:Name="Button_MFA_ChainedEntries" Margin="0,2,0,1" Width="85" Height="25" Content="MFA Chained" Click="Button_MFA_ChainedEntries_Click"/>
-            <Button x:Name="Button_AFS_Remove_Unused" Margin="0,2,0,1" Width="95" Height="25" Content="Del Unused AFS" Click="Button_AFS_Remove_Unused_Click"/>
+            <Button x:Name="Button_AFS_Remove_Unused" Margin="0,2,0,1" Width="108" Height="25" Content="Delete Unused AFS" Click="Button_AFS_Remove_Unused_Click"/>
+            <Button x:Name="Button_AFS_Dump_Unused" Margin="0,2,0,1" Width="108" Height="25" Content="Dump Unused AFS" Click="Button_AFS_Dump_Unused_Click"/>
         </StackPanel>
     </Grid>
 </Window>
