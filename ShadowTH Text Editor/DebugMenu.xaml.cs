@@ -834,6 +834,32 @@ namespace ShadowTH_Text_Editor
                 }
             }
 
+            //// hardcoded removals ///
+
+            for (int i = 0; i < openedFnts.Count; i++)
+            {
+                // perform checks
+                for (int j = 0; j < openedFnts[i].entryTable.Count; j++)
+                {
+                    var entry = openedFnts[i].entryTable[j];
+                    // if audioId = -1 skip
+                    if (entry.audioId == -1)
+                        continue;
+
+                    // manually skip Advertise\Advertise_EN.fnt
+                    if (openedFnts[i].ToString() == "Advertise\\Advertise_EN.fnt")
+                        continue;
+
+                    if (entry.subtitle.Contains("orange") || entry.subtitle.Contains("key"))
+                    {
+                        currentAfs.Files[entry.audioId].Name = "";
+                        currentAfs.Files[entry.audioId].Data = new byte[0];
+                    }
+                }
+            }
+
+
+            /// end harcoded removals ///
 
             // processing complete, export AFS
             if (currentAfs == null)
