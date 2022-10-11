@@ -825,12 +825,24 @@ namespace ShadowTH_Text_Editor
                 }
             }
 
+            MessageBox.Show("Pick replacement delete file, valid adx required");
+
+            var nulledAdxDialog = new Ookii.Dialogs.Wpf.VistaOpenFileDialog
+            {
+                Filter = "ADX files (*.adx)|*.adx|All files (*.*)|*.*",
+                DefaultExt = ".adx",
+            };
+            if (nulledAdxDialog.ShowDialog() == false)
+            {
+                return;
+            }
+            byte[] nullAdxSafeFile = File.ReadAllBytes(nulledAdxDialog.FileName);
+
             // null entries
             for (int afsIndex = 0; afsIndex < currentAfs.Files.Count; afsIndex++) { 
                 if (!afsIndexes.Contains(afsIndex))
                 {
-                    //currentAfs.Files[afsIndex].Name = ""; // DO NOT NULL Name (check if causing cutout / fail to play)
-                    currentAfs.Files[afsIndex].Data = new byte[0];
+                    currentAfs.Files[afsIndex].Data = nullAdxSafeFile;
                 }
             }
 
@@ -852,8 +864,7 @@ namespace ShadowTH_Text_Editor
 
                     if (entry.subtitle.Contains("orange") || entry.subtitle.Contains("key"))
                     {
-                        //currentAfs.Files[entry.audioId].Name = ""; // DO NOT NULL Name (check if causing cutout / fail to play)
-                        currentAfs.Files[entry.audioId].Data = new byte[0];
+                        currentAfs.Files[entry.audioId].Data = nullAdxSafeFile;
                     }
                 }
             }
