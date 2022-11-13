@@ -1,4 +1,5 @@
 ﻿using AFSLib;
+using Microsoft.VisualBasic.Logging;
 using NAudio.Wave;
 using ShadowFNT.Structures;
 using ShadowTH_Text_Editor.Helpers;
@@ -13,6 +14,7 @@ using MessageBox = System.Windows.MessageBox;
 
 namespace ShadowTH_Text_Editor {
     public partial class MainWindow : Window {
+        private Window debugMenu;
         private List<FNT> initialFntsOpenedState;
         private List<FNT> openedFnts;
         private string lastOpenDir;
@@ -480,7 +482,9 @@ namespace ShadowTH_Text_Editor {
 
         private void Button_DebugMenu_Click(object sender, RoutedEventArgs e)
         {
-            new DebugMenu().Show();
+            debugMenu ??= new DebugMenu();
+            debugMenu.Show();
+            debugMenu.Topmost = true;
         }
 
         private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -619,6 +623,12 @@ namespace ShadowTH_Text_Editor {
                 MessageBox.Show("Invalid Input\n" + ex.Message);
                 return;
             }
+        }
+
+
+        private void CoreWindow_Closed(object sender, EventArgs e)
+        {
+            Application.Current.Shutdown();
         }
 
         private void PreferredThemeSave(string themeName)

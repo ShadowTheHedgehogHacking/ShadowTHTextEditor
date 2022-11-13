@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ShadowTH_Text_Editor"
         mc:Ignorable="d"
-        Title="DebugMenu" Height="300" Width="120" MinWidth="120" MinHeight="300" MaxWidth="200" MaxHeight="300">
+        Title="DebugMenu" Height="300" Width="120" MinWidth="120" MinHeight="300" MaxWidth="200" MaxHeight="300" Closing="Window_Closing">
     <Grid>
         <StackPanel Margin="0,5,0,0">
             <Button x:Name="Button_CompareFNT" Margin="0,0,0,1" Width="85" Height="25" Content="Compare FNTs" Click="Button_CompareFNT_Click"/>
