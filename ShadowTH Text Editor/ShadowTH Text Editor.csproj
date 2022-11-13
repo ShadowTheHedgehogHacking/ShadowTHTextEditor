@@ -2,6 +2,8 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net6.0-windows</TargetFramework>
+	<RollForward>LatestMajor</RollForward>
+	<LangVersion>latest</LangVersion>
     <RootNamespace>ShadowTH_Text_Editor</RootNamespace>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>ShadowFNT.ico</ApplicationIcon>
