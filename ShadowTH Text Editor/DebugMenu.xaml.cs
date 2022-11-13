@@ -900,7 +900,7 @@ namespace ShadowTH_Text_Editor
 
         private void Button_AFS_Dump_Unused_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("This will delete all unused AFS entries (not referenced by FNT) \nand some hardcoded entries (2P voice lines, game over, death line etc)", "Warning");
+            MessageBox.Show("This will dump all unused AFS entries as .wav files.\nUnused is defined as not referenced by FNT, so there may be some 2P lines etc that are used.", "Info");
             initialFntsOpenedState = new List<FNT>();
             openedFnts = new List<FNT>();
             // Load all target EN FNTs
@@ -974,7 +974,7 @@ namespace ShadowTH_Text_Editor
                 return;
             }
 
-            // null entries
+            // dump entries
             for (int afsIndex = 0; afsIndex < currentAfs.Files.Count; afsIndex++)
             {
                 if (!afsIndexes.Contains(afsIndex))

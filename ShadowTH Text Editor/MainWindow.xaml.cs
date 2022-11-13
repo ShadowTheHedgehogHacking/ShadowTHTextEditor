@@ -18,14 +18,26 @@ namespace ShadowTH_Text_Editor {
         private List<FNT> initialFntsOpenedState;
         private List<FNT> openedFnts;
         private string lastOpenDir;
-        private bool localeWarningSeen = false;
+        private bool localeWarningSeen;
         private FNT currentFnt;
         private AfsArchive currentAfs;
         private ICollectionView displayFntsView, displayTableListView;
 
         public MainWindow() {
             InitializeComponent();
-            PreferredThemeCheck();
+            PreferencesCheck();
+
+            openedFnts = new List<FNT>();
+            initialFntsOpenedState = new List<FNT>();
+            currentAfs = null;
+            Button_OpenAFS.IsEnabled = false;
+            Button_ExportAFS.IsEnabled = false;
+            Button_ExportChangedFNTs.IsEnabled = false;
+            Button_PreviewADX.IsEnabled = false;
+            Button_AddEntry.IsEnabled = false;
+            ClearUIData();
+            ListBox_AllFNTS.ItemsSource = null;
+            ListBox_CurrentFNT.ItemsSource = null;
         }
 
         private void Button_SelectFNTSClick(object sender, RoutedEventArgs e) {
@@ -38,11 +50,11 @@ namespace ShadowTH_Text_Editor {
                 return;
             }
             lastOpenDir = dialog.SelectedPath;
-            ProcessFNTS();
+            ProcessFNTS(true);
         }
 
-        private void ProcessFNTS() {
-            ClearData();
+        private void ProcessFNTS(bool clear) {
+            if (clear) ClearData();
             if (lastOpenDir == null) return;
             string localeSwitcher = ComboBox_LocaleSwitcher.SelectedItem.ToString();
             string[] foundFnts = Directory.GetFiles(lastOpenDir, "*_" + localeSwitcher.Substring(localeSwitcher.Length - 2) + ".fnt", SearchOption.AllDirectories);
@@ -410,7 +422,7 @@ namespace ShadowTH_Text_Editor {
 
         private void ComboBox_LocaleSwitcher_SelectionChanged(object sender, SelectionChangedEventArgs e) {
             if (initialFntsOpenedState == null) return;
-            ProcessFNTS();
+            ProcessFNTS(true);
         }
 
         private void ComboBox_LocaleSwitcher_DropDownClosed(object sender, EventArgs e) {
@@ -418,6 +430,7 @@ namespace ShadowTH_Text_Editor {
                 MessageBox.Show("Saving in languages other than English is currently unsupported.\n" +
                     "Attempting this will cause issues, as the \'global\' .met used does not contain full non-English characters.", "Info");
                 localeWarningSeen = true;
+                PreferencesSave();
             }
         }
 
@@ -499,14 +512,14 @@ namespace ShadowTH_Text_Editor {
         {
             ThemeHelper.ApplySkin(Skin.Dark);
             SetGroupBoxBorder(0.1d);
-            PreferredThemeSave("Dark");
+            PreferencesSave();
         }
 
         private void CheckBox_DarkMode_Unchecked(object sender, RoutedEventArgs e)
         {
             ThemeHelper.ApplySkin(Skin.Light);
             SetGroupBoxBorder(1);
-            PreferredThemeSave("Light");
+            PreferencesSave();
         }
 
         private void SetGroupBoxBorder(double multiplier)
@@ -579,18 +592,19 @@ namespace ShadowTH_Text_Editor {
                     MessageBox.Show(ex.Message, "An Exception Occurred");
                 }
             }
-            ClearData();
         }
 
-        private void PreferredThemeCheck()
+        private void PreferencesCheck()
         {
-            string themeConfig = AppDomain.CurrentDomain.BaseDirectory + "/theme.ini";
+            string themeConfig = AppDomain.CurrentDomain.BaseDirectory + "/preferences.ini";
             if (File.Exists(themeConfig))
             {
                 foreach (string i in File.ReadAllLines(themeConfig))
                 {
                     if (i.StartsWith("Dark"))
                         CheckBox_DarkMode.IsChecked = true;
+                    if (i.StartsWith("LocaleWarningSeen=True"))
+                        localeWarningSeen = true;
                 }
             }
         }
@@ -631,10 +645,18 @@ namespace ShadowTH_Text_Editor {
             Application.Current.Shutdown();
         }
 
-        private void PreferredThemeSave(string themeName)
+        private void PreferencesSave()
         {
-            string themeConfig = AppDomain.CurrentDomain.BaseDirectory + "/theme.ini";
-            File.WriteAllText(themeConfig, themeName);
+            string themeConfig = AppDomain.CurrentDomain.BaseDirectory + "/preferences.ini";
+            string prefs = "LocaleWarningSeen=" + localeWarningSeen + "\n";
+            if (CheckBox_DarkMode.IsChecked ?? false)
+            {
+                prefs += "Dark\n";
+            } else
+            {
+                prefs += "Light\n";
+            }
+            File.WriteAllText(themeConfig, prefs);
         }
     }
 }
