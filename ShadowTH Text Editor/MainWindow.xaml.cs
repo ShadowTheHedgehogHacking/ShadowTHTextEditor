@@ -6,6 +6,7 @@ using ShadowTH_Text_Editor.Helpers;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Drawing;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -401,6 +402,8 @@ namespace ShadowTH_Text_Editor {
                 writer.WriteToStream(audio, stream);
 
                 var player = new System.Media.SoundPlayer();
+
+
                 stream.Position = 0;
                 player.Stream = stream;
                 player.Play();
@@ -537,10 +540,12 @@ namespace ShadowTH_Text_Editor {
 
         private void Button_ExportChangedFNTsClick(object sender, RoutedEventArgs e) {
             List<FNT> filesToWrite = new List<FNT>();
+            List<int> replacementIndexes = new List<int>();
             string filesToWriteReportingString = "";
             for (int i = 0; i < initialFntsOpenedState.Count; i++) {
                 if (initialFntsOpenedState[i].Equals(openedFnts[i]) == false) {
                     filesToWrite.Add(openedFnts[i]);
+                    replacementIndexes.Add(i);
                     filesToWriteReportingString = filesToWriteReportingString + "\n" + openedFnts[i];
                 }
             }
@@ -590,6 +595,25 @@ namespace ShadowTH_Text_Editor {
                 } catch (Exception ex) {
                     MessageBox.Show("Failed on " + fnt.ToString(), "An Exception Occurred");
                     MessageBox.Show(ex.Message, "An Exception Occurred");
+                }
+            }
+
+            // reset change tracking
+            for (int i = 0; i < filesToWrite.Count; i++)
+            {
+                if (CheckBox_ChooseWhereToSave.IsChecked == true)
+                {
+                    var newFntFilePath = customSavePath + '\\' + filesToWrite[i].fileName.Split(filesToWrite[i].filterString + '\\')[1];
+                    byte[] readFile = File.ReadAllBytes(newFntFilePath);
+                    FNT replacementFnt = FNT.ParseFNTFile(newFntFilePath, ref readFile, lastOpenDir);
+                    initialFntsOpenedState.RemoveAt(replacementIndexes[i]);
+                    initialFntsOpenedState.Insert(replacementIndexes[i], replacementFnt);
+                } else
+                {
+                    byte[] readFile = File.ReadAllBytes(filesToWrite[i].fileName);
+                    FNT replacementFnt = FNT.ParseFNTFile(filesToWrite[i].fileName, ref readFile, lastOpenDir);
+                    initialFntsOpenedState.RemoveAt(replacementIndexes[i]);
+                    initialFntsOpenedState.Insert(replacementIndexes[i], replacementFnt);
                 }
             }
         }
