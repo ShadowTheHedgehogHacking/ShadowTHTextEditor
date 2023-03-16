@@ -782,10 +782,10 @@ namespace ShadowTH_Text_Editor
                 data = null; // for GC purpose
             };
 
-            HashSet<int> afsIndexes = new()
-            {
+            HashSet<int> afsIndexes = new();
+/*            {
                 // add hardcoded entries
-                1,
+*//*                1,
                 2,
                 3,
                 7,
@@ -807,8 +807,8 @@ namespace ShadowTH_Text_Editor
                 34,
                 36,
                 38,
-                40
-            };
+                40*//*
+            };*/
 
             // Do actual processing
             for (int i = 0; i < openedFnts.Count; i++)
@@ -836,15 +836,15 @@ namespace ShadowTH_Text_Editor
             {
                 return;
             }
-            byte[] nullAdxSafeFile = File.ReadAllBytes(nulledAdxDialog.FileName);
+            //byte[] nullAdxSafeFile = File.ReadAllBytes(nulledAdxDialog.FileName);
 
             // null entries
-            for (int afsIndex = 0; afsIndex < currentAfs.Files.Count; afsIndex++) { 
+ /*           for (int afsIndex = 0; afsIndex < currentAfs.Files.Count; afsIndex++) { 
                 if (!afsIndexes.Contains(afsIndex))
                 {
-                    currentAfs.Files[afsIndex].Data = nullAdxSafeFile;
+                    currentAfs.Files[afsIndex].Data = new byte[4];
                 }
-            }
+            }*/
 
             //// hardcoded removals ///
 
@@ -864,7 +864,12 @@ namespace ShadowTH_Text_Editor
 
                     if (entry.subtitle.Contains("orange") || entry.subtitle.Contains("key"))
                     {
-                        currentAfs.Files[entry.audioId].Data = nullAdxSafeFile;
+                        currentAfs.Files[entry.audioId].Data = new byte[4];//nullAdxSafeFile;
+                    }
+
+                    if (currentAfs.Files[entry.audioId].Name.Contains("xb_"))
+                    {
+                        currentAfs.Files[entry.audioId].Data = new byte[4];//nullAdxSafeFile;
                     }
                 }
             }
