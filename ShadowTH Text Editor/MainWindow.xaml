@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:ShadowTH_Text_Editor"
         mc:Ignorable="d"
         x:Name="CoreWindow"
-        Title="Shadow The Hedgehog Text Editor / FNT Editor v1.8.0" Height="715" Width="800" MinWidth="600" MinHeight="715" MaxWidth="800" MaxHeight="715" ResizeMode="CanResizeWithGrip" Icon="ShadowFNT.ico" SizeChanged="Window_SizeChanged" Closed="CoreWindow_Closed">
+        Title="Shadow The Hedgehog Text Editor / FNT Editor v1.8.1" Height="715" Width="800" MinWidth="600" MinHeight="715" MaxWidth="800" MaxHeight="715" ResizeMode="CanResizeWithGrip" Icon="ShadowFNT.ico" SizeChanged="Window_SizeChanged" Closed="CoreWindow_Closed">
     <DockPanel>
         <StackPanel DockPanel.Dock="Top">
             <StackPanel Orientation="Horizontal">
@@ -81,21 +81,22 @@
                     <TextBlock>Audio Filename</TextBlock>
                     <TextBlock x:Name="TextBlock_AfsAudioIDName"/>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5,0,5">
-                        <Button x:Name="Button_ReplaceADX" IsEnabled="False" Margin="0,0,0,0" Width="80" Height="30" VerticalAlignment="Top" Click="Button_ReplaceADXClick" Content="Replace ADX"/>
-                        <Button x:Name="Button_ExtractADX" IsEnabled="False" Margin="5,0,0,0" Width="80" Height="30" VerticalAlignment="Top" Click="Button_ExtractADXClick" Content="Extract Audio"/>
-                        <Button x:Name="Button_PreviewADX" FontSize="20" IsEnabled="False" Margin="5,0,0,0" Width="30" Height="30" VerticalAlignment="Top" Click="Button_PreviewADXClick" Content="►"/>
+                        <Button x:Name="Button_ReplaceAudio" IsEnabled="False" Margin="0,0,0,0" Width="80" Height="30" VerticalAlignment="Top" Click="Button_ReplaceAudioClick" Content="Replace Audio"/>
+                        <Button x:Name="Button_ExtractAudio" IsEnabled="False" Margin="5,0,0,0" Width="80" Height="30" VerticalAlignment="Top" Click="Button_ExtractAudioClick" Content="Extract Audio"/>
+                        <Button x:Name="Button_PreviewAudio" FontSize="20" IsEnabled="False" Margin="5,0,0,0" Width="30" Height="30" VerticalAlignment="Top" Click="Button_PreviewAudioClick" Content="►"/>
                     </StackPanel>
                     <TextBlock>Text</TextBlock>
                     <TextBox x:Name="TextBox_EditSubtitle" TextWrapping="NoWrap" AcceptsReturn="True" MinHeight="90" MinWidth="260" MaxWidth="260" MaxHeight="90"/>
                     <Button x:Name="Button_SaveCurrentEntry" Height="30" Margin="0,5,0,0" Content="Save Entry Changes" Click="Button_SaveCurrentEntry_Click"/>
                 </StackPanel>
             </GroupBox>
-            <GroupBox x:Name="GroupBoxMisc" Header="Misc" Height="85">
+            <GroupBox x:Name="GroupBoxMisc" Header="Misc" Height="100">
                 <StackPanel>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                         <Button x:Name="Button_About" Height="25" Click="Button_About_Click" Width="85">About</Button>
                         <Button x:Name="Button_DebugMenu" Margin="5"  Width="85" Height="25" Content="Debug Menu" Click="Button_DebugMenu_Click"/>
                     </StackPanel>
+                    <CheckBox x:Name="CheckBox_Monospaced_Text" HorizontalAlignment="Center" Content="Monospaced Subtitle Text" ToolTip="Enable for Monospaced Font in Subtitle Viewer" Unchecked="CheckBox_MonoSpace_Unchecked" Checked="CheckBox_MonoSpace_Checked"/>
                     <CheckBox x:Name="CheckBox_DarkMode" HorizontalAlignment="Center" Content="Dark Mode Theme" ToolTip="Enable for Dark Mode Theme" Unchecked="CheckBox_DarkMode_Unchecked" Checked="CheckBox_DarkMode_Checked"/>
                 </StackPanel>
             </GroupBox>
@@ -124,7 +125,7 @@
             <GroupBox x:Name="GroupBoxEntries" Header="Entries" Padding="5">
                 <StackPanel>
                     <TextBlock x:Name="TextBlock_CurrentFNT_Index" Text="Index: None"/>
-                    <ListBox x:Name="ListBox_CurrentFNT" MinHeight="375" MaxHeight="375" MinWidth="280" MaxWidth="280" SelectionChanged="ListBox_CurrentFNT_SelectionChanged"/>
+                    <ListBox x:Name="ListBox_CurrentFNT" MinHeight="365" MaxHeight="365" MinWidth="280" MaxWidth="280" SelectionChanged="ListBox_CurrentFNT_SelectionChanged"/>
                 </StackPanel>
             </GroupBox>
         </StackPanel>
@@ -140,7 +141,7 @@
                         <ComboBoxItem>JP</ComboBoxItem>
                         <ComboBoxItem>SP</ComboBoxItem>
                     </ComboBox>
-                    <ListBox x:Name="ListBox_AllFNTS" Margin="0,5,0,0" MaxWidth="280" MaxHeight="467" MinHeight="467" SelectionChanged="ListBox_OpenedFNTS_SelectionChanged"/>
+                    <ListBox x:Name="ListBox_AllFNTS" Margin="0,5,0,0" MaxWidth="280" MaxHeight="474" MinHeight="474" SelectionChanged="ListBox_OpenedFNTS_SelectionChanged"/>
                 </StackPanel>
             </GroupBox>
         </StackPanel>

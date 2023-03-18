@@ -1,16 +1,15 @@
 ﻿using AFSLib;
-using Microsoft.VisualBasic.Logging;
 using NAudio.Wave;
 using ShadowFNT.Structures;
 using ShadowTH_Text_Editor.Helpers;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Drawing;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Media;
 using MessageBox = System.Windows.MessageBox;
 
 namespace ShadowTH_Text_Editor {
@@ -34,7 +33,7 @@ namespace ShadowTH_Text_Editor {
             Button_OpenAFS.IsEnabled = false;
             Button_ExportAFS.IsEnabled = false;
             Button_ExportChangedFNTs.IsEnabled = false;
-            Button_PreviewADX.IsEnabled = false;
+            Button_PreviewAudio.IsEnabled = false;
             Button_AddEntry.IsEnabled = false;
             ClearUIData();
             ListBox_AllFNTS.ItemsSource = null;
@@ -79,7 +78,7 @@ namespace ShadowTH_Text_Editor {
             Button_OpenAFS.IsEnabled = false;
             Button_ExportAFS.IsEnabled = false;
             Button_ExportChangedFNTs.IsEnabled = false;
-            Button_PreviewADX.IsEnabled = false;
+            Button_PreviewAudio.IsEnabled = false;
             Button_AddEntry.IsEnabled = false;
             ClearUIData();
             ListBox_AllFNTS.ItemsSource = null;
@@ -95,9 +94,9 @@ namespace ShadowTH_Text_Editor {
             TextBox_SubtitleActiveTime.Clear();
             Button_DeleteEntry.IsEnabled = false;
             Button_GotoSelected.IsEnabled = false;
-            Button_ExtractADX.IsEnabled = false;
-            Button_ReplaceADX.IsEnabled = false;
-            Button_PreviewADX.IsEnabled = false;
+            Button_ExtractAudio.IsEnabled = false;
+            Button_ReplaceAudio.IsEnabled = false;
+            Button_PreviewAudio.IsEnabled = false;
             Button_AutoActiveTime_CurrentEntry.IsEnabled = false;
         }
 
@@ -162,9 +161,9 @@ namespace ShadowTH_Text_Editor {
 
         private void SetAFSRelatedButtonEnabledState(bool isEnabled)
         {
-            Button_ExtractADX.IsEnabled = isEnabled;
-            Button_ReplaceADX.IsEnabled = isEnabled;
-            Button_PreviewADX.IsEnabled = isEnabled;
+            Button_ExtractAudio.IsEnabled = isEnabled;
+            Button_ReplaceAudio.IsEnabled = isEnabled;
+            Button_PreviewAudio.IsEnabled = isEnabled;
             Button_AutoActiveTime_CurrentEntry.IsEnabled = isEnabled;
         }
 
@@ -299,7 +298,7 @@ namespace ShadowTH_Text_Editor {
             }
         }
 
-        private void Button_ReplaceADXClick(object sender, RoutedEventArgs e) {
+        private void Button_ReplaceAudioClick(object sender, RoutedEventArgs e) {
             if (currentAfs == null)
                 return;
             Ookii.Dialogs.Wpf.VistaOpenFileDialog dialog = new Ookii.Dialogs.Wpf.VistaOpenFileDialog {
@@ -348,7 +347,7 @@ namespace ShadowTH_Text_Editor {
             MessageBox.Show("File was not found", "Error");
         }
 
-        private void Button_ExtractADXClick(object sender, RoutedEventArgs e) {
+        private void Button_ExtractAudioClick(object sender, RoutedEventArgs e) {
             if (currentAfs == null)
                 return;
             Ookii.Dialogs.Wpf.VistaSaveFileDialog dialog = new Ookii.Dialogs.Wpf.VistaSaveFileDialog {
@@ -380,7 +379,7 @@ namespace ShadowTH_Text_Editor {
             }
         }
 
-        private void Button_PreviewADXClick(object sender, RoutedEventArgs e) {
+        private void Button_PreviewAudioClick(object sender, RoutedEventArgs e) {
             if (currentAfs == null)
                 return;
             int audioId;
@@ -420,7 +419,7 @@ namespace ShadowTH_Text_Editor {
                 "Uses VGAudio by Alex Barney for ADX playback\n" +
                 "Uses modified version of DarkTheme by Otiel\n" +
                 "Uses Ookii.Dialogs for dialogs\n\n" +
-                "https://github.com/ShadowTheHedgehogHacking\n\nto check for updates for this software.", "About ShadowTH Text Editor / FNT Editor v1.8.0");
+                "https://github.com/ShadowTheHedgehogHacking\n\nto check for updates for this software.", "About ShadowTH Text Editor / FNT Editor v1.8.1");
         }
 
         private void ComboBox_LocaleSwitcher_SelectionChanged(object sender, SelectionChangedEventArgs e) {
@@ -667,6 +666,16 @@ namespace ShadowTH_Text_Editor {
         private void CoreWindow_Closed(object sender, EventArgs e)
         {
             Application.Current.Shutdown();
+        }
+
+        private void CheckBox_MonoSpace_Checked(object sender, RoutedEventArgs e)
+        {
+            TextBox_EditSubtitle.FontFamily = new FontFamily("Courier New");
+        }
+
+        private void CheckBox_MonoSpace_Unchecked(object sender, RoutedEventArgs e)
+        {
+            TextBox_EditSubtitle.FontFamily = new FontFamily("Segoe UI");
         }
 
         private void PreferencesSave()
