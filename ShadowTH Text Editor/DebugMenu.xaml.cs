@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Windows;
 using static System.Net.Mime.MediaTypeNames;
 
@@ -994,6 +995,61 @@ namespace ShadowTH_Text_Editor
         {
             e.Cancel = true;
             Hide();
+        }
+
+        private void Button_Dump_Path_Names_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("This will dump all path names for all languages.", "Info");
+            initialFntsOpenedState = new List<FNT>();
+            openedFnts = new List<FNT>();
+            MessageBox.Show("Pick the 'fonts' folder extracted from Shadow The Hedgehog.", "Step 1");
+            var dialog = new Ookii.Dialogs.Wpf.VistaFolderBrowserDialog();
+            if (dialog.ShowDialog() == false)
+            {
+                return;
+            }
+            if (!dialog.SelectedPath.EndsWith("fonts"))
+            {
+                MessageBox.Show("Pick the 'fonts' folder extracted from Shadow The Hedgehog.", "Try Again");
+                return;
+            }
+            lastOpenDir = dialog.SelectedPath;
+
+            if (lastOpenDir == null) return;
+            string[] foundFnts = Directory.GetFiles(lastOpenDir, "Advertise_*.fnt", SearchOption.AllDirectories);
+            for (int i = 0; i < foundFnts.Length; i++)
+            {
+                byte[] readFile = File.ReadAllBytes(foundFnts[i]);
+                FNT newFnt = FNT.ParseFNTFile(foundFnts[i], ref readFile, lastOpenDir);
+                FNT originalFnt = FNT.ParseFNTFile(foundFnts[i], ref readFile, lastOpenDir);
+
+                openedFnts.Add(newFnt);
+                initialFntsOpenedState.Add(originalFnt);
+            }
+
+            MessageBox.Show("Pick output directory for text dumps");
+            var outputPath = new Ookii.Dialogs.Wpf.VistaFolderBrowserDialog();
+            if (outputPath.ShowDialog() == false)
+            {
+                return;
+            }
+
+
+            // Do actual processing
+            for (int i = 0; i < openedFnts.Count; i++)
+            {
+                // index 6 is path 001
+                // index 331 is path 326
+                StringBuilder textDump = new StringBuilder();
+                for (int j = 6; j < 332; j++)
+                {
+                    textDump.AppendLine(openedFnts[i].entryTable[j].subtitle.Replace("\0", ""));
+                }
+                var fileName = openedFnts[i].ToString().Substring(10);
+                fileName = fileName.Replace(".fnt", ".fntdump");
+
+                File.WriteAllText(outputPath.SelectedPath + "\\" + fileName, textDump.ToString());     
+            }
         }
     }
 }

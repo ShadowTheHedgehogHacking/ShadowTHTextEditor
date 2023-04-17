@@ -14,6 +14,7 @@
             <Button x:Name="Button_MFA_ChainedEntries" Margin="0,2,0,1" Width="85" Height="25" Content="MFA Chained" Click="Button_MFA_ChainedEntries_Click"/>
             <Button x:Name="Button_AFS_Remove_Unused" Margin="0,2,0,1" Width="108" Height="25" Content="Delete Unused AFS" Click="Button_AFS_Remove_Unused_Click"/>
             <Button x:Name="Button_AFS_Dump_Unused" Margin="0,2,0,1" Width="108" Height="25" Content="Dump Unused AFS" Click="Button_AFS_Dump_Unused_Click"/>
+            <Button x:Name="Button_Dump_Path_Names" Width="108" Height="25" Content="Dump Path Names" Click="Button_Dump_Path_Names_Click"/>
         </StackPanel>
     </Grid>
 </Window>
