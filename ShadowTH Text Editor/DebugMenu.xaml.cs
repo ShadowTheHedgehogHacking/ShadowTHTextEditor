@@ -4,9 +4,7 @@ using ShadowFNT.Structures;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Windows;
-using static System.Net.Mime.MediaTypeNames;
 
 
 namespace ShadowTH_Text_Editor
