@@ -5,9 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Windows;
-using static System.Net.Mime.MediaTypeNames;
-
 
 namespace ShadowTH_Text_Editor
 {
@@ -994,6 +993,218 @@ namespace ShadowTH_Text_Editor
         {
             e.Cancel = true;
             Hide();
+        }
+
+        private void Button_MIT_Wordlist_Swap_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("This replaces same-string length words randomly from https://www.mit.edu/~ecprice/wordlist.10000 for EN fnt", "Info");
+            initialFntsOpenedState = new List<FNT>();
+            openedFnts = new List<FNT>();
+            // Load all target EN FNTs
+            MessageBox.Show("Pick the 'fonts' folder extracted from Shadow The Hedgehog.", "Step 1");
+            var dialog = new Ookii.Dialogs.Wpf.VistaFolderBrowserDialog();
+            if (dialog.ShowDialog() == false)
+            {
+                return;
+            }
+            if (!dialog.SelectedPath.EndsWith("fonts"))
+            {
+                MessageBox.Show("Pick the 'fonts' folder extracted from Shadow The Hedgehog.", "Try Again");
+                return;
+            }
+            lastOpenDir = dialog.SelectedPath;
+
+            if (lastOpenDir == null) return;
+            string[] foundFnts = Directory.GetFiles(lastOpenDir, "*_EN.fnt", SearchOption.AllDirectories);
+            for (int i = 0; i < foundFnts.Length; i++)
+            {
+                byte[] readFile = File.ReadAllBytes(foundFnts[i]);
+                FNT newFnt = FNT.ParseFNTFile(foundFnts[i], ref readFile, lastOpenDir);
+                FNT originalFnt = FNT.ParseFNTFile(foundFnts[i], ref readFile, lastOpenDir);
+
+                openedFnts.Add(newFnt);
+                initialFntsOpenedState.Add(originalFnt);
+            }
+
+            var wordlist_by_length = BuildMITLists();
+
+            int seed = CalculateSeed(TextBox_MIT_Wordlist_Swap_Seed.Text);
+            Random random = new Random(seed);
+
+            // Do actual processing
+            for (int i = 0; i < openedFnts.Count; i++)
+            {
+                // perform checks
+                for (int j = 0; j < openedFnts[i].entryTable.Count; j++)
+                {
+                    openedFnts[i].UpdateEntrySubtitle(j, MITIfySubtitle(openedFnts[i].GetEntrySubtitle(j), random, wordlist_by_length));
+                }
+            }
+
+            // processing complete, export FNTs
+
+            List<FNT> filesToWrite = new List<FNT>();
+            string filesToWriteReportingString = "";
+            for (int i = 0; i < initialFntsOpenedState.Count; i++)
+            {
+                if (initialFntsOpenedState[i].Equals(openedFnts[i]) == false)
+                {
+                    filesToWrite.Add(openedFnts[i]);
+                    filesToWriteReportingString = filesToWriteReportingString + "\n" + openedFnts[i];
+                }
+            }
+            if (filesToWriteReportingString == "")
+            {
+                MessageBox.Show("No changes detected. Nothing will be written.", "Report");
+                return;
+            }
+            MessageBox.Show("Files to be written:" + filesToWriteReportingString, "Report");
+            foreach (FNT fnt in filesToWrite)
+            {
+                try
+                {
+                    fnt.RecomputeAllSubtitleAddresses();
+                    File.WriteAllBytes(fnt.fileName, fnt.BuildFNTFile().ToArray());
+                    string prec = fnt.fileName.Remove(fnt.fileName.Length - 4);
+                    File.Copy(AppDomain.CurrentDomain.BaseDirectory + "res/EN.txd", prec + ".txd", true);
+                    File.Copy(AppDomain.CurrentDomain.BaseDirectory + "res/EN00.met", prec + "00.met", true);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Failed on " + fnt.ToString(), "An Exception Occurred");
+                    MessageBox.Show(ex.Message, "An Exception Occurred");
+                }
+            }
+
+        }
+
+        private Dictionary<int, string[]> BuildMITLists()
+        {
+            var resourceFile = AppDomain.CurrentDomain.BaseDirectory + "res/wordlist.10000.txt";
+            string[] lines = File.ReadAllLines(resourceFile);
+            var groupedLines = lines.GroupBy(line => line.Length);
+
+            Dictionary<int, string[]> arraysByLength = new Dictionary<int, string[]>();
+            foreach (var group in groupedLines)
+            {
+                arraysByLength[group.Key] = group.ToArray();
+            }
+
+            return arraysByLength;
+        }
+
+        static int CalculateSeed(string seedString)
+        {
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                byte[] hashBytes = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes(seedString));
+                // Convert the first 4 bytes of the hash to an integer for the seed
+                int seed = BitConverter.ToInt32(hashBytes, 0);
+                return seed;
+            }
+        }
+
+        private string MITIfySubtitle(string text, Random random, Dictionary<int, string[]> wordlist_by_length)
+        {
+            if (text.Length == 0)
+                return text;
+
+            text = text.Replace("\0", string.Empty); // we can chuck out null terminators, ShadowFNT will auto handle this
+            var words = text.Split(' ');
+
+            // account for \n (\r\n should already be translated pre-call)
+            var indexesOfNewLines = new List<int>();
+            var indexesOfCommas = new List<int>();
+            var indexesOfPeriods = new List<int>();
+            var indexesOfExclamations = new List<int>();
+            var indexesOfQuestions = new List<int>();
+
+            for (int i = 0; i < words.Length; i++)
+            {
+                if (words[i].Contains("\n"))
+                {
+                    indexesOfNewLines.Add(i);
+                    words[i] = words[i].Split('\n')[0];
+                }
+                if (words[i].Contains("."))
+                {
+                    indexesOfPeriods.Add(i);
+                    words[i] = words[i].Split('.')[0];
+                }
+                if (words[i].Contains(","))
+                {
+                    indexesOfCommas.Add(i);
+                    words[i] = words[i].Split(',')[0];
+                }
+                if (words[i].Contains("!"))
+                {
+                    indexesOfExclamations.Add(i);
+                    words[i] = words[i].Split('!')[0];
+                }
+                if (words[i].Contains("?"))
+                {
+                    indexesOfQuestions.Add(i);
+                    words[i] = words[i].Split('?')[0];
+                }
+            }
+
+            for (int i = 0; i < words.Length; i++)
+            {
+                string[] targetWordList;
+                try
+                {
+                    targetWordList = wordlist_by_length[words[i].Length];
+                } catch (Exception e)
+                {
+                    targetWordList = wordlist_by_length[12]; // get index 12 instead
+                }
+
+                // Check the case of the word. - Thanks Knuxfan24 - https://github.com/Knuxfan24/Sonic-06-Randomiser-Suite/blob/master/MarathonRandomiser/Randomisers/TextRandomiser.cs#L108
+                bool isAllUpper = false;
+                bool isAllLower = false;
+                if (words[i].ToLower() == words[i])
+                    isAllLower = true;
+                if (words[i].ToUpper() == words[i])
+                    isAllUpper = true;
+
+                var newWord = targetWordList[random.Next(targetWordList.Length)];
+                if (isAllLower)
+                    newWord = newWord.ToLower();
+                else if (isAllUpper)
+                    newWord = newWord.ToUpper();
+                else
+                    newWord = char.ToUpper(newWord[0]) + newWord[1..];
+                words[i] = newWord;
+            }
+
+            foreach (var index in indexesOfCommas)
+            {
+                words[index] += ",";
+            }
+
+            foreach (var index in indexesOfExclamations)
+            {
+                words[index] += "!";
+            }
+
+            foreach (var index in indexesOfPeriods)
+            {
+                words[index] += ".";
+            }
+
+
+            foreach (var index in indexesOfQuestions)
+            {
+                words[index] += "?";
+            }
+
+            // restore \n
+            foreach (var index in indexesOfNewLines)
+            {
+                words[index] += "\n";
+            }
+
+            return String.Join(" ", words);
         }
     }
 }
