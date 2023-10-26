@@ -1,5 +1,6 @@
 ﻿using AFSLib;
 using NAudio.Wave;
+using Ookii.Dialogs.Wpf;
 using ShadowFNT.Structures;
 using System;
 using System.Collections.Generic;
@@ -1031,51 +1032,29 @@ namespace ShadowTH_Text_Editor
             int seed = CalculateSeed(TextBox_MIT_Wordlist_Swap_Seed.Text);
             Random random = new Random(seed);
 
+            var dialogx = new Ookii.Dialogs.Wpf.VistaSaveFileDialog
+            {
+                Filter = "Text files (*.txt)|*.txt|All files (*.*)|*.*",
+                DefaultExt = ".txt"
+            };
+
+            dialogx.ShowDialog();
+            var stream = File.Open(dialogx.FileName, FileMode.CreateNew, FileAccess.Write);
+            var writer = new StreamWriter(stream);
             // Do actual processing
             for (int i = 0; i < openedFnts.Count; i++)
             {
+                if (openedFnts[i].ToString() != "Advertise\\Advertise_EN.fnt")
+                    continue;
+
                 // perform checks
                 for (int j = 0; j < openedFnts[i].entryTable.Count; j++)
                 {
-                    openedFnts[i].UpdateEntrySubtitle(j, MITIfySubtitle(openedFnts[i].GetEntrySubtitle(j), random, wordlist_by_length));
+                    writer.WriteLine(openedFnts[i].GetEntrySubtitle(j));
                 }
             }
-
-            // processing complete, export FNTs
-
-            List<FNT> filesToWrite = new List<FNT>();
-            string filesToWriteReportingString = "";
-            for (int i = 0; i < initialFntsOpenedState.Count; i++)
-            {
-                if (initialFntsOpenedState[i].Equals(openedFnts[i]) == false)
-                {
-                    filesToWrite.Add(openedFnts[i]);
-                    filesToWriteReportingString = filesToWriteReportingString + "\n" + openedFnts[i];
-                }
-            }
-            if (filesToWriteReportingString == "")
-            {
-                MessageBox.Show("No changes detected. Nothing will be written.", "Report");
-                return;
-            }
-            MessageBox.Show("Files to be written:" + filesToWriteReportingString, "Report");
-            foreach (FNT fnt in filesToWrite)
-            {
-                try
-                {
-                    fnt.RecomputeAllSubtitleAddresses();
-                    File.WriteAllBytes(fnt.fileName, fnt.BuildFNTFile().ToArray());
-                    string prec = fnt.fileName.Remove(fnt.fileName.Length - 4);
-                    File.Copy(AppDomain.CurrentDomain.BaseDirectory + "res/EN.txd", prec + ".txd", true);
-                    File.Copy(AppDomain.CurrentDomain.BaseDirectory + "res/EN00.met", prec + "00.met", true);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Failed on " + fnt.ToString(), "An Exception Occurred");
-                    MessageBox.Show(ex.Message, "An Exception Occurred");
-                }
-            }
-
+            writer.Close();
+            stream.Close();
         }
 
         private Dictionary<int, string[]> BuildMITLists()
