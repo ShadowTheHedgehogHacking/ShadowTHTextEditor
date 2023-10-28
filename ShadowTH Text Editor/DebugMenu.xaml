@@ -14,8 +14,9 @@
             <Button x:Name="Button_MFA_ChainedEntries" Margin="0,2,0,1" Width="85" Height="25" Content="MFA Chained" Click="Button_MFA_ChainedEntries_Click"/>
             <Button x:Name="Button_AFS_Remove_Unused" Margin="0,2,0,1" Width="108" Height="25" Content="Delete Unused AFS" Click="Button_AFS_Remove_Unused_Click"/>
             <Button x:Name="Button_AFS_Dump_Unused" Margin="0,2,0,1" Width="108" Height="25" Content="Dump Unused AFS" Click="Button_AFS_Dump_Unused_Click"/>
-            <TextBox x:Name="TextBox_MIT_Wordlist_Swap_Seed" Margin="0,2,0,1" TextAlignment="Center" Text="Seed for Wordlist"/>
+            <TextBox x:Name="TextBox_Seed" Margin="0,2,0,1" TextAlignment="Center" Text="RNG Seed"/>
             <Button x:Name="Button_MIT_Wordlist_Swap" Margin="0,2,0,1" Width="108" Height="25" Content="MIT Wordlist Swap" Click="Button_MIT_Wordlist_Swap_Click"/>
+            <Button x:Name="Button_Randomize_FNTs" Margin="0,2,0,1" Width="108" Height="25" Content="Randomize FNTs" Click="Button_Randomize_FNTs_Click"/>
         </StackPanel>
     </Grid>
 </Window>

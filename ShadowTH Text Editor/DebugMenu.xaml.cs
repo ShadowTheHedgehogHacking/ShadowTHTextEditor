@@ -252,7 +252,10 @@ namespace ShadowTH_Text_Editor
 
         private int LoadFNTs(bool loadAFS, string localeOverride = "EN")
         {
-            // Load all target EN FNTs
+            // Load all target FNTs
+            initialFntsOpenedState = new List<FNT>();
+            openedFnts = new List<FNT>();
+
             MessageBox.Show("Pick the 'fonts' folder extracted from Shadow The Hedgehog.", "Step 1");
             var dialog = new Ookii.Dialogs.Wpf.VistaFolderBrowserDialog();
             if (dialog.ShowDialog() == false)
@@ -970,7 +973,7 @@ namespace ShadowTH_Text_Editor
 
             var wordlist_by_length = BuildMITLists();
 
-            int seed = CalculateSeed(TextBox_MIT_Wordlist_Swap_Seed.Text);
+            int seed = CalculateSeed(TextBox_Seed.Text);
             Random random = new Random(seed);
 
             // Do actual processing
@@ -1151,6 +1154,29 @@ namespace ShadowTH_Text_Editor
             }
 
             return String.Join(" ", words);
+        }
+
+        private void Button_Randomize_FNTs_Click(object sender, RoutedEventArgs e)
+        {
+            LoadFNTs(false);
+
+            int seed = CalculateSeed(TextBox_Seed.Text);
+            Random random = new Random(seed);
+
+            for (int i = 0; i < openedFnts.Count; i++)
+            {
+                for (int j = 0; j < openedFnts[i].entryTable.Count; j++)
+                {
+                    // for now we simply swap everything without caring. We probably have to be careful about final entry etc.
+                    // Chained entries not accounted for, so may produce wacky results
+                    var donorFNTIndex = random.Next(0, openedFnts.Count - 1);
+                    var donotFNTEntryIndex = random.Next(0, initialFntsOpenedState[donorFNTIndex].entryTable.Count - 1);
+                    openedFnts[i].UpdateEntrySubtitle(j, initialFntsOpenedState[donorFNTIndex].GetEntrySubtitle(donotFNTEntryIndex));
+                    openedFnts[i].UpdateEntryAudioID(j, initialFntsOpenedState[donorFNTIndex].GetEntryAudioID(donotFNTEntryIndex));
+                    openedFnts[i].UpdateEntryActiveTime(j, initialFntsOpenedState[donorFNTIndex].GetEntryActiveTime(donotFNTEntryIndex));
+                }
+            }
+            ExportChangedFNTs();
         }
     }
 }
