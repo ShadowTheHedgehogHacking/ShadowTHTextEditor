@@ -233,42 +233,7 @@ namespace ShadowTH_Text_Editor
                     }
                 }
             }
-
-            // processing complete, export FNTs
-
-            List<FNT> filesToWrite = new List<FNT>();
-            string filesToWriteReportingString = "";
-            for (int i = 0; i < initialFntsOpenedState.Count; i++)
-            {
-                if (initialFntsOpenedState[i].Equals(openedFnts[i]) == false)
-                {
-                    filesToWrite.Add(openedFnts[i]);
-                    filesToWriteReportingString = filesToWriteReportingString + "\n" + openedFnts[i];
-                }
-            }
-            if (filesToWriteReportingString == "")
-            {
-                MessageBox.Show("No changes detected. Nothing will be written.", "Report");
-                return;
-            }
-            MessageBox.Show("Files to be written:" + filesToWriteReportingString, "Report");
-            foreach (FNT fnt in filesToWrite)
-            {
-                try
-                {
-                    fnt.RecomputeAllSubtitleAddresses();
-                    File.WriteAllBytes(fnt.fileName, fnt.BuildFNTFile().ToArray());
-                    string prec = fnt.fileName.Remove(fnt.fileName.Length - 4);
-                    File.Copy(AppDomain.CurrentDomain.BaseDirectory + "res/EN.txd", prec + ".txd", true);
-                    File.Copy(AppDomain.CurrentDomain.BaseDirectory + "res/EN00.met", prec + "00.met", true);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Failed on " + fnt.ToString(), "An Exception Occurred");
-                    MessageBox.Show(ex.Message, "An Exception Occurred");
-                }
-            }
-
+            ExportChangedFNTs();
         }
 
         private void AutoActiveTime(int fntIndex, int entryIndex)
@@ -283,6 +248,60 @@ namespace ShadowTH_Text_Editor
             openedFnts[fntIndex].UpdateEntryActiveTime(entryIndex, (int)(wf.TotalTime.TotalMilliseconds / ((double)1000 / (double)60)));
             wf.Close();
             stream.Close();
+        }
+
+        private int LoadFNTs(bool loadAFS, string localeOverride = "EN")
+        {
+            // Load all target EN FNTs
+            MessageBox.Show("Pick the 'fonts' folder extracted from Shadow The Hedgehog.", "Step 1");
+            var dialog = new Ookii.Dialogs.Wpf.VistaFolderBrowserDialog();
+            if (dialog.ShowDialog() == false)
+            {
+                return -1;
+            }
+            if (!dialog.SelectedPath.EndsWith("fonts"))
+            {
+                MessageBox.Show("Pick the 'fonts' folder extracted from Shadow The Hedgehog.", "Try Again");
+                return -1;
+            }
+            lastOpenDir = dialog.SelectedPath;
+
+            if (lastOpenDir == null) return -1;
+            string[] foundFnts = Directory.GetFiles(lastOpenDir, "*_" + localeOverride + ".fnt", SearchOption.AllDirectories);
+            for (int i = 0; i < foundFnts.Length; i++)
+            {
+                byte[] readFile = File.ReadAllBytes(foundFnts[i]);
+                FNT newFnt = FNT.ParseFNTFile(foundFnts[i], ref readFile, lastOpenDir);
+                FNT originalFnt = FNT.ParseFNTFile(foundFnts[i], ref readFile, lastOpenDir);
+
+                openedFnts.Add(newFnt);
+                initialFntsOpenedState.Add(originalFnt);
+            }
+
+            if (!loadAFS)
+                return 0;
+
+            MessageBox.Show("Pick the 'PRS_VOICE_*.afs' file extracted from Shadow The Hedgehog.", "Step 2");
+            var dialog2 = new Ookii.Dialogs.Wpf.VistaOpenFileDialog
+            {
+                Filter = "AFS files (*.afs)|*.afs|All files (*.*)|*.*"
+            };
+            if (dialog2.ShowDialog() == false)
+            {
+                return -1;
+            }
+            if (!dialog2.FileName.ToLower().EndsWith(".afs"))
+            {
+                MessageBox.Show("Pick an 'AFS' file", "Try Again");
+                return -1;
+            }
+            var data = File.ReadAllBytes(dialog2.FileName);
+            if (AfsArchive.TryFromFile(data, out var afsArchive))
+            {
+                currentAfs = afsArchive;
+                data = null; // for GC purpose
+            };
+            return 0;
         }
 
         private void Button_DumpChainedEntries_Click(object sender, RoutedEventArgs e)
@@ -414,61 +433,24 @@ namespace ShadowTH_Text_Editor
             MessageBox.Show("EXPERIMENTAL PROCESS THAT REQUIRES Montreal Forced Aligner. Intended for EN fnt and EN AFS currently.", "Warning");
             initialFntsOpenedState = new List<FNT>();
             openedFnts = new List<FNT>();
-            // Load all target EN FNTs
-            MessageBox.Show("Pick the 'fonts' folder extracted from Shadow The Hedgehog.", "Step 1");
-            var dialog = new Ookii.Dialogs.Wpf.VistaFolderBrowserDialog();
-            if (dialog.ShowDialog() == false)
+            if (LoadFNTs(loadAFS: true) == -1)
+                return;
+
+            MessageBox.Show("Next you will pick the folder for corpus output & processing.", "Info");
+            MessageBox.Show("The same directory must have TextGrids either in the root or subdirectories BEFORE pressing the next message OK box.", "Info");
+            var corpusOutputDialog = new Ookii.Dialogs.Wpf.VistaFolderBrowserDialog();
+            if (corpusOutputDialog.ShowDialog() == false)
             {
                 return;
             }
-            if (!dialog.SelectedPath.EndsWith("fonts"))
-            {
-                MessageBox.Show("Pick the 'fonts' folder extracted from Shadow The Hedgehog.", "Try Again");
-                return;
-            }
-            lastOpenDir = dialog.SelectedPath;
-
-            if (lastOpenDir == null) return;
-            string[] foundFnts = Directory.GetFiles(lastOpenDir, "*_EN.fnt", SearchOption.AllDirectories);
-            for (int i = 0; i < foundFnts.Length; i++)
-            {
-                byte[] readFile = File.ReadAllBytes(foundFnts[i]);
-                FNT newFnt = FNT.ParseFNTFile(foundFnts[i], ref readFile, lastOpenDir);
-                FNT originalFnt = FNT.ParseFNTFile(foundFnts[i], ref readFile, lastOpenDir);
-
-                openedFnts.Add(newFnt);
-                initialFntsOpenedState.Add(originalFnt);
-            }
-
-            MessageBox.Show("Pick the 'PRS_VOICE_E.afs' file extracted from Shadow The Hedgehog.", "Step 2");
-            var dialog2 = new Ookii.Dialogs.Wpf.VistaOpenFileDialog
-            {
-                Filter = "AFS files (*.afs)|*.afs|All files (*.*)|*.*"
-            };
-            if (dialog2.ShowDialog() == false)
-            {
-                return;
-            }
-            if (!dialog2.FileName.ToLower().EndsWith(".afs"))
-            {
-                MessageBox.Show("Pick an 'AFS' file", "Try Again");
-                return;
-            }
-            var data = File.ReadAllBytes(dialog2.FileName);
-            if (AfsArchive.TryFromFile(data, out var afsArchive))
-            {
-                currentAfs = afsArchive;
-                data = null; // for GC purpose
-            };
-
 
             string dumpLog = "";
             // Do actual processing
             for (int i = 0; i < openedFnts.Count; i++)
             {
-                // TEMPORARY FOR DEBUGGING, ONLY TARGET stg0404_EN
-                /*                if (openedFnts[i].ToString() != "stg0100\\stg0100_EN.fnt")
-                                    continue;*/
+                // FOR DEBUGGING, ONLY TARGET ONE FILE
+                /* if (openedFnts[i].ToString() != "stg0100\\stg0100_EN.fnt")
+                    continue; */
 
                 // manually skip Advertise\Advertise_EN.fnt
                 if (openedFnts[i].ToString() == "Advertise\\Advertise_EN.fnt")
@@ -479,21 +461,19 @@ namespace ShadowTH_Text_Editor
                 for (int j = 0; j < openedFnts[i].entryTable.Count; j++)
                 {
 
-                    // DEBUG FOR BLACKDOOM ONLY
-                    /*                    if (openedFnts[i].entryTable[j].audioId != -1 && !currentAfs.Files[openedFnts[i].entryTable[j].audioId].Name.Contains("_bd.adx"))
-                                            continue;*/
+                    // FOR DEBUGGING - BLACKDOOM ONLY
+                    /* if (openedFnts[i].entryTable[j].audioId != -1 && !currentAfs.Files[openedFnts[i].entryTable[j].audioId].Name.Contains("_bd.adx"))
+                        continue; */
 
                     var labTranscript = "";
 
                     var entry = openedFnts[i].entryTable[j];
-                    // if audioId = -1 skip
                     if (entry.audioId == -1)
                         continue;
 
                     // manually skip IFF type is BACKGROUND VOICE (GUN Soldiers)
                     if (entry.entryType == EntryType.BACKGROUND_VOICE)
                         continue;
-
 
                     // dump for entries with succeeding chained entries and other type where 00 has an AudioID and successive entry has -1 for audioID
                     // ex: 652000 -> check succeeding entry for self+1 -> if exist, check next for (self+1)+1 (recursive)
@@ -534,7 +514,7 @@ namespace ShadowTH_Text_Editor
                         // has data
                         if (initialEntry.audioId != -1)
                         {
-                            var directory = "X:\\corpus\\" + openedFnts[i].ToString() + "\\"; // temp hardcoded
+                            var directory = corpusOutputDialog.SelectedPath + "\\" + openedFnts[i].ToString() + "\\";
                             Directory.CreateDirectory(directory);
                             File.WriteAllText(directory + initialEntry.messageIdBranchSequence + ".lab", labTranscript);
                             var decoder = new VGAudio.Containers.Adx.AdxReader();
@@ -552,10 +532,9 @@ namespace ShadowTH_Text_Editor
             }
 
             // now we need to wait until MFA finishes (user manual)
-            MessageBox.Show("Your corpus has been generated. Do NOT press okay until you have ran MFA align and completed the process!");
-            MessageBox.Show("Next you will pick the folder the processed corpus output, containing TextGrids either in the root or subdirectories");
+            MessageBox.Show("Your corpus has been generated. Run your forced aligner now (external program) targeting the corpus output. Do NOT press OK until MFA alignment has completed!");
 
-            // Read and parse TextGrids (do libraries exist?)
+            // Read and parse TextGrids
 
             // How to get perfect timings:
 
@@ -568,11 +547,9 @@ namespace ShadowTH_Text_Editor
             // Get 'xmax' from every NUL "\0\" in the textgrid. This solves the issue of multi word use in same subtitles ex "jump"
             //
 
-            // TODO: Implement the above
-
             for (int i = 0; i < openedFnts.Count; i++)
             {
-                // TEMPORARY FOR DEBUGGING, ONLY TARGET stg0404_EN
+                // FOR DEBUGGING, ONLY TARGET stg0404_EN
                 /*                if (openedFnts[i].ToString() != "stg0404\\stg0404_EN.fnt")
                                     continue;*/
 
@@ -616,9 +593,9 @@ namespace ShadowTH_Text_Editor
                             if (successorEntry.audioId == -1)
                             {
                                 // check self text, and successor's text
-                                var directory = "X:\\corpusout\\" + openedFnts[i].ToString() + "\\"; // temp hardcoded
+                                var directory = corpusOutputDialog.SelectedPath + "\\" + openedFnts[i].ToString() + "\\";
 
-                                string[] textgrid = null;
+                                string[] textgrid;
                                 try
                                 {
                                     textgrid = File.ReadAllLines(directory + initialEntry.messageIdBranchSequence + ".TextGrid");
@@ -691,42 +668,7 @@ namespace ShadowTH_Text_Editor
                     // has no successor, we can skip the current entry
                 }
             }
-
-            // processing complete, export FNTs
-
-            List<FNT> filesToWrite = new List<FNT>();
-            string filesToWriteReportingString = "";
-            for (int i = 0; i < initialFntsOpenedState.Count; i++)
-            {
-                if (initialFntsOpenedState[i].Equals(openedFnts[i]) == false)
-                {
-                    filesToWrite.Add(openedFnts[i]);
-                    filesToWriteReportingString = filesToWriteReportingString + "\n" + openedFnts[i];
-                }
-            }
-            if (filesToWriteReportingString == "")
-            {
-                MessageBox.Show("No changes detected. Nothing will be written.", "Report");
-                return;
-            }
-            MessageBox.Show("Files to be written:" + filesToWriteReportingString, "Report");
-            foreach (FNT fnt in filesToWrite)
-            {
-                try
-                {
-                    fnt.RecomputeAllSubtitleAddresses();
-                    File.WriteAllBytes(fnt.fileName, fnt.BuildFNTFile().ToArray());
-                    string prec = fnt.fileName.Remove(fnt.fileName.Length - 4);
-                    File.Copy(AppDomain.CurrentDomain.BaseDirectory + "res/EN.txd", prec + ".txd", true);
-                    File.Copy(AppDomain.CurrentDomain.BaseDirectory + "res/EN00.met", prec + "00.met", true);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Failed on " + fnt.ToString(), "An Exception Occurred");
-                    MessageBox.Show(ex.Message, "An Exception Occurred");
-                }
-            }
-            MessageBox.Show("ALL DONE");
+            ExportChangedFNTs();
         }
 
         private void Button_AFS_Remove_Unused_Click(object sender, RoutedEventArgs e)
@@ -1040,9 +982,11 @@ namespace ShadowTH_Text_Editor
                     openedFnts[i].UpdateEntrySubtitle(j, MITIfySubtitle(openedFnts[i].GetEntrySubtitle(j), random, wordlist_by_length));
                 }
             }
+            ExportChangedFNTs();
+        }
 
-            // processing complete, export FNTs
-
+        private void ExportChangedFNTs()
+        {
             List<FNT> filesToWrite = new List<FNT>();
             string filesToWriteReportingString = "";
             for (int i = 0; i < initialFntsOpenedState.Count; i++)
@@ -1075,7 +1019,9 @@ namespace ShadowTH_Text_Editor
                     MessageBox.Show(ex.Message, "An Exception Occurred");
                 }
             }
-
+            initialFntsOpenedState.Clear();
+            openedFnts.Clear();
+            MessageBox.Show("Completed FNT Exports", "Report");
         }
 
         private Dictionary<int, string[]> BuildMITLists()
