@@ -7,14 +7,14 @@
     <RootNamespace>ShadowTH_Text_Editor</RootNamespace>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>ShadowFNT.ico</ApplicationIcon>
-    <Version>1.8.1</Version>
+    <Version>1.9.0</Version>
     <Authors>dreamsyntax</Authors>
     <Company>ShadowTheHedgehogHacking</Company>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="res\EN.txd" />
     <None Remove="res\EN00.met" />
-    <None Remove="res\wordlist.10000.txt" />
+    <None Remove="res\randomizer-wordlist.txt" />
     <None Remove="ShadowFNT.ico" />
   </ItemGroup>
   <ItemGroup>
@@ -33,7 +33,7 @@
     <Content Include="res\EN00.met">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="res\wordlist.10000.txt">
+    <Content Include="res\randomizer-wordlist.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

@@ -1,5 +1,6 @@
 ﻿using AFSLib;
 using NAudio.Wave;
+using ShadowFNT;
 using ShadowFNT.Structures;
 using System;
 using System.Collections.Generic;
@@ -55,22 +56,22 @@ namespace ShadowTH_Text_Editor
             FNT fnt1 = FNT.ParseFNTFile(file1Picker.FileName, ref file1);
             FNT fnt2 = FNT.ParseFNTFile(file2Picker.FileName, ref file2);
             String differenceLog = "";
-            for (int i = 0; i < fnt1.entryTable.Count; i++)
+            for (int i = 0; i < fnt1.GetEntryTableCount(); i++)
             {
                 String currentDiff = "";
 
                 var subtitleAddress = fnt1.GetEntrySubtitleAddress(i);
                 var messageIdBranchSequence = fnt1.GetEntryMessageIdBranchSequence(i);
                 var type = fnt1.GetEntryEntryType(i);
-                var activeTime = fnt1.GetEntryActiveTime(i);
-                var audioId = fnt1.GetEntryAudioID(i);
+                var activeTime = fnt1.GetEntrySubtitleActiveTime(i);
+                var audioId = fnt1.GetEntryAudioId(i);
                 var subtitle = fnt1.GetEntrySubtitle(i);
 
                 var subtitleAddress2 = fnt2.GetEntrySubtitleAddress(i);
                 var messageIdBranchSequence2 = fnt2.GetEntryMessageIdBranchSequence(i);
                 var type2 = fnt2.GetEntryEntryType(i);
-                var activeTime2 = fnt2.GetEntryActiveTime(i);
-                var audioId2 = fnt2.GetEntryAudioID(i);
+                var activeTime2 = fnt2.GetEntrySubtitleActiveTime(i);
+                var audioId2 = fnt2.GetEntryAudioId(i);
                 var subtitle2 = fnt2.GetEntrySubtitle(i);
                 // TODO: we can get rid of the second loop if we treat element : element ratio rule (no adds/deletes)
                 /*                for (int j = 0; i < fnt2.entryTable.Count; j++)
@@ -196,9 +197,9 @@ namespace ShadowTH_Text_Editor
                 if (openedFnts[i].ToString() == "Advertise\\Advertise_EN.fnt")
                     continue;
                 // perform checks
-                for (int j = 0; j < openedFnts[i].entryTable.Count; j++)
+                for (int j = 0; j < openedFnts[i].GetEntryTableCount(); j++)
                 {
-                    var entry = openedFnts[i].entryTable[j];
+                    var entry = openedFnts[i].GetTableEntry(j);
                     // if audioId = -1 skip
                     if (entry.audioId == -1)
                         continue;
@@ -216,7 +217,7 @@ namespace ShadowTH_Text_Editor
                         // do NOT calculate for entries with succeeding chained entries and other type where 00 has an AudioID and successive entry has -1 for audioID
                         // ex: 652000 -> check succeeding entry for self+1 -> if exist, check next for (self+1)+1 (recursive)
                         // when done skip all entries for every self+1 IFF the successors were -1 for AudioID
-                        var successorEntry = openedFnts[i].entryTable[j + 1];
+                        var successorEntry = openedFnts[i].GetTableEntry(j + 1);
                         if ((entry.messageIdBranchSequence + 1) == successorEntry.messageIdBranchSequence)
                         {
                             // successive entry found, check for audioId
@@ -239,13 +240,13 @@ namespace ShadowTH_Text_Editor
         private void AutoActiveTime(int fntIndex, int entryIndex)
         {
             var decoder = new VGAudio.Containers.Adx.AdxReader();
-            var audio = decoder.Read(currentAfs.Files[openedFnts[fntIndex].GetEntryAudioID(entryIndex)].Data);
+            var audio = decoder.Read(currentAfs.Files[openedFnts[fntIndex].GetEntryAudioId(entryIndex)].Data);
             var writer = new VGAudio.Containers.Wave.WaveWriter();
             MemoryStream stream = new MemoryStream();
             writer.WriteToStream(audio, stream);
             stream.Position = 0;
             WaveFileReader wf = new WaveFileReader(stream);
-            openedFnts[fntIndex].UpdateEntryActiveTime(entryIndex, (int)(wf.TotalTime.TotalMilliseconds / ((double)1000 / (double)60)));
+            openedFnts[fntIndex].SetEntrySubtitleActiveTime(entryIndex, (int)(wf.TotalTime.TotalMilliseconds / ((double)1000 / (double)60)));
             wf.Close();
             stream.Close();
         }
@@ -370,9 +371,9 @@ namespace ShadowTH_Text_Editor
 
                 dumpLog += "\n\n" + openedFnts[i].ToString() + "\n\n";
                 // perform checks
-                for (int j = 0; j < openedFnts[i].entryTable.Count; j++)
+                for (int j = 0; j < openedFnts[i].GetEntryTableCount(); j++)
                 {
-                    var entry = openedFnts[i].entryTable[j];
+                    var entry = openedFnts[i].GetTableEntry(j);
                     // if audioId = -1 skip
                     if (entry.audioId == -1)
                         continue;
@@ -387,8 +388,8 @@ namespace ShadowTH_Text_Editor
                     // need to be careful for scenario of entry1 [has audio id] -> successor [no audio id] -> successor's successor [has audio id]
                     do
                     {
-                        var currentEntry = openedFnts[i].entryTable[j];
-                        var successorEntry = openedFnts[i].entryTable[j + 1];
+                        var currentEntry = openedFnts[i].GetTableEntry(j);
+                        var successorEntry = openedFnts[i].GetTableEntry(j + 1);
                         if ((currentEntry.messageIdBranchSequence + 1) == successorEntry.messageIdBranchSequence)
                         {
                             dumpLog += currentEntry.messageIdBranchSequence + " AFS: " + currentEntry.audioId + " chained " + successorEntry.messageIdBranchSequence + " AFS: " + successorEntry.audioId + "\n";
@@ -461,7 +462,7 @@ namespace ShadowTH_Text_Editor
 
                 dumpLog += "\n\n" + openedFnts[i].ToString() + "\n\n";
                 // perform checks
-                for (int j = 0; j < openedFnts[i].entryTable.Count; j++)
+                for (int j = 0; j < openedFnts[i].GetEntryTableCount(); j++)
                 {
 
                     // FOR DEBUGGING - BLACKDOOM ONLY
@@ -470,7 +471,7 @@ namespace ShadowTH_Text_Editor
 
                     var labTranscript = "";
 
-                    var entry = openedFnts[i].entryTable[j];
+                    var entry = openedFnts[i].GetTableEntry(j);
                     if (entry.audioId == -1)
                         continue;
 
@@ -481,11 +482,11 @@ namespace ShadowTH_Text_Editor
                     // dump for entries with succeeding chained entries and other type where 00 has an AudioID and successive entry has -1 for audioID
                     // ex: 652000 -> check succeeding entry for self+1 -> if exist, check next for (self+1)+1 (recursive)
                     // need to be careful for scenario of entry1 [has audio id] -> successor [no audio id] -> successor's successor [has audio id]
-                    var initialEntry = openedFnts[i].entryTable[j];
+                    var initialEntry = openedFnts[i].GetTableEntry(j);
                     do
                     {
-                        var currentEntry = openedFnts[i].entryTable[j];
-                        var successorEntry = openedFnts[i].entryTable[j + 1];
+                        var currentEntry = openedFnts[i].GetTableEntry(j);
+                        var successorEntry = openedFnts[i].GetTableEntry(j + 1);
                         if ((currentEntry.messageIdBranchSequence + 1) == successorEntry.messageIdBranchSequence && successorEntry.subtitleActiveTime != 0 && successorEntry.audioId == -1)
                         {
 
@@ -561,7 +562,7 @@ namespace ShadowTH_Text_Editor
                     continue;
 
                 // perform checks
-                for (int j = 0; j < openedFnts[i].entryTable.Count; j++)
+                for (int j = 0; j < openedFnts[i].GetEntryTableCount(); j++)
                 {
 
                     // DEBUG FOR BLACKDOOM ONLY
@@ -569,7 +570,7 @@ namespace ShadowTH_Text_Editor
                                             continue;
                     */
                     var chained = false;
-                    var entry = openedFnts[i].entryTable[j];
+                    var entry = openedFnts[i].GetTableEntry(j);
 
                     if (entry.audioId == -1)
                         continue;
@@ -579,15 +580,15 @@ namespace ShadowTH_Text_Editor
                         continue;
 
 
-                    var initialEntry = openedFnts[i].entryTable[j];
+                    var initialEntry = openedFnts[i].GetTableEntry(j);
                     var initialEntryIndex = j;
                     var chainPosition = 0;
                     do
                     {
                         chainPosition++; //increment sequence position
-                        var currentEntry = openedFnts[i].entryTable[j];
+                        var currentEntry = openedFnts[i].GetTableEntry(j);
                         var currentEntryIndex = j;
-                        var successorEntry = openedFnts[i].entryTable[j + 1];
+                        var successorEntry = openedFnts[i].GetTableEntry(j + 1);
                         if ((currentEntry.messageIdBranchSequence + 1) == successorEntry.messageIdBranchSequence && successorEntry.subtitleActiveTime != 0 && successorEntry.audioId == -1)
                         {
 
@@ -628,11 +629,11 @@ namespace ShadowTH_Text_Editor
                                     // subtract prior entries from time
                                     for (int pos = 0; pos < chainPosition - 1; pos++)
                                     {
-                                        activeTime -= openedFnts[i].entryTable[initialEntryIndex + pos].subtitleActiveTime;
+                                        activeTime -= openedFnts[i].GetEntrySubtitleActiveTime(initialEntryIndex + pos);
                                     }
 
                                     currentEntry.subtitleActiveTime = activeTime;
-                                    openedFnts[i].UpdateEntryActiveTime(currentEntryIndex, currentEntry.subtitleActiveTime);
+                                    openedFnts[i].SetEntrySubtitleActiveTime(currentEntryIndex, currentEntry.subtitleActiveTime);
                                 } else
                                 {
                                     MessageBox.Show("NO CANDIDATES FOR " + currentEntry.messageIdBranchSequence);
@@ -658,10 +659,10 @@ namespace ShadowTH_Text_Editor
                                 var lastEntryTime = (int)(wf.TotalTime.TotalMilliseconds / ((double)1000 / (double)60)); //total audio length first
 
                                 for (int pos = 0; pos < chainPosition - 1; pos++) {
-                                    lastEntryTime -= openedFnts[i].entryTable[initialEntryIndex + pos].subtitleActiveTime;
+                                    lastEntryTime -= openedFnts[i].GetEntrySubtitleActiveTime(initialEntryIndex + pos);
                                 }
                                 currentEntry.subtitleActiveTime = lastEntryTime;
-                                openedFnts[i].UpdateEntryActiveTime(currentEntryIndex, currentEntry.subtitleActiveTime);
+                                openedFnts[i].SetEntrySubtitleActiveTime(currentEntryIndex, currentEntry.subtitleActiveTime);
                             }
                             break;
                         }
@@ -758,9 +759,9 @@ namespace ShadowTH_Text_Editor
             for (int i = 0; i < openedFnts.Count; i++)
             {
                 // perform checks
-                for (int j = 0; j < openedFnts[i].entryTable.Count; j++)
+                for (int j = 0; j < openedFnts[i].GetEntryTableCount(); j++)
                 {
-                    var entry = openedFnts[i].entryTable[j];
+                    var entry = openedFnts[i].GetTableEntry(j);
                     // if audioId = -1 skip
                     if (entry.audioId == -1)
                         continue;
@@ -795,9 +796,9 @@ namespace ShadowTH_Text_Editor
             for (int i = 0; i < openedFnts.Count; i++)
             {
                 // perform checks
-                for (int j = 0; j < openedFnts[i].entryTable.Count; j++)
+                for (int j = 0; j < openedFnts[i].GetEntryTableCount(); j++)
                 {
-                    var entry = openedFnts[i].entryTable[j];
+                    var entry = openedFnts[i].GetTableEntry(j);
                     // if audioId = -1 skip
                     if (entry.audioId == -1)
                         continue;
@@ -900,9 +901,9 @@ namespace ShadowTH_Text_Editor
             for (int i = 0; i < openedFnts.Count; i++)
             {
                 // perform checks
-                for (int j = 0; j < openedFnts[i].entryTable.Count; j++)
+                for (int j = 0; j < openedFnts[i].GetEntryTableCount(); j++)
                 {
-                    var entry = openedFnts[i].entryTable[j];
+                    var entry = openedFnts[i].GetTableEntry(j);
                     // if audioId = -1 skip
                     if (entry.audioId == -1)
                         continue;
@@ -942,7 +943,8 @@ namespace ShadowTH_Text_Editor
 
         private void Button_MIT_Wordlist_Swap_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("This replaces same-string length words randomly from https://www.mit.edu/~ecprice/wordlist.10000 for EN fnt", "Info");
+            MessageBox.Show("This replaces same-string length words randomly for EN fnt", "Info");
+            MessageBox.Show("We use https://www.mit.edu/~ecprice/wordlist.10000 by default, but you can edit res/randomizer-wordlist.txt and change to whatever wordlist you want.");
             initialFntsOpenedState = new List<FNT>();
             openedFnts = new List<FNT>();
             // Load all target EN FNTs
@@ -980,9 +982,9 @@ namespace ShadowTH_Text_Editor
             for (int i = 0; i < openedFnts.Count; i++)
             {
                 // perform checks
-                for (int j = 0; j < openedFnts[i].entryTable.Count; j++)
+                for (int j = 0; j < openedFnts[i].GetEntryTableCount(); j++)
                 {
-                    openedFnts[i].UpdateEntrySubtitle(j, MITIfySubtitle(openedFnts[i].GetEntrySubtitle(j), random, wordlist_by_length));
+                    openedFnts[i].SetEntrySubtitle(j, MITIfySubtitle(openedFnts[i].GetEntrySubtitle(j), random, wordlist_by_length));
                 }
             }
             ExportChangedFNTs();
@@ -1011,7 +1013,7 @@ namespace ShadowTH_Text_Editor
                 try
                 {
                     fnt.RecomputeAllSubtitleAddresses();
-                    File.WriteAllBytes(fnt.fileName, fnt.BuildFNTFile().ToArray());
+                    File.WriteAllBytes(fnt.fileName, fnt.ToBytes());
                     string prec = fnt.fileName.Remove(fnt.fileName.Length - 4);
                     File.Copy(AppDomain.CurrentDomain.BaseDirectory + "res/EN.txd", prec + ".txd", true);
                     File.Copy(AppDomain.CurrentDomain.BaseDirectory + "res/EN00.met", prec + "00.met", true);
@@ -1029,7 +1031,7 @@ namespace ShadowTH_Text_Editor
 
         private Dictionary<int, string[]> BuildMITLists()
         {
-            var resourceFile = AppDomain.CurrentDomain.BaseDirectory + "res/wordlist.10000.txt";
+            var resourceFile = AppDomain.CurrentDomain.BaseDirectory + "res/randomizer-wordlist.txt";
             string[] lines = File.ReadAllLines(resourceFile);
             var groupedLines = lines.GroupBy(line => line.Length);
 
@@ -1103,8 +1105,7 @@ namespace ShadowTH_Text_Editor
                 try
                 {
                     targetWordList = wordlist_by_length[words[i].Length];
-                } catch (Exception e)
-                {
+                } catch (Exception) {
                     targetWordList = wordlist_by_length[12]; // get index 12 instead
                 }
 
@@ -1165,24 +1166,24 @@ namespace ShadowTH_Text_Editor
 
             for (int i = 0; i < openedFnts.Count; i++)
             {
-                for (int j = 0; j < openedFnts[i].entryTable.Count; j++)
+                for (int j = 0; j < openedFnts[i].GetEntryTableCount(); j++)
                 {
                     // for now we simply swap everything without caring. We probably have to be careful about final entry etc.
                     // Chained entries not accounted for, so may produce wacky results
                     int donorFNTIndex = random.Next(0, openedFnts.Count - 1);
-                    int donotFNTEntryIndex = random.Next(0, initialFntsOpenedState[donorFNTIndex].entryTable.Count - 1);
-                    if (initialFntsOpenedState[donorFNTIndex].GetEntryAudioID(donotFNTEntryIndex) == -1)
+                    int donotFNTEntryIndex = random.Next(0, initialFntsOpenedState[donorFNTIndex].GetEntryTableCount() - 1);
+                    if (initialFntsOpenedState[donorFNTIndex].GetEntryAudioId(donotFNTEntryIndex) == -1)
                     {
                         int audio = random.Next(0, currentAfs.Files.Count - 1);
-                        openedFnts[i].UpdateEntryAudioID(j, audio);
+                        openedFnts[i].SetEntryAudioId(j, audio);
                     }
                     else
                     {
-                        openedFnts[i].UpdateEntryAudioID(j, initialFntsOpenedState[donorFNTIndex].GetEntryAudioID(donotFNTEntryIndex));
+                        openedFnts[i].SetEntryAudioId(j, initialFntsOpenedState[donorFNTIndex].GetEntryAudioId(donotFNTEntryIndex));
                     }
 
-                    openedFnts[i].UpdateEntrySubtitle(j, initialFntsOpenedState[donorFNTIndex].GetEntrySubtitle(donotFNTEntryIndex));
-                    openedFnts[i].UpdateEntryActiveTime(j, initialFntsOpenedState[donorFNTIndex].GetEntryActiveTime(donotFNTEntryIndex));
+                    openedFnts[i].SetEntrySubtitle(j, initialFntsOpenedState[donorFNTIndex].GetEntrySubtitle(donotFNTEntryIndex));
+                    openedFnts[i].SetEntrySubtitleActiveTime(j, initialFntsOpenedState[donorFNTIndex].GetEntrySubtitleActiveTime(donotFNTEntryIndex));
                 }
             }
             ExportChangedFNTs();

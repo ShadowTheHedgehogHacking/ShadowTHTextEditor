@@ -1,5 +1,6 @@
 ﻿using AFSLib;
 using NAudio.Wave;
+using ShadowFNT;
 using ShadowFNT.Structures;
 using ShadowTH_Text_Editor.Helpers;
 using System;
@@ -108,7 +109,7 @@ namespace ShadowTH_Text_Editor {
             }
             currentFnt = (FNT)ListBox_AllFNTS.SelectedItem;
             ListBox_CurrentFNT.SelectedIndex = -1;
-            displayTableListView = CollectionViewSource.GetDefaultView(currentFnt.entryTable);
+            displayTableListView = CollectionViewSource.GetDefaultView(currentFnt.GetEntryTable());
 
             ListBox_CurrentFNT.ItemsSource = displayTableListView;
             UpdateDisplayTableListView();
@@ -123,7 +124,7 @@ namespace ShadowTH_Text_Editor {
                 ClearUIData();
                 return;
             }
-            var currentSubtitleIndex = currentFnt.entryTable.IndexOf((TableEntry)ListBox_CurrentFNT.SelectedItem);
+            var currentSubtitleIndex = currentFnt.GetIndexOfTableEntry((TableEntry)ListBox_CurrentFNT.SelectedItem);
             if (currentSubtitleIndex == -1)
             {
                 ClearUIData();
@@ -132,14 +133,14 @@ namespace ShadowTH_Text_Editor {
             Button_DeleteEntry.IsEnabled = true;
             Button_GotoSelected.IsEnabled = true;
             TextBlock_CurrentFNT_Index.Text = "Index: " + currentSubtitleIndex.ToString();
-            var audioID = currentFnt.GetEntryAudioID(currentSubtitleIndex);
+            var audioID = currentFnt.GetEntryAudioId(currentSubtitleIndex);
 
             TextBlock_SubtitleAddress.Text = currentFnt.GetEntrySubtitleAddress(currentSubtitleIndex).ToString();
             TextBox_EditSubtitle.Text = currentFnt.GetEntrySubtitle(currentSubtitleIndex);
             TextBox_MessageIdBranchSequence.Text = currentFnt.GetEntryMessageIdBranchSequence(currentSubtitleIndex).ToString();
             EntryType currentTextType = currentFnt.GetEntryEntryType(currentSubtitleIndex);
             ComboBox_EntryType.SelectedIndex = Array.IndexOf(Enum.GetValues(currentTextType.GetType()), currentTextType);
-            TextBox_SubtitleActiveTime.Text = currentFnt.GetEntryActiveTime(currentSubtitleIndex).ToString();
+            TextBox_SubtitleActiveTime.Text = currentFnt.GetEntrySubtitleActiveTime(currentSubtitleIndex).ToString();
             TextBox_AudioID.Text = audioID.ToString();
 
             if (currentAfs == null)
@@ -177,12 +178,12 @@ namespace ShadowTH_Text_Editor {
                 return;
             displayFntsView.Filter = fnt => {
                 FNT curfnt = (FNT)fnt;
-                for (int i = 0; i < curfnt.entryTable.Count; i++) {
-                    if (curfnt.entryTable[i].subtitle.ToLower().Contains(TextBox_SearchText.Text.ToLower())) {
+                for (int i = 0; i < curfnt.GetEntryTableCount(); i++) {
+                    if (curfnt.GetEntrySubtitle(i).ToLower().Contains(TextBox_SearchText.Text.ToLower())) {
                         if (TextBox_SearchAudioFileName.Text == "" || currentAfs == null)
                             return true;
 
-                        var audioId = curfnt.GetEntryAudioID(i);
+                        var audioId = curfnt.GetEntryAudioId(i);
 
                         if (audioId == -1)
                             continue;
@@ -211,7 +212,7 @@ namespace ShadowTH_Text_Editor {
                     if (TextBox_SearchAudioFileName.Text == "" || currentAfs == null)
                         return true;
 
-                    var audioId = currentFnt.GetEntryAudioID(currentFnt.entryTable.IndexOf(tblEntry));
+                    var audioId = currentFnt.GetEntryAudioId(currentFnt.GetIndexOfTableEntry(tblEntry));
 
                     if (audioId == -1)
                         return false;
@@ -233,22 +234,22 @@ namespace ShadowTH_Text_Editor {
         private void Button_SaveCurrentEntry_Click(object sender, RoutedEventArgs e) {
             if (ListBox_CurrentFNT.SelectedItem == null)
                 return;
-            var currentEntryIndex = currentFnt.entryTable.IndexOf((TableEntry)ListBox_CurrentFNT.SelectedItem);
+            var currentEntryIndex = currentFnt.GetIndexOfTableEntry((TableEntry)ListBox_CurrentFNT.SelectedItem);
             if (currentEntryIndex == -1) { 
                 MessageBox.Show("Error, subtitle not found, report this bug and what you did to cause it.", "Impossible Bug. If you see this screenshot it!");
                 return;
             }
-            currentFnt.UpdateEntrySubtitle(currentEntryIndex, TextBox_EditSubtitle.Text);
-            currentFnt.UpdateEntryMessageIdBranchSequence(currentEntryIndex, int.Parse(TextBox_MessageIdBranchSequence.Text));
-            currentFnt.UpdateEntryEntryType(currentEntryIndex, ComboBox_EntryType.SelectedIndex);
-            currentFnt.UpdateEntryAudioID(currentEntryIndex, int.Parse(TextBox_AudioID.Text));
-            currentFnt.UpdateEntryActiveTime(currentEntryIndex, int.Parse(TextBox_SubtitleActiveTime.Text));
+            currentFnt.SetEntrySubtitle(currentEntryIndex, TextBox_EditSubtitle.Text);
+            currentFnt.SetEntryMessageIdBranchSequence(currentEntryIndex, int.Parse(TextBox_MessageIdBranchSequence.Text));
+            currentFnt.SetEntryEntryType(currentEntryIndex, ComboBox_EntryType.SelectedIndex);
+            currentFnt.SetEntryAudioId(currentEntryIndex, int.Parse(TextBox_AudioID.Text));
+            currentFnt.SetEntrySubtitleActiveTime(currentEntryIndex, int.Parse(TextBox_SubtitleActiveTime.Text));
             UpdateDisplayFntsView();
             UpdateDisplayTableListView();
             Button_ExportChangedFNTs.IsEnabled = true;
             TextBox_EditSubtitle.Clear();
             ListBox_CurrentFNT.SelectedIndex = -1; // trigger deselect-reselect event
-            ListBox_CurrentFNT.SelectedIndex = ListBox_CurrentFNT.Items.IndexOf(currentFnt.entryTable[currentEntryIndex]);
+            ListBox_CurrentFNT.SelectedIndex = ListBox_CurrentFNT.Items.IndexOf(currentFnt.GetTableEntry(currentEntryIndex));
          }
 
         private void Button_SelectAFSClick(object sender, RoutedEventArgs e) {
@@ -269,7 +270,7 @@ namespace ShadowTH_Text_Editor {
                 data = null; // for GC purpose
                 if (ListBox_CurrentFNT.SelectedItem == null)
                     return;
-                var currentSubtitleIndex = currentFnt.entryTable.IndexOf((TableEntry)ListBox_CurrentFNT.SelectedItem);
+                var currentSubtitleIndex = currentFnt.GetIndexOfTableEntry((TableEntry)ListBox_CurrentFNT.SelectedItem);
                 if (currentSubtitleIndex == -1) {
                     return;
                 }
@@ -385,7 +386,7 @@ namespace ShadowTH_Text_Editor {
             int audioId;
             try
             {
-                audioId = currentFnt.GetEntryAudioID(currentFnt.entryTable.IndexOf((TableEntry)ListBox_CurrentFNT.SelectedItem));
+                audioId = currentFnt.GetEntryAudioId(currentFnt.GetIndexOfTableEntry((TableEntry)ListBox_CurrentFNT.SelectedItem));
             } catch (NullReferenceException)
             {
                 return;
@@ -419,7 +420,7 @@ namespace ShadowTH_Text_Editor {
                 "Uses VGAudio by Alex Barney for ADX playback\n" +
                 "Uses modified version of DarkTheme by Otiel\n" +
                 "Uses Ookii.Dialogs for dialogs\n\n" +
-                "https://github.com/ShadowTheHedgehogHacking\n\nto check for updates for this software.", "About ShadowTH Text Editor / FNT Editor v1.8.1");
+                "https://github.com/ShadowTheHedgehogHacking\n\nto check for updates for this software.", "About ShadowTH Text Editor / FNT Editor v1.9.0");
         }
 
         private void ComboBox_LocaleSwitcher_SelectionChanged(object sender, SelectionChangedEventArgs e) {
@@ -448,9 +449,9 @@ namespace ShadowTH_Text_Editor {
         }
 
         private void Button_AddEntry_Click(object sender, RoutedEventArgs e) {
-            int result = currentFnt.InsertNewEntry(int.Parse(TextBox_AddEntryMessageID.Text));
+            bool result = currentFnt.InsertEntry(int.Parse(TextBox_AddEntryMessageID.Text));
             displayTableListView.Refresh();
-            if (result == -1) {
+            if (result == false) {
                 MessageBox.Show("Failed to add, make sure BranchId you picked is not in use\n and is not the first/last entry.", "Error");
             } else {
                 MessageBox.Show("Added successfully", "Success");
@@ -462,7 +463,7 @@ namespace ShadowTH_Text_Editor {
         }
 
         private void Button_DeleteEntry_Click(object sender, RoutedEventArgs e) {
-            currentFnt.DeleteEntry(currentFnt.entryTable.IndexOf((TableEntry)ListBox_CurrentFNT.SelectedItem));
+            currentFnt.DeleteEntry(currentFnt.GetIndexOfTableEntry((TableEntry)ListBox_CurrentFNT.SelectedItem));
             ListBox_CurrentFNT.SelectedIndex = -1;
             UpdateDisplayTableListView();
             Button_ExportChangedFNTs.IsEnabled = true;
@@ -473,7 +474,7 @@ namespace ShadowTH_Text_Editor {
             try
             {
                 var element = int.Parse(response);
-                TableEntry entry = currentFnt.entryTable[element];
+                TableEntry entry = currentFnt.GetTableEntry(element);
                 TextBox_SearchText.Text = "";
                 TextBox_SearchAudioFileName.Text = "";
                 UpdateDisplayTableListView();
@@ -573,7 +574,7 @@ namespace ShadowTH_Text_Editor {
                     {
                         var newFntFilePath = customSavePath + '\\' + fnt.fileName.Split(fnt.filterString + '\\')[1];
                         Directory.CreateDirectory(Directory.GetParent(newFntFilePath).FullName);
-                        File.WriteAllBytes(newFntFilePath, fnt.BuildFNTFile().ToArray());
+                        File.WriteAllBytes(newFntFilePath, fnt.ToBytes());
                         if (CheckBox_NoReplaceMetTxd.IsChecked == false)
                         {
                             string prec = newFntFilePath.Remove(newFntFilePath.Length - 4);
@@ -583,7 +584,7 @@ namespace ShadowTH_Text_Editor {
                     }
                     else
                     {
-                        File.WriteAllBytes(fnt.fileName, fnt.BuildFNTFile().ToArray());
+                        File.WriteAllBytes(fnt.fileName, fnt.ToBytes());
                         if (CheckBox_NoReplaceMetTxd.IsChecked == false)
                         {
                             string prec = fnt.fileName.Remove(fnt.fileName.Length - 4);
