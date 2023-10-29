@@ -1158,7 +1158,7 @@ namespace ShadowTH_Text_Editor
 
         private void Button_Randomize_FNTs_Click(object sender, RoutedEventArgs e)
         {
-            LoadFNTs(false);
+            LoadFNTs(true);
 
             int seed = CalculateSeed(TextBox_Seed.Text);
             Random random = new Random(seed);
@@ -1169,10 +1169,19 @@ namespace ShadowTH_Text_Editor
                 {
                     // for now we simply swap everything without caring. We probably have to be careful about final entry etc.
                     // Chained entries not accounted for, so may produce wacky results
-                    var donorFNTIndex = random.Next(0, openedFnts.Count - 1);
-                    var donotFNTEntryIndex = random.Next(0, initialFntsOpenedState[donorFNTIndex].entryTable.Count - 1);
+                    int donorFNTIndex = random.Next(0, openedFnts.Count - 1);
+                    int donotFNTEntryIndex = random.Next(0, initialFntsOpenedState[donorFNTIndex].entryTable.Count - 1);
+                    if (initialFntsOpenedState[donorFNTIndex].GetEntryAudioID(donotFNTEntryIndex) == -1)
+                    {
+                        int audio = random.Next(0, currentAfs.Files.Count - 1);
+                        openedFnts[i].UpdateEntryAudioID(j, audio);
+                    }
+                    else
+                    {
+                        openedFnts[i].UpdateEntryAudioID(j, initialFntsOpenedState[donorFNTIndex].GetEntryAudioID(donotFNTEntryIndex));
+                    }
+
                     openedFnts[i].UpdateEntrySubtitle(j, initialFntsOpenedState[donorFNTIndex].GetEntrySubtitle(donotFNTEntryIndex));
-                    openedFnts[i].UpdateEntryAudioID(j, initialFntsOpenedState[donorFNTIndex].GetEntryAudioID(donotFNTEntryIndex));
                     openedFnts[i].UpdateEntryActiveTime(j, initialFntsOpenedState[donorFNTIndex].GetEntryActiveTime(donotFNTEntryIndex));
                 }
             }
