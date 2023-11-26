@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="Current">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0-windows</TargetFramework>
+    <TargetFramework>net8.0-windows7.0</TargetFramework>
 	<RollForward>LatestMajor</RollForward>
 	<LangVersion>latest</LangVersion>
     <RootNamespace>ShadowTH_Text_Editor</RootNamespace>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>ShadowFNT.ico</ApplicationIcon>
-    <Version>1.9.0</Version>
+    <Version>1.9.1</Version>
     <Authors>dreamsyntax</Authors>
     <Company>ShadowTheHedgehogHacking</Company>
   </PropertyGroup>
@@ -18,7 +18,7 @@
     <None Remove="ShadowFNT.ico" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="AFSLib" Version="1.1.0" />
+    <PackageReference Include="AFSLib" Version="1.1.1" />
     <PackageReference Include="NAudio" Version="2.2.1" />
     <PackageReference Include="Ookii.Dialogs.Wpf" Version="5.0.1" />
     <PackageReference Include="ShadowFNT" Version="2.0.1" />

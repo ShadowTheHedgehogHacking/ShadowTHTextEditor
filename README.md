@@ -1,15 +1,12 @@
-<div align="center"><h1>Shadow The Hedgehog Text Editor</h1>
+<div align="center">
+<h1>Shadow The Hedgehog Text Editor</h1>
+<h3>FNT editor (Subtitles & Voice Associations) for GameCube/Xbox versions of Shadow The Hedgehog</h3>
 <img src="https://raw.githubusercontent.com/ShadowTheHedgehogHacking/ShadowTHTextEditor/master/res/preview.jpg" align="center" />
 </div>
 
 
-
-
-
-FNT editor for GameCube/Xbox versions of Shadow The Hedgehog.
-
 ## Dependencies:
-* Requires [.NET 6 Desktop Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/6.0/runtime) (or higher).
+* Requires [.NET 8 Desktop Runtime](https://aka.ms/dotnet-core-applaunch?missing_runtime=true&arch=x64&apphost_version=8.0.0&gui=true)
 
 ## Features:
 * Handles the entire /font folder (with locale support).
@@ -20,7 +17,6 @@ FNT editor for GameCube/Xbox versions of Shadow The Hedgehog.
 * Automatic SubtitleAddress calculation
 * Add / Delete subtitle entries
 * Dark Mode
-
 
 ## Note:
 By default ShadowTH uses an ampersand (&) to represent the trademark symbol (™).
