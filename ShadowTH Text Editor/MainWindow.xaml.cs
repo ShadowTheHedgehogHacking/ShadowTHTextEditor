@@ -413,14 +413,14 @@ namespace ShadowTH_Text_Editor {
         }
 
         private void Button_About_Click(object sender, RoutedEventArgs e) {
-            MessageBox.Show("Created by dreamsyntax\n" +
+            MessageBox.Show("Created by dreamsyntax\n\n" +
                 ".fnt struct reversal done by LimblessVector & dreamsyntax\n" +
-                ".met/.txd universal map and design work by TheHatedGravity\n" +
+                ".met/.txd EN universal map and design work by TheHatedGravity\n" +
                 "Uses AfsLib by Sewer56 for AFS support\n" +
                 "Uses VGAudio by Alex Barney for ADX playback\n" +
                 "Uses modified version of DarkTheme by Otiel\n" +
                 "Uses Ookii.Dialogs for dialogs\n\n" +
-                "https://github.com/ShadowTheHedgehogHacking\n\nto check for updates for this software.", "About ShadowTH Text Editor / FNT Editor v1.9.0");
+                "github.com/ShadowTheHedgehogHacking", "About ShadowTH Text Editor / FNT Editor");
         }
 
         private void ComboBox_LocaleSwitcher_SelectionChanged(object sender, SelectionChangedEventArgs e) {
@@ -430,8 +430,10 @@ namespace ShadowTH_Text_Editor {
 
         private void ComboBox_LocaleSwitcher_DropDownClosed(object sender, EventArgs e) {
             if (!localeWarningSeen) {
-                MessageBox.Show("Saving in languages other than English is currently unsupported.\n" +
-                    "Attempting this will cause issues, as the \'global\' .met used does not contain full non-English characters.", "Info");
+                MessageBox.Show("Saving in languages other than English may require MET & TXD edits.\n" +
+                    "After saving, check in-game that all letters appear in your edited message.\n" +
+                    "If not, the missing letters need to be added to your .met and .txd for the edited fnt folder.\n\n" +
+                    "See github.com/ShadowTheHedgehogHacking/ShadowMET for more info", "Info");
                 localeWarningSeen = true;
                 PreferencesSave();
             }
