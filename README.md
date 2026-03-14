@@ -6,7 +6,7 @@
 
 
 ## Dependencies:
-* Requires [.NET 9 Desktop Runtime](https://aka.ms/dotnet-core-applaunch?missing_runtime=true&arch=x64&apphost_version=9.0.0&gui=true)
+* Requires [.NET 10 Desktop Runtime](https://aka.ms/dotnet-core-applaunch?missing_runtime=true&arch=x64&apphost_version=10.0.0&gui=true)
 
 ## Features:
 * Handles the entire /font folder (with locale support) for both the GameCube and Xbox versions
@@ -35,4 +35,4 @@
 
 ## Dev / How to build
 Release build with
-`dotnet publish -c Release --self-contained false /p:PublishSingleFile=true -p:TrimMode=CopyUsed --framework net9.0-windows7.0`
+`dotnet publish`
